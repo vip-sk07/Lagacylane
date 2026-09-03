@@ -6,14 +6,14 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db from './database.js';
-import { generatePersonaResponse, analyzeSentiment } from '../ai_modules/index.js';
+import { generatePersonaResponse, analyzeSentiment } from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -41,13 +41,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ----------------------------------------------------
-// AUTHENTICATION & USER REGISTRATION ENDPOINTS
+// 1. AUTHENTICATION & USER MANAGEMENT ENDPOINTS
 // ----------------------------------------------------
 
-// 1. Register New User / Create Account
+// Register New User / Create Account
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password, profileType, sportType, position, teamHistory } = req.body;
+    const { name, email, password, profileType, sportType, position, teamHistory, avatarUrl } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required.' });
@@ -60,27 +60,28 @@ app.post('/api/auth/register', async (req, res) => {
 
     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const passwordHash = await bcrypt.hash(password, 10);
-    const isAthlete = profileType === 'Athlete';
+    const isAthlete = profileType !== 'Standard';
 
     db.prepare(`
-      INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(userId, name, email, passwordHash, isAthlete ? 'Athlete' : 'Standard');
+      INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, AvatarURL)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(userId, name, email, passwordHash, isAthlete ? 'Athlete' : 'Standard', avatarUrl || null);
 
     const profileId = 'prof_' + Date.now();
     db.prepare(`
-      INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(profileId, userId, sportType || 'Football', position || 'Attacking Midfielder', teamHistory || 'Academy XI');
+      INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory, JerseyNumber)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(profileId, userId, sportType || 'football', position || 'Attacking Midfielder (#10)', teamHistory || 'Legacy Academy XI', 10);
 
     const newUser = {
       id: userId,
       name,
       email,
       role: isAthlete ? 'Athlete' : 'Standard',
-      sport: sportType || 'Football',
+      sport: sportType || 'football',
       position: position || 'Player',
-      team: teamHistory || 'Personal Timeline'
+      team: teamHistory || 'Legacy Academy XI',
+      avatarUrl: avatarUrl || null
     };
 
     res.status(201).json({ message: 'Account created successfully', user: newUser });
@@ -90,7 +91,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 2. Login User
+// Login User
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -112,9 +113,11 @@ app.post('/api/auth/login', async (req, res) => {
       name: userRow.Name,
       email: userRow.Email,
       role: userRow.ProfileType,
-      sport: athleteRow ? athleteRow.SportType : 'Football',
+      sport: athleteRow ? athleteRow.SportType : 'football',
       position: athleteRow ? athleteRow.Position : 'Player',
-      team: athleteRow ? athleteRow.TeamHistory : 'Personal'
+      team: athleteRow ? athleteRow.TeamHistory : 'Personal',
+      jerseyNumber: athleteRow ? athleteRow.JerseyNumber : 10,
+      avatarUrl: userRow.AvatarURL
     };
 
     res.json({ message: 'Login successful', user: userPayload });
@@ -124,10 +127,10 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// 3. Google Sign-In Authentication
+// Google Sign-In Authentication
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { email, name, sportType, position, teamHistory } = req.body;
+    const { email, name, sportType, position, teamHistory, avatarUrl } = req.body;
 
     if (!email || !name) {
       return res.status(400).json({ error: 'Google email and name are required.' });
@@ -136,20 +139,19 @@ app.post('/api/auth/google', async (req, res) => {
     let userRow = db.prepare('SELECT * FROM Users WHERE Email = ?').get(email);
 
     if (!userRow) {
-      // Auto-register Google user
       const userId = 'usr_google_' + Date.now();
       const dummyHash = await bcrypt.hash(userId, 10);
 
       db.prepare(`
-        INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
-        VALUES (?, ?, ?, ?, ?)
-      `).run(userId, name, email, dummyHash, 'Athlete');
+        INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, AvatarURL)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(userId, name, email, dummyHash, 'Athlete', avatarUrl || null);
 
       const profileId = 'prof_' + Date.now();
       db.prepare(`
-        INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory)
-        VALUES (?, ?, ?, ?, ?)
-      `).run(profileId, userId, sportType || 'Football', position || 'Attacking Midfielder (#10)', teamHistory || 'Legacy Academy');
+        INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory, JerseyNumber)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(profileId, userId, sportType || 'football', position || 'Attacking Midfielder (#10)', teamHistory || 'Legacy Academy', 10);
 
       userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
     }
@@ -161,9 +163,11 @@ app.post('/api/auth/google', async (req, res) => {
       name: userRow.Name,
       email: userRow.Email,
       role: userRow.ProfileType,
-      sport: athleteRow ? athleteRow.SportType : (sportType || 'Football'),
+      sport: athleteRow ? athleteRow.SportType : (sportType || 'football'),
       position: athleteRow ? athleteRow.Position : 'Player',
-      team: athleteRow ? athleteRow.TeamHistory : 'Personal'
+      team: athleteRow ? athleteRow.TeamHistory : 'Personal',
+      jerseyNumber: athleteRow ? athleteRow.JerseyNumber : 10,
+      avatarUrl: userRow.AvatarURL
     };
 
     res.json({ message: 'Google Sign-In successful', user: userPayload });
@@ -174,8 +178,44 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// IMAGE UPLOAD ENDPOINT
+// 2. ATHLETE PROFILE ENDPOINTS
 // ----------------------------------------------------
+
+app.get('/api/profile/:userId', (req, res) => {
+  const { userId } = req.params;
+  const user = db.prepare('SELECT User_ID, Name, Email, ProfileType, AvatarURL, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const profile = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
+  res.json({ user, profile });
+});
+
+app.put('/api/profile/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { name, sportType, position, teamHistory, jerseyNumber, bio } = req.body;
+
+  if (name) {
+    db.prepare('UPDATE Users SET Name = ? WHERE User_ID = ?').run(name, userId);
+  }
+  if (sportType || position || teamHistory || jerseyNumber || bio) {
+    db.prepare(`
+      UPDATE AthleteProfiles 
+      SET SportType = COALESCE(?, SportType),
+          Position = COALESCE(?, Position),
+          TeamHistory = COALESCE(?, TeamHistory),
+          JerseyNumber = COALESCE(?, JerseyNumber),
+          Bio = COALESCE(?, Bio)
+      WHERE User_ID = ?
+    `).run(sportType, position, teamHistory, jerseyNumber, bio, userId);
+  }
+
+  res.json({ message: 'Profile updated successfully' });
+});
+
+// ----------------------------------------------------
+// 3. IMAGE & MEDIA UPLOAD ENDPOINT
+// ----------------------------------------------------
+
 app.post('/api/upload', upload.single('media'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded.' });
@@ -185,7 +225,7 @@ app.post('/api/upload', upload.single('media'), (req, res) => {
 });
 
 // ----------------------------------------------------
-// MEMORY LOGS & LEVEL NODES ENDPOINTS (MongoDB NoSQL)
+// 4. CHRONOLOGICAL TIMELINE & MEMORY LOGS (MongoDB NoSQL)
 // ----------------------------------------------------
 
 app.get('/api/memories/:userId', async (req, res) => {
@@ -196,17 +236,18 @@ app.get('/api/memories/:userId', async (req, res) => {
 
     const memories = rows.map((r, idx) => ({
       id: r.Memory_ID,
-      levelNumber: idx + 1,
+      levelNumber: r.LevelNumber || idx + 1,
       title: r.Title,
-      era: r.Tags ? r.Tags.era || 'Youth Era' : 'Youth Era',
+      era: r.Era || r.Tags?.era || 'Youth Era (2018-2020)',
       date: r.EntryDate,
       stars: r.Stars || 3,
-      status: idx === rows.length - 1 ? 'current' : 'completed',
+      status: r.Status || (idx === rows.length - 1 ? 'current' : 'completed'),
       matchDetails: r.MatchDetails,
       content: r.TextEncrypted,
+      victoryMessage: r.VictoryMessage || '',
       sentiment: r.SentimentScore,
       media: r.MediaAssets ? r.MediaAssets[0]?.url : null,
-      tags: r.Tags ? r.Tags.context || [] : []
+      tags: r.Tags?.context || []
     }));
 
     res.json({ memories });
@@ -219,24 +260,27 @@ app.get('/api/memories/:userId', async (req, res) => {
 // Add New Memory Log / Level Node with dynamic sentiment analysis from AI modules
 app.post('/api/memories', async (req, res) => {
   try {
-    const { userId, title, era, date, matchDetails, content, stars, mediaUrl, tags } = req.body;
+    const { userId, title, era, date, matchDetails, content, victoryMessage, stars, mediaUrl, tags } = req.body;
 
     const memoryId = 'mem_' + Date.now();
     
     // Analyze sentiment dynamically using the AI module
-    const sentimentScore = analyzeSentiment(title, content);
+    const sentimentScore = analyzeSentiment(title, content + ' ' + (victoryMessage || ''));
 
     const doc = {
       Memory_ID: memoryId,
       User_ID: userId,
-      EntryDate: date,
+      EntryDate: date || new Date().toISOString().split('T')[0],
       Title: title,
-      TextEncrypted: content,
+      Era: era || 'Youth Era (2018-2020)',
       MatchDetails: matchDetails || title,
-      Stars: stars || 3,
+      TextEncrypted: content,
+      VictoryMessage: victoryMessage || '',
+      Stars: Number(stars) || 3,
+      Status: 'completed',
       SentimentScore: sentimentScore,
-      Tags: { era: era || 'Youth Era', context: tags || [] },
-      MediaAssets: mediaUrl ? [{ url: mediaUrl }] : [],
+      Tags: { era: era || 'Youth Era (2018-2020)', context: tags || [] },
+      MediaAssets: mediaUrl ? [{ url: mediaUrl, type: 'image' }] : [],
       CreatedAt: new Date()
     };
 
@@ -250,7 +294,10 @@ app.post('/api/memories', async (req, res) => {
   }
 });
 
-// Chat with AI Younger Self persona grounded on memories
+// ----------------------------------------------------
+// 5. AI YOUNGER SELF CHAT ENDPOINT
+// ----------------------------------------------------
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { userId, era, userMessage } = req.body;
@@ -259,22 +306,25 @@ app.post('/api/chat', async (req, res) => {
     const collection = getCollection('MemoryLogs');
     const rows = await collection.find({ User_ID: userId }).toArray();
     const eraMemories = rows
-      .filter((r) => r.Tags?.era === era)
+      .filter((r) => (r.Era === era || r.Tags?.era === era))
       .map((r) => ({
         title: r.Title,
-        content: r.TextEncrypted
+        content: `${r.TextEncrypted} ${r.VictoryMessage ? `[Victory: ${r.VictoryMessage}]` : ''}`
       }));
 
     // Delegate generation to the AI modules persona engine
     const responseText = await generatePersonaResponse(era, eraMemories, userMessage);
 
-    // Save Chat Session History
+    // Save Chat Session History in MongoDB
     const chatCollection = getCollection('ChatSessions');
     await chatCollection.insertOne({
       User_ID: userId,
       EraSelected: era,
       StartTime: new Date(),
-      Messages: [{ text: userMessage, sender: 'user' }, { text: responseText, sender: 'ai' }]
+      Messages: [
+        { sender: 'user', text: userMessage, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+        { sender: 'ai', text: responseText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+      ]
     });
 
     res.json({ response: responseText });
@@ -284,6 +334,66 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// ----------------------------------------------------
+// 6. WELLNESS & SENTIMENT ANALYTICS ENDPOINT
+// ----------------------------------------------------
+
+app.get('/api/analytics/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const collection = getCollection('MemoryLogs');
+    const rows = await collection.find({ User_ID: userId }).toArray();
+
+    const dataPoints = rows.map(r => ({
+      date: r.EntryDate ? r.EntryDate.substring(0, 7) : '2024-01',
+      score: r.SentimentScore || 0.8,
+      title: r.Title
+    }));
+
+    const avgSentiment = dataPoints.length > 0
+      ? dataPoints.reduce((acc, p) => acc + p.score, 0) / dataPoints.length
+      : 0.85;
+
+    res.json({
+      dataPoints,
+      burnoutRisk: avgSentiment > 0.6 ? 'Low' : avgSentiment > 0.2 ? 'Moderate' : 'High',
+      totalMemories: rows.length
+    });
+  } catch (err) {
+    console.error('Analytics Error:', err);
+    res.status(500).json({ error: 'Server error calculating analytics.' });
+  }
+});
+
+// ----------------------------------------------------
+// 7. TEAMMATE & USER CONNECTIONS ENDPOINTS
+// ----------------------------------------------------
+
+app.get('/api/connections/:userId', (req, res) => {
+  const { userId } = req.params;
+  const connections = db.prepare(`
+    SELECT c.Connection_ID, c.Status, u.User_ID, u.Name, u.Email, u.ProfileType, p.SportType, p.Position, p.TeamHistory
+    FROM UserConnections c
+    JOIN Users u ON c.Following_ID = u.User_ID
+    LEFT JOIN AthleteProfiles p ON u.User_ID = p.User_ID
+    WHERE c.Follower_ID = ?
+  `).all(userId);
+
+  res.json({ connections });
+});
+
+app.post('/api/connections/follow', (req, res) => {
+  const { followerId, followingId } = req.body;
+  const connectionId = 'conn_' + Date.now();
+  db.prepare(`
+    INSERT INTO UserConnections (Connection_ID, Follower_ID, Following_ID, Status)
+    VALUES (?, ?, ?, 'pending')
+  `).run(connectionId, followerId, followingId);
+
+  res.status(201).json({ message: 'Follow request sent', connectionId });
+});
+
+// Start Server & Connect MongoDB
 app.listen(PORT, async () => {
   await connectMongoDB();
   console.log(`🚀 LegacyLane Backend Database API listening on http://localhost:${PORT}`);
