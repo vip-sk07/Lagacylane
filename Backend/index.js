@@ -13,7 +13,8 @@ import {
   searchMemoriesByQuery,
   getSupabaseSchemaSQL,
   retrieveEraContext,
-  generateYoungerSelfResponse
+  generateYoungerSelfResponse,
+  initSidelineWebSocketServer
 } from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
@@ -555,7 +556,10 @@ app.delete('/api/users/:userId', async (req, res) => {
 });
 
 // Start Server & Connect MongoDB
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   await connectMongoDB();
   console.log(`🚀 LegacyLane Backend Database API listening on http://localhost:${PORT}`);
 });
+
+// Initialize Sideline AI Real-Time WebSocket Streaming Server on /ws/sideline-ai
+initSidelineWebSocketServer({ server });

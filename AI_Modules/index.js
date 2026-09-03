@@ -1,12 +1,12 @@
 /**
- * AI Modules - Persona & Sentiment Analysis Engine + Memory Vector Pipeline + RAG Engine + Persona Orchestrator
+ * AI Modules - Persona & Sentiment Analysis Engine + Memory Vector Pipeline + RAG Engine + Persona Orchestrator + Sideline WebSocket Server
  * Connects to local Ollama (llama3 / qwen2.5), Google Gemini (text-embedding-004 / gemini-1.5-flash) or provides rules-based fallbacks.
- * Handles vector embedding generation, AES-256 memory encryption, Era-Filtered RAG retrieval, and AI Younger Self Persona Orchestration.
+ * Handles vector embedding generation, AES-256 memory encryption, Era-Filtered RAG retrieval, Persona Orchestration, and WebSocket Token Streaming.
  */
 
 import { generateYoungerSelfResponse } from './personaOrchestrator.js';
 
-// Re-export vector embedding, encryption, vector storage, ingestion service, RAG & Persona Orchestrator modules
+// Re-export vector embedding, encryption, vector storage, ingestion service, RAG, Persona Orchestrator & WebSocket modules
 export { generateEmbedding } from './embeddings.js';
 export { encryptText, decryptText } from './encryption.js';
 export { storeVectorEmbedding, searchVectorStore, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
@@ -19,6 +19,7 @@ export {
   detectCrisisKeywords, 
   detectBurnoutKeywords 
 } from './personaOrchestrator.js';
+export { initSidelineWebSocketServer, handleInstantLearningEvent, processStreamingChatFlow } from './sidelineSocket.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 

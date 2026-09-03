@@ -1,6 +1,6 @@
-# LegacyLane AI Modules — Phase 1, 2 & 3 Complete AI Engine
+# LegacyLane AI Modules — Phase 1, 2, 3 & 4 Full Stack AI Engine
 
-Production-grade Memory Vectorization, AES-256 Encryption, Era-Filtered Hybrid RAG Engine, and AI Younger Self Persona Orchestration for **LegacyLane**.
+Production-grade Memory Vectorization, AES-256 Encryption, Era-Filtered Hybrid RAG Engine, Younger Self Persona Orchestration, and Sideline AI Real-Time WebSocket Streaming & Instant Learning Engine for **LegacyLane**.
 
 ## 🚀 Key Features
 
@@ -20,46 +20,32 @@ Production-grade Memory Vectorization, AES-256 Encryption, Era-Filtered Hybrid R
    - **Token Budgeting & Summarization**: Formats output into a markdown block strictly under 800 tokens (~3200 characters).
 
 3. **Phase 3: Younger Self Persona & System Prompt Orchestration (`generateYoungerSelfResponse`)**:
-   - **Dynamic Era Age Calculation**: Computes `ERA_AGE` dynamically from era metadata (e.g. "High School (Age 13-17)" -> "13-17").
+   - **Dynamic Era Age Calculation**: Computes `ERA_AGE` dynamically from era metadata.
    - **System Prompt Contract**: Enforces strict temporal boundaries where knowledge is locked up to selected era.
    - **Safety Guardrail Engine**: Automatically detects self-harm/crisis triggers, breaking character gently to provide 24/7 helpline resources (`988`, `Tele-MANAS 14416`).
-   - **Adult Burnout Grounding**: Detects adult fatigue/exhaustion, reminding the user of early dreams and sacrifices.
-   - **Candid Future Event Handling**: Candidly responds to undocumented future events: *"I don't remember that happening yet—did that happen after this season?"*.
+   - **Adult Burnout Grounding**: Reminds user of early dreams and sacrifices when adult exhaustion is detected.
+   - **Candid Future Event Handling**: *"I don't remember that happening yet—did that happen after this season?"*.
+
+4. **Phase 4: Sideline AI Real-Time WebSocket Streaming & Instant Learning (`initSidelineWebSocketServer`)**:
+   - **WebSocket Endpoint**: Mounted on `/ws/sideline-ai?userId={id}&era={era}`.
+   - **Real-Time Token Streaming**: Streams response tokens in real time `{ event: 'token', data: chunkText }`, ending with `{ event: 'done', fullResponse: string, insightQuote: string }`.
+   - **Instant Learning Hook (`+ LOG PLAY`)**: On `{ event: 'log_play' }` message, immediately vectorizes the newly logged play, updates the active vector index, and broadcasts `{ event: 'memory_learned' }` so the VERY NEXT chat query immediately reflects the new memory!
 
 ---
 
-## 📡 API Endpoints
+## 📡 Endpoints Specification
 
-### 1. `POST /api/chat`
-Phase 3 AI Younger Self Chat orchestration with RAG context and safety guardrails.
+### 1. `ws://localhost:5000/ws/sideline-ai` (WebSocket Real-Time API)
+- Connects client HUD drawer to real-time token streaming and instant play learning.
 
-#### Request Body:
-```json
-{
-  "userId": "usr_12345",
-  "era": "High School (Age 13-17)",
-  "userMessage": "Do you remember our basketball championship?",
-  "history": []
-}
-```
+### 2. `POST /api/chat` (REST Chat Endpoint)
+- Phase 3 AI Younger Self Chat orchestration with RAG context and safety guardrails.
 
-#### Response (`200 OK`):
-```json
-{
-  "response": "Hey! Of course I remember...",
-  "crisisTriggered": false,
-  "isBurnout": false,
-  "era": "High School (Age 13-17)",
-  "eraAge": "13-17",
-  "model": "google-gemini"
-}
-```
+### 3. `POST /api/memories/ingest` (Ingestion API)
+- Ingests memory payload, generates 768-dim vector, encrypts description, and updates vector store index.
 
-### 2. `POST /api/memories/ingest`
-Ingests memory payload, generates 768-dim vector, encrypts description, and updates vector store index.
-
-### 3. `POST /api/memories/retrieve-context`
-Executes Era-Constrained Hybrid RAG context retrieval.
+### 4. `POST /api/memories/retrieve-context` (RAG Context API)
+- Executes Era-Constrained Hybrid RAG context retrieval.
 
 ---
 
@@ -73,4 +59,7 @@ node AI_Modules/test_rag.js
 
 # Test Phase 3 Persona & System Prompt Orchestrator
 node AI_Modules/test_persona.js
+
+# Test Phase 4 Real-Time WebSocket Streaming & Instant Learning
+node AI_Modules/test_websocket.js
 ```
