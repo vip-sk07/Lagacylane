@@ -10,6 +10,7 @@ import {
 } from './personaOrchestrator.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const MAX_HISTORY_TURNS = 10; // Sliding window max turns
 
 // Active WebSocket Sessions Store
 const activeSessions = new Map();
@@ -44,6 +45,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * Phase 4: Sideline AI Real-Time WebSocket Streaming & Instant Learning Controller
  * 
  * Attaches to an HTTP server or creates a WebSocket server listening on path /ws/sideline-ai
+ * Includes 30s ping/pong heartbeat and multi-turn sliding window history memory management.
  * 
  * @param {object} [options]
  * @param {import('http').Server} [options.server] - Existing HTTP Server instance
@@ -57,7 +59,21 @@ export function initSidelineWebSocketServer(options = {}) {
 
   console.log(`⚡ Sideline AI Real-Time WebSocket Server initialized on path /ws/sideline-ai`);
 
+  // Heartbeat ping interval (30 seconds) to prevent connection timeouts on idle HUD drawers
+  const pingInterval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+      if (ws.isAlive === false) return ws.terminate();
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000);
+
+  wss.on('close', () => clearInterval(pingInterval));
+
   wss.on('connection', (ws, req) => {
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
+
     // Parse query params e.g. /ws/sideline-ai?userId=usr_123&era=Youth%20Era
     const urlObj = new URL(req.url || '', 'http://localhost');
     const userId = urlObj.searchParams.get('userId') || 'usr_default';
@@ -234,7 +250,7 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       const contents = [];
       
       if (sessionState.history && sessionState.history.length > 0) {
-        sessionState.history.forEach(item => {
+        sessionState.history.slice(-MAX_HISTORY_TURNS).forEach(item => {
           contents.push({
             role: item.role === 'user' ? 'user' : 'model',
             parts: [{ text: item.content || item.text || '' }]
@@ -260,9 +276,12 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       }
 
       if (fullResponse) {
-        // Record in history
+        // Record in history & enforce sliding window
         sessionState.history.push({ role: 'user', content: userPrompt });
         sessionState.history.push({ role: 'assistant', content: fullResponse });
+        if (sessionState.history.length > MAX_HISTORY_TURNS * 2) {
+          sessionState.history = sessionState.history.slice(-MAX_HISTORY_TURNS * 2);
+        }
 
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
@@ -283,7 +302,7 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     const ollamaCheck = await fetch(`${OLLAMA_HOST}/api/tags`, { signal: AbortSignal.timeout(800) });
     if (ollamaCheck.ok) {
       const messages = [{ role: 'system', content: systemPrompt }];
-      sessionState.history.forEach(h => messages.push({ role: h.role === 'user' ? 'user' : 'assistant', content: h.content }));
+      sessionState.history.slice(-MAX_HISTORY_TURNS).forEach(h => messages.push({ role: h.role === 'user' ? 'user' : 'assistant', content: h.content }));
       messages.push({ role: 'user', content: userPrompt });
 
       const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
@@ -319,6 +338,9 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
         if (fullResponse) {
           sessionState.history.push({ role: 'user', content: userPrompt });
           sessionState.history.push({ role: 'assistant', content: fullResponse });
+          if (sessionState.history.length > MAX_HISTORY_TURNS * 2) {
+            sessionState.history = sessionState.history.slice(-MAX_HISTORY_TURNS * 2);
+          }
 
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
@@ -364,6 +386,9 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
 
   sessionState.history.push({ role: 'user', content: userPrompt });
   sessionState.history.push({ role: 'assistant', content: fullResponse });
+  if (sessionState.history.length > MAX_HISTORY_TURNS * 2) {
+    sessionState.history = sessionState.history.slice(-MAX_HISTORY_TURNS * 2);
+  }
 
   if (ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({
