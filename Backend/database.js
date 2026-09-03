@@ -11,7 +11,7 @@ const db = new Database(dbPath);
 // Enable Foreign Keys
 db.pragma('foreign_keys = ON');
 
-// Initialize Schema based on LegacyLane_Database_Dictionary.pdf
+// Initialize Schema based on LegacyLane_Database_Dictionary.pdf & SRS
 db.exec(`
   -- Structured Data Table: Users
   CREATE TABLE IF NOT EXISTS Users (
@@ -20,6 +20,7 @@ db.exec(`
     Email TEXT UNIQUE NOT NULL,
     PasswordHash TEXT NOT NULL,
     ProfileType TEXT NOT NULL CHECK(ProfileType IN ('Standard', 'Athlete')),
+    AvatarURL TEXT,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -31,22 +32,35 @@ db.exec(`
     SportType TEXT NOT NULL,
     Position TEXT NOT NULL,
     TeamHistory TEXT,
+    JerseyNumber INTEGER DEFAULT 10,
+    Bio TEXT,
     FOREIGN KEY(User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
   );
 
-  -- Structured Data Table: FamilyAccessControl & UserConnections
+  -- Structured Data Table: UserConnections (Followers & Teammates)
+  CREATE TABLE IF NOT EXISTS UserConnections (
+    Connection_ID TEXT PRIMARY KEY,
+    Follower_ID TEXT NOT NULL,
+    Following_ID TEXT NOT NULL,
+    Status TEXT DEFAULT 'pending' CHECK(Status IN ('pending', 'accepted', 'rejected')),
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(Follower_ID) REFERENCES Users(User_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Following_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
+  );
+
+  -- Structured Data Table: FamilyAccessControl
   CREATE TABLE IF NOT EXISTS FamilyAccessControl (
     Grant_ID TEXT PRIMARY KEY,
     Owner_User_ID TEXT NOT NULL,
     Family_User_ID TEXT NOT NULL,
-    PermissionLevel TEXT DEFAULT 'ViewOnly',
-    Status TEXT DEFAULT 'PENDING' CHECK(Status IN ('PENDING', 'ACCEPTED', 'REJECTED')),
+    PermissionLevel TEXT DEFAULT 'Viewer' CHECK(PermissionLevel IN ('Viewer', 'Contributor', 'Admin')),
+    Status TEXT DEFAULT 'active' CHECK(Status IN ('active', 'revoked')),
     GrantedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(Owner_User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE,
     FOREIGN KEY(Family_User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
   );
 
-  -- Unstructured Document Collection: MemoryLogs
+  -- Unstructured Fallback Collection: MemoryLogs
   CREATE TABLE IF NOT EXISTS MemoryLogs (
     Memory_ID TEXT PRIMARY KEY,
     User_ID TEXT NOT NULL,
@@ -54,6 +68,7 @@ db.exec(`
     Title TEXT NOT NULL,
     TextEncrypted TEXT NOT NULL,
     MatchDetails TEXT,
+    VictoryMessage TEXT,
     Stars INTEGER DEFAULT 3,
     SentimentScore REAL DEFAULT 0.85,
     PrivacySetting TEXT DEFAULT 'Public',
@@ -63,7 +78,7 @@ db.exec(`
     FOREIGN KEY(User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
   );
 
-  -- Unstructured Document Collection: ChatSessions
+  -- Unstructured Fallback Collection: ChatSessions
   CREATE TABLE IF NOT EXISTS ChatSessions (
     Session_ID TEXT PRIMARY KEY,
     User_ID TEXT NOT NULL,
