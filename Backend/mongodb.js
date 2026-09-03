@@ -10,7 +10,8 @@ let useFallback = false;
 // Fallback in-memory/file storage if MongoDB is not yet running/reachable
 const memoryFallback = {
   MemoryLogs: [],
-  ChatSessions: []
+  ChatSessions: [],
+  SentimentAnalytics: []
 };
 
 /**
@@ -38,6 +39,9 @@ export async function connectMongoDB() {
  */
 export function getCollection(collectionName) {
   if (useFallback || !db) {
+    if (!memoryFallback[collectionName]) {
+      memoryFallback[collectionName] = [];
+    }
     return {
       find: (query = {}) => {
         let results = memoryFallback[collectionName];
@@ -52,6 +56,16 @@ export function getCollection(collectionName) {
       insertOne: async (doc) => {
         memoryFallback[collectionName].push(doc);
         return { insertedId: doc._id || Date.now().toString() };
+      },
+      deleteMany: async (query = {}) => {
+        if (query.User_ID) {
+          const initialLen = memoryFallback[collectionName].length;
+          memoryFallback[collectionName] = memoryFallback[collectionName].filter(item => item.User_ID !== query.User_ID);
+          return { deletedCount: initialLen - memoryFallback[collectionName].length };
+        }
+        const count = memoryFallback[collectionName].length;
+        memoryFallback[collectionName] = [];
+        return { deletedCount: count };
       }
     };
   }

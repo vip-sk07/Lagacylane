@@ -265,122 +265,39 @@ app.get('/api/memories/:userId', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// VECTOR EMBEDDING & MEMORY INGESTION PIPELINE
-// ----------------------------------------------------
-
-/**
- * 1. Dedicated Production Ingestion Endpoint
- * POST /api/memories/ingest
- * Accepts: { userId, title, description, entryDate, era, emotionTags, contextTags, sentimentScore, mediaUrl }
- */
-app.post('/api/memories/ingest', async (req, res) => {
+// Semantic Search & Tag Filtering Endpoint (SRS Page 16 - REQ-3)
+app.get('/api/memories/search/:userId', async (req, res) => {
   try {
-    const { userId, title, description, entryDate, era, emotionTags, contextTags, sentimentScore, mediaUrl } = req.body;
+    const { userId } = req.params;
+    const { q, era, tag } = req.query;
 
-    if (!title && !description) {
-      return res.status(400).json({ error: 'Title or description is required for memory ingestion.' });
+    const collection = getCollection('MemoryLogs');
+    const rows = await collection.find({ User_ID: userId }).toArray();
+
+    let filtered = rows;
+
+    if (era) {
+      filtered = filtered.filter(r => (r.Era === era || r.Tags?.era === era));
+    }
+    if (tag) {
+      filtered = filtered.filter(r => r.Tags?.context?.some(t => t.toLowerCase() === tag.toLowerCase()));
+    }
+    if (q) {
+      const query = q.toLowerCase();
+      filtered = filtered.filter(r =>
+        r.Title?.toLowerCase().includes(query) ||
+        r.TextEncrypted?.toLowerCase().includes(query) ||
+        r.MatchDetails?.toLowerCase().includes(query) ||
+        r.VictoryMessage?.toLowerCase().includes(query)
+      );
     }
 
-    // Attach Commercial Zero-Training Guarantee Header
-    res.setHeader('X-Zero-Training-Guarantee', 'Enabled');
-
-    // Run modular ingestion pipeline (Vectorization + AES-256 Encryption + Vector Persistence)
-    const result = await ingestMemoryPayload({
-      userId,
-      title,
-      description,
-      entryDate,
-      era,
-      emotionTags,
-      contextTags,
-      sentimentScore,
-      mediaUrl
-    });
-
-    // Also persist to MongoDB for timeline display compatibility
-    try {
-      const collection = getCollection('MemoryLogs');
-      await collection.insertOne({
-        Memory_ID: result.memoryId,
-        User_ID: userId || 'usr_anonymous',
-        EntryDate: entryDate || new Date().toISOString().split('T')[0],
-        Title: title,
-        TextEncrypted: result.metadata.description || description,
-        MatchDetails: title,
-        Stars: 3,
-        SentimentScore: result.metadata.sentimentScore,
-        Tags: { era: era || 'Youth Era', context: contextTags || emotionTags || [] },
-        MediaAssets: mediaUrl ? [{ url: mediaUrl }] : [],
-        CreatedAt: new Date()
-      });
-    } catch (dbErr) {
-      console.warn('MongoDB duplicate/sync warning during ingest:', dbErr.message);
-    }
-
-    res.status(201).json(result);
+    res.json({ results: filtered, count: filtered.length });
   } catch (err) {
-    console.error('Ingestion Pipeline Error:', err);
-    res.status(500).json({ error: 'Failed to ingest memory and update vector index.' });
+    console.error('Search Memories Error:', err);
+    res.status(500).json({ error: 'Server error searching memories.' });
   }
 });
-
-/**
- * 2. Semantic Similarity Vector Search Endpoint
- * GET /api/memories/vector-search?query=...&userId=...
- */
-app.get('/api/memories/vector-search', async (req, res) => {
-  try {
-    const { query, userId, topK } = req.query;
-    if (!query) {
-      return res.status(400).json({ error: 'Query string is required for semantic vector search.' });
-    }
-
-    const matches = await searchMemoriesByQuery(query, userId, parseInt(topK) || 5);
-    res.json({ status: 'success', query, count: matches.length, matches });
-  } catch (err) {
-    console.error('Vector Search Error:', err);
-    res.status(500).json({ error: 'Failed to execute vector search.' });
-  }
-});
-
-/**
- * 3. Phase 2 Era-Filtered Hybrid RAG Context Retrieval Endpoint
- * POST /api/memories/retrieve-context
- * Accepts: { userId, selectedEra, userPrompt, topK }
- */
-app.post('/api/memories/retrieve-context', async (req, res) => {
-  try {
-    const { userId, selectedEra, userPrompt, topK } = req.body;
-
-    if (!userId || !selectedEra) {
-      return res.status(400).json({ error: 'userId and selectedEra are required parameters.' });
-    }
-
-    const ragResult = await retrieveEraContext({
-      userId,
-      selectedEra,
-      userPrompt,
-      topK: Number(topK) || 4
-    });
-
-    res.json(ragResult);
-  } catch (err) {
-    console.error('RAG Context Retrieval Error:', err);
-    res.status(500).json({ error: 'Failed to retrieve era-constrained context.' });
-  }
-});
-
-/**
- * 4. Supabase Schema DDL Endpoint
- * GET /api/memories/supabase-schema
- */
-app.get('/api/memories/supabase-schema', (req, res) => {
-  res.setHeader('Content-Type', 'text/plain');
-  res.send(getSupabaseSchemaSQL());
-});
-
-// Add New Memory Log / Level Node with dynamic sentiment analysis & vector ingestion
 app.post('/api/memories', async (req, res) => {
   try {
     const { userId, title, era, date, matchDetails, content, victoryMessage, stars, mediaUrl, tags } = req.body;
@@ -540,6 +457,101 @@ app.post('/api/connections/follow', (req, res) => {
   `).run(connectionId, followerId, followingId);
 
   res.status(201).json({ message: 'Follow request sent', connectionId });
+});
+
+// ----------------------------------------------------
+// 8. FAMILY ACCESS CONTROL & VAULT PERMISSION ENDPOINTS
+// ----------------------------------------------------
+
+app.get('/api/vault/:ownerId', async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    const { viewerId } = req.query;
+
+    if (ownerId !== viewerId) {
+      const grant = db.prepare(`
+        SELECT PermissionLevel, Status FROM FamilyAccessControl
+        WHERE Owner_User_ID = ? AND Family_User_ID = ? AND Status = 'active'
+      `).get(ownerId, viewerId);
+
+      if (!grant) {
+        return res.status(403).json({ error: 'Access denied. You do not have permission to view this vault.' });
+      }
+    }
+
+    const collection = getCollection('MemoryLogs');
+    const memories = await collection.find({ User_ID: ownerId }).toArray();
+    res.json({ ownerId, memories, access: 'granted' });
+  } catch (err) {
+    console.error('Vault Access Error:', err);
+    res.status(500).json({ error: 'Server error verifying vault access.' });
+  }
+});
+
+app.post('/api/vault/grant', (req, res) => {
+  const { ownerId, familyUserId, permissionLevel } = req.body;
+  const grantId = 'grant_' + Date.now();
+
+  db.prepare(`
+    INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, PermissionLevel, Status)
+    VALUES (?, ?, ?, ?, 'active')
+  `).run(grantId, ownerId, familyUserId, permissionLevel || 'Viewer');
+
+  res.status(201).json({ message: 'Vault access granted', grantId });
+});
+
+// ----------------------------------------------------
+// 9. DATA EXPORT & ACCOUNT WIPING (GDPR / SRS Page 21)
+// ----------------------------------------------------
+
+app.get('/api/users/:userId/export', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = db.prepare('SELECT User_ID, Name, Email, ProfileType, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const profile = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
+    const collection = getCollection('MemoryLogs');
+    const memories = await collection.find({ User_ID: userId }).toArray();
+    const chatCollection = getCollection('ChatSessions');
+    const chats = await chatCollection.find({ User_ID: userId }).toArray();
+
+    const archive = {
+      user,
+      athleteProfile: profile,
+      timelineMemories: memories,
+      aiChatHistory: chats,
+      exportedAt: new Date().toISOString()
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="LegacyLane_Archive_${userId}.json"`);
+    res.json(archive);
+  } catch (err) {
+    console.error('Export Error:', err);
+    res.status(500).json({ error: 'Server error exporting user archive.' });
+  }
+});
+
+app.delete('/api/users/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Delete from SQLite
+    db.prepare('DELETE FROM Users WHERE User_ID = ?').run(userId);
+
+    // Delete from MongoDB
+    const collection = getCollection('MemoryLogs');
+    await collection.deleteMany({ User_ID: userId });
+
+    const chatCollection = getCollection('ChatSessions');
+    await chatCollection.deleteMany({ User_ID: userId });
+
+    res.json({ message: 'User account and all personal timeline memories permanently deleted.' });
+  } catch (err) {
+    console.error('Delete Account Error:', err);
+    res.status(500).json({ error: 'Server error wiping account.' });
+  }
 });
 
 // Start Server & Connect MongoDB
