@@ -11,7 +11,8 @@ import {
   analyzeSentiment, 
   ingestMemoryPayload, 
   searchMemoriesByQuery,
-  getSupabaseSchemaSQL 
+  getSupabaseSchemaSQL,
+  retrieveEraContext
 } from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
@@ -343,7 +344,34 @@ app.get('/api/memories/vector-search', async (req, res) => {
 });
 
 /**
- * 3. Supabase Schema DDL Endpoint
+ * 3. Phase 2 Era-Filtered Hybrid RAG Context Retrieval Endpoint
+ * POST /api/memories/retrieve-context
+ * Accepts: { userId, selectedEra, userPrompt, topK }
+ */
+app.post('/api/memories/retrieve-context', async (req, res) => {
+  try {
+    const { userId, selectedEra, userPrompt, topK } = req.body;
+
+    if (!userId || !selectedEra) {
+      return res.status(400).json({ error: 'userId and selectedEra are required parameters.' });
+    }
+
+    const ragResult = await retrieveEraContext({
+      userId,
+      selectedEra,
+      userPrompt,
+      topK: Number(topK) || 4
+    });
+
+    res.json(ragResult);
+  } catch (err) {
+    console.error('RAG Context Retrieval Error:', err);
+    res.status(500).json({ error: 'Failed to retrieve era-constrained context.' });
+  }
+});
+
+/**
+ * 4. Supabase Schema DDL Endpoint
  * GET /api/memories/supabase-schema
  */
 app.get('/api/memories/supabase-schema', (req, res) => {

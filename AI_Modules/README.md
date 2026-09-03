@@ -1,108 +1,76 @@
-# LegacyLane AI Modules — Phase 1 Ingestion & Vector Embedding Pipeline
+# LegacyLane AI Modules — Phase 1 & Phase 2 AI Engine
 
-Production-grade Memory Vectorization, AES-256 Encryption, and Persona Engine for **LegacyLane**.
+Production-grade Memory Vectorization, AES-256 Encryption, Era-Filtered Hybrid RAG Engine, and Persona Generation for **LegacyLane**.
 
 ## 🚀 Key Features
 
-1. **Rich Embedding Payload Formatting**:
-   Formats memory attributes into chunked semantic representations:
-   `"Era: {era} | Date: {entryDate} | Title: {title} | Emotion: {emotionTags.join(', ')} | Journal: {description}"`
+1. **Phase 1: Rich Ingestion & Vectorization Pipeline**:
+   - Formats memory attributes into chunked semantic representations:
+     `"Era: {era} | Date: {entryDate} | Title: {title} | Emotion: {emotionTags.join(', ')} | Journal: {description}"`
+   - **Google Gemini Embedding API (`text-embedding-004`)**: Powered by `@google/genai` (768-dim float vector).
+   - **Local Ollama & Deterministic Fallback**: Support for `nomic-embed-text` and zero-downtime offline vector math.
+   - **AES-256-GCM Encryption**: Encrypts sensitive journal text before storage.
+   - **Zero-Training Guarantee**: Commercial terms header (`X-Zero-Training-Guarantee: Enabled`).
 
-2. **Modular Vector Embedding Generation (768-dim)**:
-   - **Google Gemini Embedding API (`text-embedding-004`)**: Powered by `@google/genai`.
-   - **Local Ollama Fallback**: Calls local `nomic-embed-text` or `all-minilm` embeddings (`http://localhost:11434`).
-   - **Offline Deterministic Fallback**: Computes normalized 768-dim vector math offline when APIs are unconfigured.
-
-3. **AES-256-GCM Encryption**:
-   - Encrypts sensitive journal reflections before storage using `crypto` AES-256-GCM with authentication tags.
-
-4. **Vector Store Integration (Supabase pgvector / Local Index)**:
-   - Persists embeddings and metadata to Supabase PostgreSQL with `pgvector` extension when `SUPABASE_URL` is set.
-   - Automatically maintains a local in-memory vector index with Cosine Similarity ranking for rapid offline execution.
-
-5. **Zero-Training Guarantee**:
-   - Built under commercial terms ensuring diary reflections & embeddings are never retained for public model training. Attached with `X-Zero-Training-Guarantee: Enabled` headers.
+2. **Phase 2: Era-Filtered Hybrid RAG Engine (`retrieveEraContext`)**:
+   - **Stage 1 (Hard Metadata Filter)**: Enforces SQL/vector constraint `WHERE userId = :userId AND era = :selectedEra`. Under NO circumstances can memories from future/other eras bleed into context.
+   - **Stage 2 (Cosine Similarity Ranking)**: Ranks era-filtered memories by prompt vector similarity, selecting top $K$ ($K=4$).
+   - **Sparse Data Fallback**: Triggers fallback message if zero/sparse memories exist:
+     `"You haven't logged any memories from this time yet. Responses will be limited."`
+   - **Token Budgeting & Summarization**: Formats output into a markdown block strictly under 800 tokens (~3200 characters).
 
 ---
 
 ## 📡 API Endpoints
 
-### `POST /api/memories/ingest`
+### 1. `POST /api/memories/ingest`
 Ingests memory payload, generates 768-dim vector, encrypts description, and updates vector store index.
+
+### 2. `POST /api/memories/retrieve-context`
+Executes Era-Constrained Hybrid RAG context retrieval.
 
 #### Request Body:
 ```json
 {
   "userId": "usr_12345",
-  "title": "Championship Goal",
-  "description": "Scored header in the 90th minute.",
-  "entryDate": "2024-05-15",
-  "era": "Youth Era (2020-2024)",
-  "emotionTags": ["Triumph", "Joy"],
-  "contextTags": ["Finals", "Header"],
-  "sentimentScore": 0.95,
-  "mediaUrl": "http://localhost:5000/uploads/media-123.jpg"
+  "selectedEra": "High School (Age 13-17)",
+  "userPrompt": "Tell me about my basketball championship game",
+  "topK": 4
 }
 ```
 
-#### Response (`201 Created`):
+#### Response (`200 OK`):
 ```json
 {
-  "status": "success",
-  "memoryId": "mem_vec_1788455233163_w5vhe",
-  "message": "Memory successfully ingested, journal text encrypted, and 768-dim vector index updated.",
-  "vectorDimension": 768,
-  "provider": "google-gemini (text-embedding-004)",
-  "encrypted": true,
-  "storageTarget": "Supabase pgvector",
-  "zeroTrainingGuarantee": true,
-  "metadata": {
-    "userId": "usr_12345",
-    "title": "Championship Goal",
-    "era": "Youth Era (2020-2024)",
-    "entryDate": "2024-05-15",
-    "sentimentScore": 0.95,
-    "emotionTags": ["Triumph", "Joy"],
-    "contextTags": ["Finals", "Header"],
-    "mediaUrl": "http://localhost:5000/uploads/media-123.jpg"
-  }
+  "isSparse": false,
+  "count": 2,
+  "selectedEra": "High School (Age 13-17)",
+  "fallbackMessage": null,
+  "formattedContext": "### Memory 1: High School District Finals\n- **Date**: 2016-03-12\n...",
+  "memories": [
+    {
+      "memoryId": "mem_vec_123",
+      "title": "High School District Finals",
+      "entryDate": "2016-03-12",
+      "era": "High School (Age 13-17)",
+      "similarity": 0.8954,
+      "excerpt": "Scored the decisive 3-pointer..."
+    }
+  ],
+  "tokenEstimate": 122
 }
 ```
 
-### `GET /api/memories/vector-search?query=...&userId=...`
+### 3. `GET /api/memories/vector-search?query=...&userId=...`
 Performs semantic similarity query against stored vector embeddings.
-
----
-
-## 🛢️ Supabase pgvector Setup (Optional)
-Run this SQL script in your Supabase SQL Editor:
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-
-CREATE TABLE IF NOT EXISTS memories_vector (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    memory_id VARCHAR(255) UNIQUE NOT NULL,
-    user_id VARCHAR(255) NOT NULL,
-    title TEXT NOT NULL,
-    encrypted_text TEXT NOT NULL,
-    era VARCHAR(100) NOT NULL,
-    entry_date DATE,
-    emotion_tags TEXT[],
-    context_tags TEXT[],
-    sentiment_score FLOAT,
-    media_url TEXT,
-    embedding VECTOR(768),
-    metadata JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_memories_vector_embedding 
-ON memories_vector USING hnsw (embedding vector_cosine_ops);
-```
 
 ---
 
 ## 🧪 Running Tests
 ```bash
+# Test Phase 1 Ingestion Pipeline
 node AI_Modules/test_pipeline.js
+
+# Test Phase 2 Era-Filtered Hybrid RAG Engine
+node AI_Modules/test_rag.js
 ```

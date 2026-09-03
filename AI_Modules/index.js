@@ -1,16 +1,17 @@
 /**
- * AI Modules - Persona & Sentiment Analysis Engine + Memory Ingestion Pipeline
+ * AI Modules - Persona & Sentiment Analysis Engine + Memory Ingestion Pipeline + RAG Engine
  * Connects to local Ollama (llama3 / qwen2.5) or provides rules-based fallbacks.
- * Handles vector embedding generation (Google Gemini text-embedding-004 / Ollama) & AES-256 memory encryption.
+ * Handles vector embedding generation (Google Gemini text-embedding-004 / Ollama), AES-256 encryption, and Era-Filtered RAG retrieval.
  */
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 
-// Re-export vector embedding, encryption, vector storage & ingestion service modules
+// Re-export vector embedding, encryption, vector storage, ingestion service & RAG modules
 export { generateEmbedding } from './embeddings.js';
 export { encryptText, decryptText } from './encryption.js';
 export { storeVectorEmbedding, searchVectorStore, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
 export { formatEmbeddingPayload, ingestMemoryPayload, searchMemoriesByQuery } from './ingestionService.js';
+export { retrieveEraContext, estimateTokens } from './ragEngine.js';
 
 /**
  * Checks if local Ollama server is running.
@@ -33,7 +34,10 @@ export async function checkOllamaStatus() {
 export async function generatePersonaResponse(era, memories, userMessage) {
   const isOllamaLive = await checkOllamaStatus();
 
-  const eraContext = memories.map(m => `${m.title}: ${m.content}`).join('\n');
+  const eraContext = Array.isArray(memories) 
+    ? memories.map(m => `${m.title}: ${m.content || m.excerpt}`).join('\n')
+    : memories;
+
   const systemPrompt = `You are the user's AI Younger Self during their ${era}. You speak with athletic passion, enthusiasm, and reflectiveness. Here are your memories from this era:\n${eraContext}\nRespond to the user naturally, concisely, and strictly in character.`;
 
   if (isOllamaLive) {
