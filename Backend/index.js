@@ -257,6 +257,40 @@ app.get('/api/memories/:userId', async (req, res) => {
   }
 });
 
+// Semantic Search & Tag Filtering Endpoint (SRS Page 16 - REQ-3)
+app.get('/api/memories/search/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { q, era, tag } = req.query;
+
+    const collection = getCollection('MemoryLogs');
+    const rows = await collection.find({ User_ID: userId }).toArray();
+
+    let filtered = rows;
+
+    if (era) {
+      filtered = filtered.filter(r => (r.Era === era || r.Tags?.era === era));
+    }
+    if (tag) {
+      filtered = filtered.filter(r => r.Tags?.context?.some(t => t.toLowerCase() === tag.toLowerCase()));
+    }
+    if (q) {
+      const query = q.toLowerCase();
+      filtered = filtered.filter(r =>
+        r.Title?.toLowerCase().includes(query) ||
+        r.TextEncrypted?.toLowerCase().includes(query) ||
+        r.MatchDetails?.toLowerCase().includes(query) ||
+        r.VictoryMessage?.toLowerCase().includes(query)
+      );
+    }
+
+    res.json({ results: filtered, count: filtered.length });
+  } catch (err) {
+    console.error('Search Memories Error:', err);
+    res.status(500).json({ error: 'Server error searching memories.' });
+  }
+});
+
 // Add New Memory Log / Level Node with dynamic sentiment analysis from AI modules
 app.post('/api/memories', async (req, res) => {
   try {
@@ -391,6 +425,101 @@ app.post('/api/connections/follow', (req, res) => {
   `).run(connectionId, followerId, followingId);
 
   res.status(201).json({ message: 'Follow request sent', connectionId });
+});
+
+// ----------------------------------------------------
+// 8. FAMILY ACCESS CONTROL & VAULT PERMISSION ENDPOINTS
+// ----------------------------------------------------
+
+app.get('/api/vault/:ownerId', async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    const { viewerId } = req.query;
+
+    if (ownerId !== viewerId) {
+      const grant = db.prepare(`
+        SELECT PermissionLevel, Status FROM FamilyAccessControl
+        WHERE Owner_User_ID = ? AND Family_User_ID = ? AND Status = 'active'
+      `).get(ownerId, viewerId);
+
+      if (!grant) {
+        return res.status(403).json({ error: 'Access denied. You do not have permission to view this vault.' });
+      }
+    }
+
+    const collection = getCollection('MemoryLogs');
+    const memories = await collection.find({ User_ID: ownerId }).toArray();
+    res.json({ ownerId, memories, access: 'granted' });
+  } catch (err) {
+    console.error('Vault Access Error:', err);
+    res.status(500).json({ error: 'Server error verifying vault access.' });
+  }
+});
+
+app.post('/api/vault/grant', (req, res) => {
+  const { ownerId, familyUserId, permissionLevel } = req.body;
+  const grantId = 'grant_' + Date.now();
+
+  db.prepare(`
+    INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, PermissionLevel, Status)
+    VALUES (?, ?, ?, ?, 'active')
+  `).run(grantId, ownerId, familyUserId, permissionLevel || 'Viewer');
+
+  res.status(201).json({ message: 'Vault access granted', grantId });
+});
+
+// ----------------------------------------------------
+// 9. DATA EXPORT & ACCOUNT WIPING (GDPR / SRS Page 21)
+// ----------------------------------------------------
+
+app.get('/api/users/:userId/export', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = db.prepare('SELECT User_ID, Name, Email, ProfileType, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const profile = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
+    const collection = getCollection('MemoryLogs');
+    const memories = await collection.find({ User_ID: userId }).toArray();
+    const chatCollection = getCollection('ChatSessions');
+    const chats = await chatCollection.find({ User_ID: userId }).toArray();
+
+    const archive = {
+      user,
+      athleteProfile: profile,
+      timelineMemories: memories,
+      aiChatHistory: chats,
+      exportedAt: new Date().toISOString()
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="LegacyLane_Archive_${userId}.json"`);
+    res.json(archive);
+  } catch (err) {
+    console.error('Export Error:', err);
+    res.status(500).json({ error: 'Server error exporting user archive.' });
+  }
+});
+
+app.delete('/api/users/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Delete from SQLite
+    db.prepare('DELETE FROM Users WHERE User_ID = ?').run(userId);
+
+    // Delete from MongoDB
+    const collection = getCollection('MemoryLogs');
+    await collection.deleteMany({ User_ID: userId });
+
+    const chatCollection = getCollection('ChatSessions');
+    await chatCollection.deleteMany({ User_ID: userId });
+
+    res.json({ message: 'User account and all personal timeline memories permanently deleted.' });
+  } catch (err) {
+    console.error('Delete Account Error:', err);
+    res.status(500).json({ error: 'Server error wiping account.' });
+  }
 });
 
 // Start Server & Connect MongoDB
