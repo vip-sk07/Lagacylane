@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Archive Path | LegacyLane: The One Who Lives</title>
+    <meta name="description" content="Select your archive path to immortalize your personal milestones or athletic legacy in the LegacyLane AI vault.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           1. AWWWARDS-GRADE DESIGN SYSTEM & TOKENS
+           ========================================================================== */
+        :root {
+            --bg-obsidian: #04070b;
+            --bg-obsidian-gradient: radial-gradient(circle at 50% 12%, #0e1726 0%, #060a10 50%, #04070b 100%);
+            --bg-surface: rgba(13, 19, 27, 0.72);
+            --bg-card: rgba(13, 20, 30, 0.55);
+            --bg-card-hover: rgba(18, 28, 44, 0.75);
+            
+            --cyan-electric: #00d2ff;
+            --cyan-glow: rgba(0, 210, 255, 0.4);
+            --aqua-accent: #00fff0;
+            --purple-deep: #7000ff;
+            
+            --gold-amber: #f59e0b;
+            --gold-bright: #ffb703;
+            --gold-glow: rgba(245, 158, 11, 0.4);
+            --emerald-online: #10b981;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-cyan: rgba(0, 210, 255, 0.3);
+            --glass-border-gold: rgba(245, 158, 11, 0.35);
+            --glass-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+            
+            --font-display: 'Cinzel', serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            
+            --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-obsidian);
+            background-image: var(--bg-obsidian-gradient);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Celestial Constellation Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Ambient Dynamic Nebulae */
+        .nebula-container {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .nebula-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.25;
+            animation: floatOrb 20s ease-in-out infinite alternate;
+        }
+
+        .nebula-orb-cyan {
+            top: -10%;
+            left: 10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--cyan-electric), transparent 70%);
+        }
+
+        .nebula-orb-purple {
+            bottom: -20%;
+            right: 5%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, var(--purple-deep), transparent 70%);
+            animation-delay: -7s;
+        }
+
+        .nebula-orb-gold {
+            top: 35%;
+            right: 25%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--gold-amber), transparent 70%);
+            animation-delay: -14s;
+        }
+
+        /* Grid Pattern Mask */
+        .ambient-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+            background-size: 70px 70px;
+            z-index: 3;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at 50% 50%, black 25%, transparent 80%);
+        }
+
+        /* Screen Transition Overlay Wipe */
+        .screen-wipe-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: #04070b;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s var(--transition-smooth);
+        }
+        .screen-wipe-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ==========================================================================
+           2. TOP NAVIGATION BAR
+           ========================================================================== */
+        .system-bar {
+            position: fixed;
+            top: 24px;
+            left: 40px;
+            right: 40px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-icon-box {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(0, 255, 240, 0.05));
+            border: 1px solid var(--glass-border-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+            overflow: hidden;
+        }
+
+        .brand-icon-box::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            transform: translateX(-100%);
+            animation: shineSweep 4.5s infinite;
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #ffffff 0%, #a5f3fc 60%, var(--cyan-electric) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .system-status-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-dot-emerald {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald-online);
+            box-shadow: 0 0 10px var(--emerald-online);
+            animation: pulseEmerald 2s infinite;
+        }
+
+        .audio-toggle-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s var(--transition-smooth);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .audio-toggle-btn:hover {
+            color: var(--cyan-electric);
+            border-color: var(--cyan-electric);
+            box-shadow: 0 0 18px rgba(0, 210, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* ==========================================================================
+           3. STAGE 1: CINEMATIC INTRO SEQUENCE
+           ========================================================================== */
+        #stage-1 {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.08) 0%, rgba(4, 7, 11, 0.97) 75%);
+            backdrop-filter: blur(14px);
+            transition: filter 0.8s var(--transition-smooth), transform 0.8s var(--transition-smooth), opacity 0.8s var(--transition-smooth);
+        }
+
+        #stage-1.dissolve {
+            filter: blur(25px);
+            transform: scale(1.12);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-content {
+            text-align: center;
+            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .intro-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 24px;
+            border-radius: 30px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.35);
+            color: var(--aqua-accent);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.25);
+            animation: fadeLift 1s var(--transition-smooth) forwards;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--aqua-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--aqua-accent);
+        }
+
+        .intro-headline {
+            font-family: var(--font-display);
+            font-size: clamp(2.8rem, 6.5vw, 5rem);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 35%, var(--cyan-electric) 70%, var(--aqua-accent) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineGradient 5s linear infinite, fadeLift 1s var(--transition-smooth) 0.3s forwards;
+            opacity: 0;
+        }
+
+        .intro-subtitle {
+            font-size: clamp(1.15rem, 2.8vw, 1.55rem);
+            font-style: italic;
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 0.6px;
+            max-width: 650px;
+            animation: fadeLift 1s var(--transition-smooth) 0.6s forwards;
+            opacity: 0;
+        }
+
+        .skip-btn {
+            position: absolute;
+            bottom: 44px;
+            right: 44px;
+            padding: 12px 26px;
+            background: rgba(10, 16, 26, 0.75);
+            border: 1px solid var(--glass-border-cyan);
+            border-radius: 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .skip-btn:hover {
+            color: var(--cyan-electric);
+            border-color: var(--cyan-electric);
+            transform: translateX(4px);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.35);
+        }
+
+        .skip-progress {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 210, 255, 0.2);
+            border-top-color: var(--cyan-electric);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* ==========================================================================
+           4. STAGE 2: 3D DUAL JOURNEY SELECTION HUB
+           ========================================================================== */
+        #stage-2 {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 95px 24px 30px 24px;
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.8s var(--transition-smooth), transform 0.8s var(--transition-smooth);
+            overflow-y: auto;
+        }
+
+        #stage-2.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .hub-header {
+            text-align: center;
+            margin-bottom: 44px;
+            max-width: 680px;
+        }
+
+        .hub-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hub-subtitle {
+            font-size: 1.02rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* 3D Perspective Grid Layout */
+        .cards-perspective-wrap {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(340px, 480px));
+            gap: 40px;
+            width: 100%;
+            max-width: 1040px;
+            perspective: 1400px;
+        }
+
+        /* Glassmorphic 3D Card */
+        .journey-card {
+            position: relative;
+            background: var(--bg-card);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 36px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+            box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+        }
+
+        /* Top Glowing Light Rim */
+        .journey-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.4s ease;
+        }
+
+        .life-card:hover::after {
+            background: linear-gradient(90deg, transparent, var(--cyan-electric), transparent);
+            height: 2px;
+        }
+
+        .sports-card:hover::after {
+            background: linear-gradient(90deg, transparent, var(--gold-amber), transparent);
+            height: 2px;
+        }
+
+        .life-card:hover {
+            border-color: var(--glass-border-cyan);
+            background: var(--bg-card-hover);
+            box-shadow: 0 25px 65px rgba(0, 210, 255, 0.25), 0 0 35px rgba(0, 255, 240, 0.15);
+        }
+
+        .sports-card:hover {
+            border-color: var(--glass-border-gold);
+            background: var(--bg-card-hover);
+            box-shadow: 0 25px 65px rgba(245, 158, 11, 0.22), 0 0 35px rgba(245, 158, 11, 0.15);
+        }
+
+        /* Dynamic Mouse Specular Refraction */
+        .card-glare {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.14) 0%, transparent 65%);
+            border-radius: 28px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .journey-card:hover .card-glare {
+            opacity: 1;
+        }
+
+        /* Card Header & Badges */
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            transform: translateZ(35px);
+        }
+
+        .card-emblem-circle {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.18), rgba(0, 255, 240, 0.04));
+            border: 1px solid rgba(0, 210, 255, 0.35);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+            transition: transform 0.4s var(--transition-bounce);
+        }
+
+        .sports-card .card-emblem-circle {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(255, 183, 3, 0.04));
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        .journey-card:hover .card-emblem-circle {
+            transform: scale(1.1) rotate(6deg);
+        }
+
+        .card-pill-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 30px;
+            background: rgba(0, 210, 255, 0.12);
+            color: var(--cyan-electric);
+            border: 1px solid rgba(0, 210, 255, 0.25);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.12);
+        }
+
+        .sports-card .card-pill-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--gold-amber);
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.12);
+        }
+
+        /* Card Titles & Content */
+        .card-body {
+            transform: translateZ(28px);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .card-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 20px;
+        }
+
+        /* Embedded Interactive Sub-Widgets */
+        .sub-widget-box {
+            transform: translateZ(20px);
+            background: rgba(4, 8, 14, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin-bottom: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .widget-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .widget-tag-cyan {
+            color: var(--cyan-electric);
+            background: rgba(0, 210, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            font-size: 0.68rem;
+        }
+
+        .widget-tag-gold {
+            color: var(--gold-amber);
+            background: rgba(245, 158, 11, 0.1);
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            font-size: 0.68rem;
+        }
+
+        /* Sub-Widget A: Vault Timeline Preview */
+        .timeline-track-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 10px 8px 4px 8px;
+        }
+
+        .timeline-track-wrap::before {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan-electric), var(--purple-deep));
+            z-index: 1;
+        }
+
+        .timeline-checkpoint {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .checkpoint-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--bg-obsidian);
+            border: 2px solid var(--cyan-electric);
+            box-shadow: 0 0 12px var(--cyan-electric);
+            transition: transform 0.3s ease;
+        }
+
+        .timeline-checkpoint:hover .checkpoint-dot {
+            transform: scale(1.3);
+            background: var(--aqua-accent);
+        }
+
+        .checkpoint-year {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .checkpoint-tag {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        /* Sub-Widget B: Performance Matrix Grid */
+        .sports-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-capsule {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .sports-card:hover .stat-capsule {
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+
+        .stat-val {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--gold-amber);
+        }
+
+        .stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Card Photo Slideshow */
+        .card-slideshow {
+            position: relative;
+            width: 100%;
+            height: 155px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 14px;
+            flex-shrink: 0;
+        }
+
+        .slide-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            border-radius: 16px;
+        }
+
+        .slide-img.active {
+            opacity: 1;
+        }
+
+        /* Hide broken-image browser icon */
+        .card-slideshow .slide-img::before {
+            display: none;
+        }
+        .card-slideshow .slide-img[src=""],
+        .card-slideshow .slide-img:not([src]) {
+            visibility: hidden;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(4, 7, 11, 0.72) 0%, transparent 60%);
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .slide-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 3;
+        }
+
+        .slide-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: background 0.4s ease, transform 0.3s ease;
+        }
+
+        .life-card .slide-dot.active {
+            background: var(--cyan-electric);
+            transform: scale(1.4);
+            box-shadow: 0 0 6px var(--cyan-electric);
+        }
+
+        .sports-card .slide-dot.active {
+            background: var(--gold-amber);
+            transform: scale(1.4);
+            box-shadow: 0 0 6px var(--gold-amber);
+        }
+
+        /* CTA Pill Buttons */
+        .card-cta-btn {
+            transform: translateZ(35px);
+            width: 100%;
+            padding: 16px 26px;
+            border-radius: 50px;
+            border: none;
+            background: linear-gradient(135deg, var(--cyan-electric), #0088ff);
+            color: #030712;
+            font-weight: 700;
+            font-size: 0.98rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0, 210, 255, 0.35);
+            transition: all 0.3s var(--transition-smooth);
+        }
+
+        .card-cta-btn:hover {
+            background: linear-gradient(135deg, var(--aqua-accent), var(--cyan-electric));
+            box-shadow: 0 12px 40px rgba(0, 255, 240, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .sports-card .card-cta-btn {
+            background: linear-gradient(135deg, var(--gold-amber), var(--gold-bright));
+            color: #0a0700;
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.35);
+        }
+
+        .sports-card .card-cta-btn:hover {
+            background: linear-gradient(135deg, #fff099, var(--gold-amber));
+            box-shadow: 0 12px 40px rgba(245, 158, 11, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           5. STAGE 3: ATHLETE PROFILE SETUP MODAL
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(4, 7, 11, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s var(--transition-smooth);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(8, 14, 24, 0.98));
+            border: 1px solid var(--glass-border-gold);
+            border-radius: 30px;
+            width: 100%;
+            max-width: 550px;
+            padding: 40px 36px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.85), 0 0 50px rgba(245, 158, 11, 0.2);
+            transform: scale(0.85) translateY(20px);
+            transition: transform 0.4s var(--transition-bounce);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-icon-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-amber);
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .modal-title-group h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .modal-title-group p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Sport Category Selection Chips */
+        .chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .sport-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .sport-chip:hover, .sport-chip.active {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: var(--gold-amber);
+            color: var(--gold-amber);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(4, 9, 16, 0.8);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.94rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--gold-amber);
+            background: rgba(8, 16, 28, 0.95);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .life-form-control:focus {
+            border-color: var(--cyan-electric);
+            background: rgba(4, 14, 26, 0.95);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 18px center;
+            padding-right: 48px;
+        }
+
+        select.form-control option {
+            background: #090e17;
+            color: var(--text-main);
+            padding: 12px;
+        }
+
+        /* Modal Actions */
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn-modal-secondary {
+            padding: 14px 24px;
+            border-radius: 50px;
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal-secondary:hover {
+            color: #ffffff;
+            border-color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-modal-primary {
+            padding: 14px 28px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--gold-amber), var(--gold-bright));
+            border: none;
+            color: #0a0700;
+            font-size: 0.94rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal-primary:hover {
+            background: linear-gradient(135deg, #fff099, var(--gold-amber));
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.55);
+            transform: translateY(-2px);
+        }
+
+        /* Life Modal Variant Styling */
+        .life-modal-card {
+            border-color: rgba(0, 210, 255, 0.35);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 210, 255, 0.2);
+        }
+
+        .life-icon-badge {
+            background: rgba(0, 210, 255, 0.15);
+            border-color: rgba(0, 210, 255, 0.4);
+            color: var(--cyan-electric);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+        }
+
+        .life-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .life-chip:hover, .life-chip.active {
+            background: rgba(0, 210, 255, 0.16);
+            border-color: var(--cyan-electric);
+            color: var(--cyan-electric);
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
+        }
+
+        select.life-form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        .btn-life-modal-primary {
+            padding: 14px 28px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--cyan-electric), #0088ff);
+            border: none;
+            color: #030712;
+            font-size: 0.94rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 25px rgba(0, 210, 255, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .btn-life-modal-primary:hover {
+            background: linear-gradient(135deg, var(--aqua-accent), var(--cyan-electric));
+            box-shadow: 0 8px 30px rgba(0, 255, 240, 0.55);
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           6. ANIMATIONS & RESPONSIVE DESIGN
+           ========================================================================== */
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 40px) scale(1.1); }
+        }
+
+        @keyframes shineSweep {
+            0% { transform: translateX(-100%); }
+            20%, 100% { transform: translateX(200%); }
+        }
+
+        @keyframes shineGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes fadeLift {
+            0% { opacity: 0; transform: translateY(24px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseEmerald {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35); opacity: 0.6; }
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 868px) {
+            .cards-perspective-wrap {
+                grid-template-columns: 1fr;
+                max-width: 440px;
+                gap: 28px;
+            }
+
+            #stage-2 {
+                padding-top: 105px;
+            }
+
+            .system-bar {
+                top: 18px;
+                left: 18px;
+                right: 18px;
+            }
+
+            .journey-card {
+                padding: 28px 24px;
+            }
+
+            .skip-btn {
+                bottom: 24px;
+                right: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Screen Wipe Transition Overlay -->
+    <div class="screen-wipe-overlay" id="wipe-overlay"></div>
+
+    <!-- Celestial Constellation Canvas & Nebulae -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="nebula-container">
+        <div class="nebula-orb nebula-orb-cyan"></div>
+        <div class="nebula-orb nebula-orb-purple"></div>
+        <div class="nebula-orb nebula-orb-gold"></div>
+    </div>
+    <div class="ambient-grid"></div>
+
+    <!-- ==========================================================================
+         TOP NAVIGATION BAR
+         ========================================================================== -->
+    <header class="system-bar">
+        <a href="LegacyLogin.html" class="brand-logo" title="Return to Login">
+            <div class="brand-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00fff0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <polygon points="12 3 16.5 12 12 9.5 7.5 12 12 3"></polygon>
+                </svg>
+            </div>
+            <span class="brand-title">Legacy Lane</span>
+        </a>
+
+        <div class="system-status-group">
+            <div class="status-pill">
+                <span class="status-dot-emerald"></span>
+                <span id="user-display-name">Authenticated User</span>
+            </div>
+            <button class="audio-toggle-btn" id="audio-toggle" title="Toggle UI Atmosphere Soundscapes">
+                <svg id="sound-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         STAGE 1: CINEMATIC WELCOME INTRO
+         ========================================================================== -->
+    <section id="stage-1" aria-label="Intro Welcome Sequence">
+        <div class="intro-content">
+            <div class="intro-badge">
+                <span class="badge-dot"></span>
+                Digital Legacy Portal Initialized
+            </div>
+
+            <h1 class="intro-headline">Welcome to LegacyLane</h1>
+
+            <p class="intro-subtitle">Where your younger self will live forever.</p>
+        </div>
+
+        <button class="skip-btn" id="skip-intro-btn">
+            Skip Intro →
+            <div class="skip-progress"></div>
+        </button>
+    </section>
+
+    <!-- ==========================================================================
+         STAGE 2: 3D DUAL JOURNEY SELECTION HUB
+         ========================================================================== -->
+    <section id="stage-2" aria-label="Journey Selection Hub">
+        <div class="hub-header">
+            <h2 class="hub-title">Choose Your Archive Path</h2>
+            <p class="hub-subtitle">Select the dimension of your legacy you wish to immortalize today. Each path provides custom AI analytics and era-locked vaults.</p>
+        </div>
+
+        <div class="cards-perspective-wrap">
+            
+            <!-- Card 1: Life & Personal Journey (Cyan Identity) -->
+            <div class="journey-card life-card" id="card-life" role="button" tabindex="0">
+                <div class="card-glare"></div>
+                <div>
+                    <div class="card-top">
+                        <div class="card-emblem-circle">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00fff0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                            </svg>
+                        </div>
+                        <span class="card-pill-badge">Personal Vault</span>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">Life & Personal Journey</h3>
+                        <p class="card-desc">Document life milestones, personal reflections, travel, and personal growth for your future generations.</p>
+                        
+                        <!-- Embedded Interactive Sub-Widget: Vault Timeline Preview -->
+                        <div class="sub-widget-box">
+                            <div class="widget-header">
+                                <span>Vault Timeline Preview</span>
+                                <span class="widget-tag-cyan">3 Eras Active</span>
+                            </div>
+                            <div class="timeline-track-wrap">
+                                <div class="timeline-checkpoint">
+                                    <div class="checkpoint-dot"></div>
+                                    <span class="checkpoint-year">2015</span>
+                                    <span class="checkpoint-tag">Childhood</span>
+                                </div>
+                                <div class="timeline-checkpoint">
+                                    <div class="checkpoint-dot"></div>
+                                    <span class="checkpoint-year">2020</span>
+                                    <span class="checkpoint-tag">College</span>
+                                </div>
+                                <div class="timeline-checkpoint">
+                                    <div class="checkpoint-dot"></div>
+                                    <span class="checkpoint-year">2026</span>
+                                    <span class="checkpoint-tag">Present Era</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Life Card Slideshow -->
+                        <div class="card-slideshow" id="slideshow-life">
+                            <img class="slide-img active" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1519671282429-b8f0d7f3b3c0?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <div class="slide-overlay"></div>
+                            <div class="slide-dots" id="dots-life"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="card-cta-btn">
+                    Begin Life Journey →
+                </button>
+            </div>
+
+            <!-- Card 2: Sports & Athletic Legacy (Gold Identity) -->
+            <div class="journey-card sports-card" id="card-sports" role="button" tabindex="0">
+                <div class="card-glare"></div>
+                <div>
+                    <div class="card-top">
+                        <div class="card-emblem-circle">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                            </svg>
+                        </div>
+                        <span class="card-pill-badge">Athletic Vault</span>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">Sports & Athletic Legacy</h3>
+                        <p class="card-desc">Log training sessions, match highlights, tournament victories, awards, and career statistics.</p>
+                        
+                        <!-- Embedded Interactive Sub-Widget: Performance Matrix -->
+                        <div class="sub-widget-box">
+                            <div class="widget-header">
+                                <span>Performance Matrix</span>
+                                <span class="widget-tag-gold">Pro Analytics</span>
+                            </div>
+                            <div class="sports-stats-grid">
+                                <div class="stat-capsule">
+                                    <div class="stat-val">128</div>
+                                    <div class="stat-lbl">Matches</div>
+                                </div>
+                                <div class="stat-capsule">
+                                    <div class="stat-val">94%</div>
+                                    <div class="stat-lbl">Win Rate</div>
+                                </div>
+                                <div class="stat-capsule">
+                                    <div class="stat-val">15</div>
+                                    <div class="stat-lbl">Trophies</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sports Card Slideshow -->
+                        <div class="card-slideshow" id="slideshow-sports">
+                            <img class="slide-img active" src="https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1590655552745-c7f0a0c2a4f7?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <img class="slide-img" src="https://images.unsplash.com/photo-1519766304817-4f37bda74a29?auto=format&fit=crop&w=600&q=80" alt="" onerror="this.style.display='none'" />
+                            <div class="slide-overlay"></div>
+                            <div class="slide-dots" id="dots-sports"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="card-cta-btn">
+                    Configure Athletic Profile →
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         STAGE 3: ATHLETE PROFILE SETUP MODAL
+         ========================================================================== -->
+    <div class="modal-overlay" id="athlete-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-badge">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                    </svg>
+                </div>
+                <div class="modal-title-group">
+                    <h3 id="modal-title">Athlete Profile Setup</h3>
+                    <p>Configure your athletic discipline to tailor your statistics vault.</p>
+                </div>
+            </div>
+
+            <form id="athlete-form" onsubmit="event.preventDefault();">
+                
+                <div class="form-group">
+                    <label for="primary-sport" class="form-label">Sport Type</label>
+                    <div class="chips-grid" id="sport-chips">
+                        <span class="sport-chip" data-value="Football">⚽ Football</span>
+                        <span class="sport-chip" data-value="Basketball">🏀 Basketball</span>
+                        <span class="sport-chip" data-value="Track & Field">🏃 Track & Field</span>
+                        <span class="sport-chip" data-value="Cricket">🏏 Cricket</span>
+                        <span class="sport-chip" data-value="Swimming">🏊 Swimming</span>
+                        <span class="sport-chip" data-value="Tennis">🎾 Tennis</span>
+                        <span class="sport-chip" data-value="Combat Sports">🥋 Combat Sports</span>
+                        <span class="sport-chip" data-value="Other">⚡ Other</span>
+                    </div>
+
+                    <select id="primary-sport" class="form-control" required>
+                        <option value="" disabled selected>Select sport type...</option>
+                        <option value="Football">Football / Soccer</option>
+                        <option value="Basketball">Basketball</option>
+                        <option value="Track & Field">Track & Field</option>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Swimming">Swimming</option>
+                        <option value="Tennis">Tennis</option>
+                        <option value="Combat Sports">Combat Sports</option>
+                        <option value="Other">Other Sport</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="position-role" class="form-label">Position / Role / Specialization</label>
+                    <input type="text" id="position-role" class="form-control" placeholder="e.g. Forward, Point Guard, Fast Bowler, Sprinter" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="team-history" class="form-label">Current / Past Team History</label>
+                    <input type="text" id="team-history" class="form-control" placeholder="e.g. Apex Athletics Academy, Varsity Squad" />
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-secondary" id="modal-back-btn">← Back</button>
+                    <button type="submit" class="btn-modal-primary" id="modal-launch-btn">
+                        Launch Sports Archive →
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         STAGE 3: PERSONAL LIFE PROFILE SETUP MODAL
+         ========================================================================== -->
+    <div class="modal-overlay" id="life-modal" aria-modal="true" role="dialog">
+        <div class="modal-card life-modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-badge life-icon-badge">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                </div>
+                <div class="modal-title-group">
+                    <h3>Personal Life Profile</h3>
+                    <p>Configure your personal dimension to tailor your era vault & AI companion.</p>
+                </div>
+            </div>
+
+            <form id="life-form">
+                <div class="form-group">
+                    <label class="form-label">Primary Life Focus / Domain</label>
+                    <div class="chips-grid" id="life-chips-grid">
+                        <span class="life-chip" data-value="Creative Arts">🎨 Creative Arts</span>
+                        <span class="life-chip active" data-value="Technology & AI">💻 Tech & AI</span>
+                        <span class="life-chip" data-value="Travel & Exploration">🌍 Travel</span>
+                        <span class="life-chip" data-value="Academics & Research">📚 Academics</span>
+                        <span class="life-chip" data-value="Entrepreneurship">💼 Business</span>
+                        <span class="life-chip" data-value="Personal Wellness">🌱 Wellness</span>
+                        <span class="life-chip" data-value="Music & Culture">🎵 Music</span>
+                    </div>
+
+                    <select id="primary-life-focus" class="form-control life-form-control" required>
+                        <option value="Creative Arts">Creative Arts & Design</option>
+                        <option value="Technology & AI" selected>Technology & AI Engineering</option>
+                        <option value="Travel & Exploration">Travel & Global Exploration</option>
+                        <option value="Academics & Research">Academics & Scientific Research</option>
+                        <option value="Entrepreneurship">Entrepreneurship & Leadership</option>
+                        <option value="Personal Wellness">Personal Wellness & Mindful Living</option>
+                        <option value="Music & Culture">Music & Cultural Arts</option>
+                        <option value="Other">Other Life Pursuits</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="life-phase" class="form-label">Current Life Phase / Era Focus</label>
+                    <input type="text" id="life-phase" class="form-control life-form-control" placeholder="e.g. Early Career, University Years, Family Legacy" required value="Early Career & AI Engineering" />
+                </div>
+
+                <div class="form-group">
+                    <label for="life-motto" class="form-label">Personal Legacy Motto / Vision</label>
+                    <input type="text" id="life-motto" class="form-control life-form-control" placeholder="e.g. Innovate with purpose and inspire future generations" required value="Innovate with purpose and build technology that empowers humanity." />
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-secondary" id="life-modal-back-btn">← Back</button>
+                    <button type="submit" class="btn-life-modal-primary" id="life-modal-launch-btn">
+                        Launch Life Archive →
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         SCRIPT: ENGINE LOGIC & INTERACTION CONTROLLER
+         ========================================================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* ------------------------------------------------------------------
+               1. USER DISPLAY & STATE INITIALIZATION
+               ------------------------------------------------------------------ */
+            const storedUser = localStorage.getItem('legacy_user') || localStorage.getItem('username');
+            if (storedUser) {
+                document.getElementById('user-display-name').textContent = storedUser;
+            }
+
+            /* ------------------------------------------------------------------
+               2. CELESTIAL CONSTELLATION CANVAS ENGINE
+               ------------------------------------------------------------------ */
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = Math.floor((width * height) / 10000);
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.45;
+                    this.vy = (Math.random() - 0.5) * 0.45;
+                    this.radius = Math.random() * 1.9 + 0.6;
+                    this.alpha = Math.random() * 0.55 + 0.2;
+                    this.pulseSpeed = Math.random() * 0.02 + 0.005;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0) this.x = width;
+                    if (this.x > width) this.x = 0;
+                    if (this.y < 0) this.y = height;
+                    if (this.y > height) this.y = 0;
+
+                    this.alpha += Math.sin(Date.now() * this.pulseSpeed) * 0.003;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 210, 255, ${Math.max(0.1, Math.min(0.85, this.alpha))})`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#00fff0';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            function renderCanvas() {
+                ctx.clearRect(0, 0, width, height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 135) {
+                            const alpha = (1 - dist / 135) * 0.2;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(0, 255, 240, ${alpha})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                requestAnimationFrame(renderCanvas);
+            }
+            renderCanvas();
+
+            /* ------------------------------------------------------------------
+               3. SYNTHESIZED UI AUDIO SYSTEM (Web Audio API)
+               ------------------------------------------------------------------ */
+            let audioEnabled = true;
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            let audioCtx = null;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new AudioCtx();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playSynthSound(freq = 440, type = 'sine', duration = 0.15, gainVal = 0.05) {
+                if (!audioEnabled) return;
+                try {
+                    initAudio();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {
+                    // Audio context fallback
+                }
+            }
+
+            const audioBtn = document.getElementById('audio-toggle');
+            audioBtn.addEventListener('click', () => {
+                audioEnabled = !audioEnabled;
+                audioBtn.style.opacity = audioEnabled ? '1' : '0.4';
+                if (audioEnabled) playSynthSound(880, 'sine', 0.1);
+            });
+
+            /* ------------------------------------------------------------------
+               4. PHOTO SLIDESHOW ENGINE
+               ------------------------------------------------------------------ */
+            function initSlideshow(slideshowId, dotsId, intervalMs) {
+                const container = document.getElementById(slideshowId);
+                const dotsEl    = document.getElementById(dotsId);
+                if (!container || !dotsEl) return;
+
+                const imgs = container.querySelectorAll('.slide-img');
+                let current = 0;
+
+                // Build indicator dots
+                imgs.forEach((_, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+                    dotsEl.appendChild(dot);
+                });
+
+                const dots = dotsEl.querySelectorAll('.slide-dot');
+
+                function goTo(idx) {
+                    imgs[current].classList.remove('active');
+                    dots[current].classList.remove('active');
+                    current = (idx + imgs.length) % imgs.length;
+                    imgs[current].classList.add('active');
+                    dots[current].classList.add('active');
+                }
+
+                setInterval(() => goTo(current + 1), intervalMs);
+            }
+
+            initSlideshow('slideshow-life',   'dots-life',   1600);
+            initSlideshow('slideshow-sports', 'dots-sports', 1900);
+
+            /* ------------------------------------------------------------------
+               5. STAGE 1 INTRO TRANSITION CONTROLLER
+               ------------------------------------------------------------------ */
+            const stage1 = document.getElementById('stage-1');
+            const stage2 = document.getElementById('stage-2');
+            const skipBtn = document.getElementById('skip-intro-btn');
+            let isIntroTransitioned = false;
+
+            function triggerStage2() {
+                if (isIntroTransitioned) return;
+                isIntroTransitioned = true;
+
+                playSynthSound(340, 'triangle', 0.4, 0.08);
+
+                stage1.classList.add('dissolve');
+
+                setTimeout(() => {
+                    stage1.style.display = 'none';
+                    stage2.classList.add('active');
+                    playSynthSound(540, 'sine', 0.35, 0.06);
+                }, 750);
+            }
+
+            const introTimer = setTimeout(triggerStage2, 3200);
+
+            skipBtn.addEventListener('click', () => {
+                clearTimeout(introTimer);
+                triggerStage2();
+            });
+
+            /* ------------------------------------------------------------------
+               5. STAGE 2: 3D CARD HOVER PHYSICS ENGINE
+               ------------------------------------------------------------------ */
+            const cards = document.querySelectorAll('.journey-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -12;
+                    const rotateY = ((x - centerX) / centerX) * 12;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02) translateZ(10px)`;
+                    card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+                    card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0px)`;
+                });
+
+                card.addEventListener('mouseenter', () => {
+                    playSynthSound(620, 'sine', 0.08, 0.03);
+                });
+            });
+
+            // Life Journey Selection -> Opens Life Profile Setup Modal
+            const lifeCard = document.getElementById('card-life');
+            const lifeBtn = lifeCard.querySelector('.card-cta-btn');
+
+            function handleLifeSelect(e) {
+                if (e) e.stopPropagation();
+                playSynthSound(680, 'sine', 0.25, 0.08);
+                openLifeModal();
+            }
+
+            lifeCard.addEventListener('click', handleLifeSelect);
+            if (lifeBtn) lifeBtn.addEventListener('click', handleLifeSelect);
+
+            // Sports Journey Selection -> Opens Stage 3 Modal
+            const sportsCard = document.getElementById('card-sports');
+            const sportsBtn = sportsCard.querySelector('.card-cta-btn');
+
+            function handleSportsSelect(e) {
+                if (e) e.stopPropagation();
+                playSynthSound(780, 'sine', 0.25, 0.08);
+                openAthleteModal();
+            }
+
+            sportsCard.addEventListener('click', handleSportsSelect);
+            if (sportsBtn) sportsBtn.addEventListener('click', handleSportsSelect);
+
+            /* ------------------------------------------------------------------
+               6. STAGE 3: PERSONAL LIFE PROFILE MODAL HANDLER
+               ------------------------------------------------------------------ */
+            const lifeModal = document.getElementById('life-modal');
+            const lifeModalBackBtn = document.getElementById('life-modal-back-btn');
+            const lifeForm = document.getElementById('life-form');
+            const lifeLaunchBtn = document.getElementById('life-modal-launch-btn');
+            const lifeFocusSelect = document.getElementById('primary-life-focus');
+            const lifeChips = document.querySelectorAll('.life-chip');
+
+            // Quick Chip Selection Sync for Life Focus
+            lifeChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    lifeChips.forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const val = chip.getAttribute('data-value');
+                    lifeFocusSelect.value = val;
+                    playSynthSound(550, 'sine', 0.1, 0.03);
+                });
+            });
+
+            lifeFocusSelect.addEventListener('change', () => {
+                const val = lifeFocusSelect.value;
+                lifeChips.forEach(chip => {
+                    if (chip.getAttribute('data-value') === val) {
+                        chip.classList.add('active');
+                    } else {
+                        chip.classList.remove('active');
+                    }
+                });
+            });
+
+            function openLifeModal() {
+                lifeModal.classList.add('active');
+                playSynthSound(450, 'triangle', 0.3, 0.05);
+            }
+
+            function closeLifeModal() {
+                lifeModal.classList.remove('active');
+                playSynthSound(280, 'sine', 0.15, 0.04);
+            }
+
+            lifeModalBackBtn.addEventListener('click', closeLifeModal);
+
+            lifeModal.addEventListener('click', (e) => {
+                if (e.target === lifeModal) {
+                    closeLifeModal();
+                }
+            });
+
+            lifeForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const lifeFocus = lifeFocusSelect.value;
+                const lifePhase = document.getElementById('life-phase').value;
+                const lifeMotto = document.getElementById('life-motto').value;
+
+                const lifeProfile = {
+                    focus: lifeFocus,
+                    phase: lifePhase,
+                    motto: lifeMotto,
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('legacy_journey_mode', 'LIFE');
+                localStorage.setItem('legacy_life_profile', JSON.stringify(lifeProfile));
+
+                lifeLaunchBtn.innerHTML = `Launching...`;
+                lifeLaunchBtn.disabled = true;
+
+                playSynthSound(920, 'sine', 0.4, 0.1);
+
+                document.getElementById('wipe-overlay').classList.add('active');
+
+                setTimeout(() => {
+                    window.location.href = 'timeline.html?mode=life';
+                }, 500);
+            });
+
+            /* ------------------------------------------------------------------
+               7. STAGE 3: ATHLETE PROFILE MODAL HANDLER
+               ------------------------------------------------------------------ */
+            const athleteModal = document.getElementById('athlete-modal');
+            const modalBackBtn = document.getElementById('modal-back-btn');
+            const athleteForm = document.getElementById('athlete-form');
+            const launchBtn = document.getElementById('modal-launch-btn');
+            const sportSelect = document.getElementById('primary-sport');
+            const sportChips = document.querySelectorAll('.sport-chip');
+
+            // Quick Chip Selection Sync
+            sportChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    sportChips.forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const val = chip.getAttribute('data-value');
+                    sportSelect.value = val;
+                    playSynthSound(550, 'sine', 0.1, 0.03);
+                });
+            });
+
+            sportSelect.addEventListener('change', () => {
+                const val = sportSelect.value;
+                sportChips.forEach(chip => {
+                    if (chip.getAttribute('data-value') === val) {
+                        chip.classList.add('active');
+                    } else {
+                        chip.classList.remove('active');
+                    }
+                });
+            });
+
+            function openAthleteModal() {
+                athleteModal.classList.add('active');
+                playSynthSound(450, 'triangle', 0.3, 0.05);
+            }
+
+            function closeAthleteModal() {
+                athleteModal.classList.remove('active');
+                playSynthSound(280, 'sine', 0.15, 0.04);
+            }
+
+            modalBackBtn.addEventListener('click', closeAthleteModal);
+
+            athleteModal.addEventListener('click', (e) => {
+                if (e.target === athleteModal) {
+                    closeAthleteModal();
+                }
+            });
+
+            athleteForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const primarySport = sportSelect.value;
+                const positionRole = document.getElementById('position-role').value;
+                const teamHistory = document.getElementById('team-history').value;
+
+                const athleteProfile = {
+                    sport: primarySport,
+                    position: positionRole,
+                    team: teamHistory,
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('legacy_journey_mode', 'SPORTS');
+                localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
+
+                launchBtn.innerHTML = `Launching...`;
+                launchBtn.disabled = true;
+
+                playSynthSound(920, 'sine', 0.4, 0.1);
+
+                document.getElementById('wipe-overlay').classList.add('active');
+
+                setTimeout(() => {
+                    window.location.href = 'timeline.html?mode=sports';
+                }, 500);
+            });
+
+        });
+    </script>
+</body>
+</html>

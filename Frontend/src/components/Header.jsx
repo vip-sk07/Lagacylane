@@ -18,33 +18,64 @@ export default function Header({
   const currentProfile = ATHLETE_PROFILES[activeSport] || ATHLETE_PROFILES.football;
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 px-4 md:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-      {/* Brand & Home Navigation */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onGoHome}
-          className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
-          title="Back to Home Page"
-        >
-          <Home className="w-5 h-5" />
-        </button>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1
-              onClick={onGoHome}
-              className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent cursor-pointer"
-            >
-              LegacyLane
-            </h1>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
-              The One Who Lives
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 font-medium">
-            3D Chronological Ground Roadmap & AI Younger Self
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 px-4 md:px-8 py-3 flex flex-col gap-2">
+      {/* Collaborative Lead Notification Banner */}
+      <div className="w-full bg-gradient-to-r from-emerald-950/80 via-blue-950/80 to-purple-950/80 border border-emerald-500/30 rounded-xl px-3.5 py-1.5 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px] uppercase tracking-wider border border-emerald-400/30">
+            Frontend Lead Update
+          </span>
+          <p className="text-slate-200 font-semibold">
+            <span className="text-emerald-400 font-bold">Gowtham</span> has pushed the repository into the collaborative workspace!
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <a
+            href="/LegacyLogin.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/30 font-bold text-[11px] transition-all"
+          >
+            🔑 Legacy Login
+          </a>
+          <a
+            href="/journey-selection.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-[11px] transition-all"
+          >
+            🚀 Journey Selection
+          </a>
+        </div>
       </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Brand & Home Navigation */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onGoHome}
+            className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+            title="Back to Home Page"
+          >
+            <Home className="w-5 h-5" />
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1
+                onClick={onGoHome}
+                className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent cursor-pointer"
+              >
+                LegacyLane
+              </h1>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
+                The One Who Lives
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-medium">
+              3D Chronological Ground Roadmap & AI Younger Self
+            </p>
+          </div>
+        </div>
 
       {/* Dynamic Role / Sport Switcher */}
       <div className="flex items-center bg-slate-900/90 p-1 rounded-2xl border border-slate-800/80 shadow-inner overflow-x-auto">

@@ -59,6 +59,36 @@ export default function HomePage({
 
       {/* Main Home Page Body */}
       <main className="flex-1 max-w-5xl mx-auto px-6 py-6 flex flex-col items-center justify-center text-center z-10 relative">
+        {/* Collaborative Lead Banner */}
+        <div className="w-full max-w-2xl mb-6 p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/40 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-left">
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px] uppercase border border-emerald-500/30">
+              Frontend Lead Notification
+            </span>
+            <p className="text-slate-200 font-medium">
+              <span className="font-black text-emerald-400">Gowtham</span> has pushed the repo into the collaborative as Frontend Lead.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="/LegacyLogin.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition-all shadow-md"
+            >
+              🔑 Legacy Login
+            </a>
+            <a
+              href="/journey-selection.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-xs transition-all shadow-md"
+            >
+              🚀 Journey Selection
+            </a>
+          </div>
+        </div>
+
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold mb-4">
           <Sparkles className="w-4 h-4" />
