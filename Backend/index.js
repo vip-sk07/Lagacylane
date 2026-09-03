@@ -12,7 +12,8 @@ import {
   ingestMemoryPayload, 
   searchMemoriesByQuery,
   getSupabaseSchemaSQL,
-  retrieveEraContext
+  retrieveEraContext,
+  generateYoungerSelfResponse
 } from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
@@ -435,34 +436,47 @@ app.post('/api/memories', async (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { userId, era, userMessage } = req.body;
+    const { userId, era, userMessage, history, retrievedContext } = req.body;
+
+    const messageText = userMessage || (history && history.length > 0 ? history[history.length - 1].content : '');
+
+    if (!messageText) {
+      return res.status(400).json({ error: 'userMessage or history content is required.' });
+    }
     
-    // Get user memories matching this era from MongoDB database
-    const collection = getCollection('MemoryLogs');
-    const rows = await collection.find({ User_ID: userId }).toArray();
-    const eraMemories = rows
-      .filter((r) => (r.Era === era || r.Tags?.era === era))
-      .map((r) => ({
-        title: r.Title,
-        content: `${r.TextEncrypted} ${r.VictoryMessage ? `[Victory: ${r.VictoryMessage}]` : ''}`
-      }));
-
-    // Delegate generation to the AI modules persona engine
-    const responseText = await generatePersonaResponse(era, eraMemories, userMessage);
-
-    // Save Chat Session History in MongoDB
-    const chatCollection = getCollection('ChatSessions');
-    await chatCollection.insertOne({
-      User_ID: userId,
-      EraSelected: era,
-      StartTime: new Date(),
-      Messages: [
-        { sender: 'user', text: userMessage, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
-        { sender: 'ai', text: responseText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-      ]
+    // Delegate to Phase 3 Persona Orchestration Engine
+    const orchestrationResult = await generateYoungerSelfResponse({
+      history: history || [],
+      newPrompt: messageText,
+      retrievedContext: retrievedContext || null,
+      selectedEra: era || 'Youth Era',
+      userId: userId || 'usr_default'
     });
 
-    res.json({ response: responseText });
+    // Save Chat Session History in MongoDB
+    try {
+      const chatCollection = getCollection('ChatSessions');
+      await chatCollection.insertOne({
+        User_ID: userId || 'usr_default',
+        EraSelected: era || 'Youth Era',
+        StartTime: new Date(),
+        Messages: [
+          { sender: 'user', text: messageText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+          { sender: 'ai', text: orchestrationResult.response, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        ]
+      });
+    } catch (dbErr) {
+      console.warn('Chat history save warning:', dbErr.message);
+    }
+
+    res.json({ 
+      response: orchestrationResult.response,
+      crisisTriggered: orchestrationResult.crisisTriggered,
+      isBurnout: orchestrationResult.isBurnout,
+      era: orchestrationResult.selectedEra,
+      eraAge: orchestrationResult.eraAge,
+      model: orchestrationResult.model
+    });
   } catch (err) {
     console.error('AI Chat Error:', err);
     res.status(500).json({ error: 'Server error generating persona response.' });

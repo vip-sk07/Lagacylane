@@ -1,17 +1,26 @@
 /**
- * AI Modules - Persona & Sentiment Analysis Engine + Memory Ingestion Pipeline + RAG Engine
- * Connects to local Ollama (llama3 / qwen2.5) or provides rules-based fallbacks.
- * Handles vector embedding generation (Google Gemini text-embedding-004 / Ollama), AES-256 encryption, and Era-Filtered RAG retrieval.
+ * AI Modules - Persona & Sentiment Analysis Engine + Memory Vector Pipeline + RAG Engine + Persona Orchestrator
+ * Connects to local Ollama (llama3 / qwen2.5), Google Gemini (text-embedding-004 / gemini-1.5-flash) or provides rules-based fallbacks.
+ * Handles vector embedding generation, AES-256 memory encryption, Era-Filtered RAG retrieval, and AI Younger Self Persona Orchestration.
  */
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+import { generateYoungerSelfResponse } from './personaOrchestrator.js';
 
-// Re-export vector embedding, encryption, vector storage, ingestion service & RAG modules
+// Re-export vector embedding, encryption, vector storage, ingestion service, RAG & Persona Orchestrator modules
 export { generateEmbedding } from './embeddings.js';
 export { encryptText, decryptText } from './encryption.js';
 export { storeVectorEmbedding, searchVectorStore, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
 export { formatEmbeddingPayload, ingestMemoryPayload, searchMemoriesByQuery } from './ingestionService.js';
 export { retrieveEraContext, estimateTokens } from './ragEngine.js';
+export { 
+  generateYoungerSelfResponse, 
+  buildYoungerSelfSystemPrompt, 
+  calculateEraAge, 
+  detectCrisisKeywords, 
+  detectBurnoutKeywords 
+} from './personaOrchestrator.js';
+
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 
 /**
  * Checks if local Ollama server is running.
@@ -26,54 +35,22 @@ export async function checkOllamaStatus() {
 }
 
 /**
- * Generates an Era-Grounded AI Younger Self Response.
+ * Generates an Era-Grounded AI Younger Self Response using Phase 3 Persona Orchestrator.
+ * 
  * @param {string} era - E.g. "Youth Era (2018-2020)"
- * @param {Array} memories - Array of memories matching this era
+ * @param {Array|string} memories - Array of memories matching this era or RAG context string
  * @param {string} userMessage - User's chat message
+ * @param {Array} [history=[]] - Multi-turn chat history
  */
-export async function generatePersonaResponse(era, memories, userMessage) {
-  const isOllamaLive = await checkOllamaStatus();
+export async function generatePersonaResponse(era, memories, userMessage, history = []) {
+  const result = await generateYoungerSelfResponse({
+    history,
+    newPrompt: userMessage,
+    retrievedContext: memories,
+    selectedEra: era
+  });
 
-  const eraContext = Array.isArray(memories) 
-    ? memories.map(m => `${m.title}: ${m.content || m.excerpt}`).join('\n')
-    : memories;
-
-  const systemPrompt = `You are the user's AI Younger Self during their ${era}. You speak with athletic passion, enthusiasm, and reflectiveness. Here are your memories from this era:\n${eraContext}\nRespond to the user naturally, concisely, and strictly in character.`;
-
-  if (isOllamaLive) {
-    try {
-      const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'llama3',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
-          ],
-          stream: false
-        })
-      });
-      const data = await response.json();
-      return data.message?.content || 'I remember practicing every single day to get here!';
-    } catch (err) {
-      console.error('Ollama Chat Generation Error, falling back:', err);
-    }
-  }
-
-  // Fallback Persona Generation Rules
-  const lowerMsg = userMessage.toLowerCase();
-  let reply = `In our ${era}, we were fully focused on grinding and improving. No distraction could stop us!`;
-
-  if (lowerMsg.includes('injury') || lowerMsg.includes('hurt') || lowerMsg.includes('pain')) {
-    reply = `Ah, the physical setbacks were tough. But we knew we would push through rehab and return stronger than ever. The training is paying off!`;
-  } else if (lowerMsg.includes('goal') || lowerMsg.includes('win') || lowerMsg.includes('score')) {
-    reply = `Scoring that winning goal was pure magic! The feeling of the ball hitting the back of the net makes all the sweat worth it.`;
-  } else if (lowerMsg.includes('dream') || lowerMsg.includes('future') || lowerMsg.includes('pro')) {
-    reply = `We always dreamed of making it to the pro league and wearing jersey #10. I hope we make everyone proud!`;
-  }
-
-  return reply;
+  return result.response;
 }
 
 /**
