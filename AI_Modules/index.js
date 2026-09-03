@@ -1,9 +1,16 @@
 /**
- * AI Modules - Persona & Sentiment Analysis Engine
+ * AI Modules - Persona & Sentiment Analysis Engine + Memory Ingestion Pipeline
  * Connects to local Ollama (llama3 / qwen2.5) or provides rules-based fallbacks.
+ * Handles vector embedding generation (Google Gemini text-embedding-004 / Ollama) & AES-256 memory encryption.
  */
 
-const OLLAMA_HOST = 'http://localhost:11434';
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+
+// Re-export vector embedding, encryption, vector storage & ingestion service modules
+export { generateEmbedding } from './embeddings.js';
+export { encryptText, decryptText } from './encryption.js';
+export { storeVectorEmbedding, searchVectorStore, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
+export { formatEmbeddingPayload, ingestMemoryPayload, searchMemoriesByQuery } from './ingestionService.js';
 
 /**
  * Checks if local Ollama server is running.
@@ -71,7 +78,7 @@ export async function generatePersonaResponse(era, memories, userMessage) {
  * @param {string} content
  */
 export function analyzeSentiment(title, content) {
-  const text = (title + ' ' + content).toLowerCase();
+  const text = ((title || '') + ' ' + (content || '')).toLowerCase();
   let score = 0.5; // neutral-positive default
 
   // Positive Triggers

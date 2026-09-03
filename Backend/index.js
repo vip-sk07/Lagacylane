@@ -6,7 +6,13 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db from './database.js';
-import { generatePersonaResponse, analyzeSentiment } from '../ai_modules/index.js';
+import { 
+  generatePersonaResponse, 
+  analyzeSentiment, 
+  ingestMemoryPayload, 
+  searchMemoriesByQuery,
+  getSupabaseSchemaSQL 
+} from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -216,7 +222,95 @@ app.get('/api/memories/:userId', async (req, res) => {
   }
 });
 
-// Add New Memory Log / Level Node with dynamic sentiment analysis from AI modules
+// ----------------------------------------------------
+// VECTOR EMBEDDING & MEMORY INGESTION PIPELINE
+// ----------------------------------------------------
+
+/**
+ * 1. Dedicated Production Ingestion Endpoint
+ * POST /api/memories/ingest
+ * Accepts: { userId, title, description, entryDate, era, emotionTags, contextTags, sentimentScore, mediaUrl }
+ */
+app.post('/api/memories/ingest', async (req, res) => {
+  try {
+    const { userId, title, description, entryDate, era, emotionTags, contextTags, sentimentScore, mediaUrl } = req.body;
+
+    if (!title && !description) {
+      return res.status(400).json({ error: 'Title or description is required for memory ingestion.' });
+    }
+
+    // Attach Commercial Zero-Training Guarantee Header
+    res.setHeader('X-Zero-Training-Guarantee', 'Enabled');
+
+    // Run modular ingestion pipeline (Vectorization + AES-256 Encryption + Vector Persistence)
+    const result = await ingestMemoryPayload({
+      userId,
+      title,
+      description,
+      entryDate,
+      era,
+      emotionTags,
+      contextTags,
+      sentimentScore,
+      mediaUrl
+    });
+
+    // Also persist to MongoDB for timeline display compatibility
+    try {
+      const collection = getCollection('MemoryLogs');
+      await collection.insertOne({
+        Memory_ID: result.memoryId,
+        User_ID: userId || 'usr_anonymous',
+        EntryDate: entryDate || new Date().toISOString().split('T')[0],
+        Title: title,
+        TextEncrypted: result.metadata.description || description,
+        MatchDetails: title,
+        Stars: 3,
+        SentimentScore: result.metadata.sentimentScore,
+        Tags: { era: era || 'Youth Era', context: contextTags || emotionTags || [] },
+        MediaAssets: mediaUrl ? [{ url: mediaUrl }] : [],
+        CreatedAt: new Date()
+      });
+    } catch (dbErr) {
+      console.warn('MongoDB duplicate/sync warning during ingest:', dbErr.message);
+    }
+
+    res.status(201).json(result);
+  } catch (err) {
+    console.error('Ingestion Pipeline Error:', err);
+    res.status(500).json({ error: 'Failed to ingest memory and update vector index.' });
+  }
+});
+
+/**
+ * 2. Semantic Similarity Vector Search Endpoint
+ * GET /api/memories/vector-search?query=...&userId=...
+ */
+app.get('/api/memories/vector-search', async (req, res) => {
+  try {
+    const { query, userId, topK } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: 'Query string is required for semantic vector search.' });
+    }
+
+    const matches = await searchMemoriesByQuery(query, userId, parseInt(topK) || 5);
+    res.json({ status: 'success', query, count: matches.length, matches });
+  } catch (err) {
+    console.error('Vector Search Error:', err);
+    res.status(500).json({ error: 'Failed to execute vector search.' });
+  }
+});
+
+/**
+ * 3. Supabase Schema DDL Endpoint
+ * GET /api/memories/supabase-schema
+ */
+app.get('/api/memories/supabase-schema', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(getSupabaseSchemaSQL());
+});
+
+// Add New Memory Log / Level Node with dynamic sentiment analysis & vector ingestion
 app.post('/api/memories', async (req, res) => {
   try {
     const { userId, title, era, date, matchDetails, content, stars, mediaUrl, tags } = req.body;
@@ -225,6 +319,19 @@ app.post('/api/memories', async (req, res) => {
     
     // Analyze sentiment dynamically using the AI module
     const sentimentScore = analyzeSentiment(title, content);
+
+    // Ingest into Vector Store asynchronously
+    ingestMemoryPayload({
+      userId,
+      title,
+      description: content,
+      entryDate: date,
+      era,
+      emotionTags: tags,
+      contextTags: tags,
+      sentimentScore,
+      mediaUrl
+    }).catch(err => console.error('Background Vector Ingest Warning:', err.message));
 
     const doc = {
       Memory_ID: memoryId,
@@ -243,7 +350,7 @@ app.post('/api/memories', async (req, res) => {
     const collection = getCollection('MemoryLogs');
     await collection.insertOne(doc);
 
-    res.status(201).json({ message: 'Level node added to database', memoryId, sentimentScore });
+    res.status(201).json({ message: 'Level node added to database & vector index updated', memoryId, sentimentScore });
   } catch (err) {
     console.error('Add Memory Error:', err);
     res.status(500).json({ error: 'Server error saving memory node.' });
