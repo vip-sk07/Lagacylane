@@ -6,7 +6,14 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db from './database.js';
-import { generatePersonaResponse, analyzeSentiment } from '../AI_Modules/index.js';
+import { 
+  generatePersonaResponse, 
+  analyzeSentiment, 
+  ingestMemoryPayload, 
+  searchMemoriesByQuery,
+  getSupabaseSchemaSQL,
+  retrieveEraContext
+} from '../AI_Modules/index.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -290,8 +297,6 @@ app.get('/api/memories/search/:userId', async (req, res) => {
     res.status(500).json({ error: 'Server error searching memories.' });
   }
 });
-
-// Add New Memory Log / Level Node with dynamic sentiment analysis from AI modules
 app.post('/api/memories', async (req, res) => {
   try {
     const { userId, title, era, date, matchDetails, content, victoryMessage, stars, mediaUrl, tags } = req.body;
@@ -300,6 +305,19 @@ app.post('/api/memories', async (req, res) => {
     
     // Analyze sentiment dynamically using the AI module
     const sentimentScore = analyzeSentiment(title, content + ' ' + (victoryMessage || ''));
+
+    // Ingest into Vector Store asynchronously
+    ingestMemoryPayload({
+      userId,
+      title,
+      description: content,
+      entryDate: date,
+      era,
+      emotionTags: tags,
+      contextTags: tags,
+      sentimentScore,
+      mediaUrl
+    }).catch(err => console.error('Background Vector Ingest Warning:', err.message));
 
     const doc = {
       Memory_ID: memoryId,
@@ -321,7 +339,7 @@ app.post('/api/memories', async (req, res) => {
     const collection = getCollection('MemoryLogs');
     await collection.insertOne(doc);
 
-    res.status(201).json({ message: 'Level node added to database', memoryId, sentimentScore });
+    res.status(201).json({ message: 'Level node added to database & vector index updated', memoryId, sentimentScore });
   } catch (err) {
     console.error('Add Memory Error:', err);
     res.status(500).json({ error: 'Server error saving memory node.' });
