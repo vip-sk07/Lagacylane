@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LegacyLane: The One Who Lives — 3D Tactical Playbook Timeline</title>
+    <title>LegacyLane: The One Who Lives — 3D Tactical Playbook & AI Companion</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
                     colors: {
                         tactical: {
                             bg: '#04090d',
-                            panel: 'rgba(10, 20, 28, 0.85)',
+                            panel: 'rgba(8, 16, 26, 0.88)',
                             emerald: '#00e676',
                             cyan: '#00e5ff',
                             amber: '#ffb300',
@@ -72,9 +72,8 @@
             outline: none;
         }
 
-        /* Tactical Glassmorphism Header & Cards */
         .tactical-glass {
-            background: rgba(8, 16, 25, 0.88);
+            background: rgba(8, 16, 26, 0.88);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 230, 118, 0.25);
@@ -82,26 +81,53 @@
         }
 
         .tactical-glass-card {
-            background: linear-gradient(135deg, rgba(12, 24, 36, 0.92) 0%, rgba(6, 12, 18, 0.95) 100%);
+            background: linear-gradient(135deg, rgba(12, 24, 36, 0.94) 0%, rgba(6, 12, 18, 0.97) 100%);
             backdrop-filter: blur(24px);
             border: 1.5px solid rgba(0, 230, 118, 0.3);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(0, 230, 118, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(0, 230, 118, 0.2);
         }
 
-        /* Neon Glow Effects */
-        .neon-glow-emerald {
-            box-shadow: 0 0 20px rgba(0, 230, 118, 0.4), inset 0 0 10px rgba(0, 230, 118, 0.2);
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 9, 13, 0.82);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .neon-text-emerald {
-            text-shadow: 0 0 12px rgba(0, 230, 118, 0.6);
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .neon-text-gold {
-            text-shadow: 0 0 12px rgba(255, 179, 0, 0.6);
+        .ai-drawer-card {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            background: linear-gradient(180deg, rgba(8, 16, 26, 0.98) 0%, rgba(4, 9, 14, 0.99) 100%);
+            border-left: 1.5px solid rgba(255, 179, 0, 0.4);
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.9);
+            z-index: 110;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* 3D Flip Card Container */
+        .ai-drawer-card.active {
+            transform: translateX(0);
+        }
+
         .flip-card-perspective {
             perspective: 1400px;
         }
@@ -130,50 +156,6 @@
             transform: rotateY(180deg);
         }
 
-        /* Drawers Overlay Base */
-        .drawer-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(4, 9, 13, 0.8);
-            backdrop-filter: blur(16px);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .drawer-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Sideline AI Right Drawer */
-        .ai-drawer-card {
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: linear-gradient(180deg, rgba(8, 16, 26, 0.98) 0%, rgba(4, 9, 14, 0.99) 100%);
-            border-left: 1.5px solid rgba(255, 179, 0, 0.4);
-            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.9);
-            z-index: 110;
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .ai-drawer-card.active {
-            transform: translateX(0);
-        }
-
-        /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -192,54 +174,52 @@
 </head>
 <body>
 
-    <!-- WebGL Canvas for 3D Tactical Field & Avatar -->
+    <!-- WebGL Canvas for 3D Field & Avatar Scene -->
     <canvas id="webgl-canvas"></canvas>
 
-    <!-- UI Overlay Layer -->
+    <!-- UI Overlay Controls -->
     <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 overflow-hidden">
 
         <!-- ==========================================================================
-             1. TOP NAVIGATION BAR & TACTICAL HUD
+             1. TOP NAVIGATION BAR & MULTI-SPORT SWITCHER
              ========================================================================== -->
         <header class="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
             
-            <!-- Left: Player Badge with OVR rating -->
+            <!-- Left: Player OVR Badge -->
             <div class="tactical-glass px-4 py-2 rounded-2xl flex items-center gap-3.5 shadow-xl border-emerald-500/30">
-                <!-- OVR Badge -->
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-green-700 flex flex-col items-center justify-center border border-emerald-300 shadow-md">
-                    <span class="font-teko text-2xl font-bold leading-none text-black">92</span>
+                    <span id="player-ovr-display" class="font-teko text-2xl font-bold leading-none text-black">92</span>
                     <span class="text-[8px] font-mono font-bold tracking-tighter text-black uppercase">OVR</span>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span id="player-name-display" class="text-sm font-extrabold text-white tracking-wide">Marcus Vance #7</span>
-                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold border border-emerald-500/30">PRO ATHLETE</span>
+                        <span id="current-sport-badge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold border border-emerald-500/30">FOOTBALL</span>
                     </div>
-                    <p id="plays-count-display" class="text-[10px] font-mono text-cyan-300 font-bold tracking-wider uppercase mt-0.5">8 LOGGED PLAYS • TACTICAL TIMELINE</p>
+                    <p id="plays-count-display" class="text-[10px] font-mono text-cyan-300 font-bold tracking-wider uppercase mt-0.5">0 LOGGED PLAYS • TACTICAL TIMELINE</p>
                 </div>
             </div>
 
-            <!-- Center: Sport Filter Pills -->
+            <!-- Center: Multi-Sport Switcher Pills -->
             <div class="tactical-glass p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
-                <button data-sport="football" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition">Football ⚽</button>
-                <button data-sport="basketball" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Basketball 🏀</button>
-                <button data-sport="soccer" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Soccer 🥅</button>
-                <button data-sport="track" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Track 🏃</button>
-                <button data-sport="dual" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Dual ⚡</button>
-                <button data-sport="sports" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Sports 🏆</button>
-                <button data-sport="life" class="sport-pill-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Life 🌿</button>
+                <button data-sport="football" class="sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition">Football ⚽</button>
+                <button data-sport="basketball" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Basketball 🏀</button>
+                <button data-sport="soccer" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Soccer 🥅</button>
+                <button data-sport="track" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Track & Field 🏃</button>
+                <button data-sport="cricket" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Cricket 🏏</button>
+                <button data-sport="tennis" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Tennis 🎾</button>
             </div>
 
-            <!-- Right: Tactical Action Buttons -->
+            <!-- Right: Action CTA Buttons -->
             <div class="flex items-center gap-2">
                 <!-- + LOG PLAY CTA -->
                 <button id="btn-open-log-modal" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-emerald-500/30 border border-emerald-200 transition flex items-center gap-1.5 active:scale-95">
                     <span class="text-sm">➕</span> LOG PLAY
                 </button>
 
-                <!-- ⚡ SIDELINE AI Button -->
-                <button id="btn-open-sideline-ai" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-amber-500/30 border border-amber-200 transition flex items-center gap-1.5 active:scale-95">
-                    <span class="text-sm">⚡</span> SIDELINE AI
+                <!-- ⚡ YOUR YOUNGER SELF AI Button -->
+                <button id="btn-open-ai-companion" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-amber-500/30 border border-amber-200 transition flex items-center gap-1.5 active:scale-95">
+                    <span class="text-sm">⚡</span> YOUR YOUNGER SELF
                 </button>
 
                 <!-- 📇 PRO CARD Button -->
@@ -262,49 +242,48 @@
         </div>
 
         <!-- ==========================================================================
-             3. BOTTOM ACTIVE PLAY SNIPPET CARD & PROGRESS NAVIGATION
+             3. BOTTOM ACTIVE PLAY SNIPPET CARD / EMPTY STATE
              ========================================================================== -->
         <footer class="w-full max-w-4xl mx-auto pointer-events-auto">
             <div class="tactical-glass-card p-4 md:p-5 rounded-3xl space-y-3 relative overflow-hidden">
 
-                <!-- Glowing Ambient Accent Line -->
                 <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400"></div>
 
-                <!-- Top Snippet Header -->
+                <!-- Active Node Info Header -->
                 <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-2">
-                        <span id="snippet-node-tag" class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-400/40">NODE #1 OF 8</span>
-                        <span id="snippet-era-tag" class="px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-mono font-bold text-[11px] border border-cyan-400/40">Rookie Era (Age 14-18)</span>
+                        <span id="snippet-node-tag" class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-400/40">KICKOFF SPOT</span>
+                        <span id="snippet-era-tag" class="px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-mono font-bold text-[11px] border border-cyan-400/40">Ready to Log</span>
                     </div>
 
-                    <!-- Navigation Arrows -->
+                    <!-- Previous/Next Arrows -->
                     <div class="flex items-center gap-2">
-                        <button id="btn-prev-play" title="Previous Career Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❮</button>
-                        <button id="btn-next-play" title="Next Career Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❯</button>
+                        <button id="btn-prev-play" title="Previous Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❮</button>
+                        <button id="btn-next-play" title="Next Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❯</button>
                     </div>
                 </div>
 
-                <!-- Play Title & 2-Line Journal Preview -->
+                <!-- Play Title & Story Preview -->
                 <div id="snippet-clickable-area" class="cursor-pointer group">
                     <div class="flex items-center justify-between">
-                        <h3 id="snippet-title" class="text-xl md:text-2xl font-extrabold text-white group-hover:text-emerald-300 transition">High School Cup Final Victory</h3>
-                        <span id="snippet-sentiment" class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold border border-emerald-400/30">SENTIMENT: 96/100</span>
+                        <h3 id="snippet-title" class="text-xl md:text-2xl font-extrabold text-white group-hover:text-emerald-300 transition">No plays logged yet.</h3>
+                        <span id="snippet-sentiment" class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-400/30">CLICK '+ LOG PLAY'</span>
                     </div>
                     <p id="snippet-journal-preview" class="text-xs text-gray-300 mt-1 line-clamp-2 italic leading-relaxed">
-                        "Scored the winning goal in the 89th minute off a curler into the top corner. Entire stadium went wild!"
+                        "Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"
                     </p>
-                    <p class="text-[10px] text-emerald-400 font-bold tracking-wider mt-1 uppercase flex items-center gap-1 group-hover:underline">
-                        <span>Inspect Full Play Details & Tactical Analysis</span> →
+                    <p id="snippet-cta-text" class="text-[10px] text-emerald-400 font-bold tracking-wider mt-1 uppercase flex items-center gap-1 group-hover:underline">
+                        <span>Record your first milestone play now</span> →
                     </p>
                 </div>
 
-                <!-- Timeline Progress Bar -->
+                <!-- Progress Bar -->
                 <div class="pt-2 border-t border-white/10 flex items-center gap-3">
                     <span class="text-[10px] font-mono text-gray-400 font-bold">TIMELINE PROGRESS</span>
                     <div class="flex-1 h-2 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5">
-                        <div id="snippet-progress-fill" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-500" style="width: 12.5%;"></div>
+                        <div id="snippet-progress-fill" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
                     </div>
-                    <span id="snippet-progress-text" class="text-[10px] font-mono text-cyan-300 font-bold">1 / 8 PLAYS</span>
+                    <span id="snippet-progress-text" class="text-[10px] font-mono text-cyan-300 font-bold">0 / 0 PLAYS</span>
                 </div>
 
             </div>
@@ -316,63 +295,72 @@
          MODAL 1: "+ LOG PLAY" (TACTICAL PLAYBOOK LOGGER)
          ========================================================================== -->
     <div id="modal-log-play" class="drawer-overlay">
-        <div class="w-full max-w-xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative">
+        <div class="w-full max-w-xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
             <div class="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                    <span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-400/40 uppercase">TACTICAL PLAYBOOK LOGGER</span>
-                    <h2 class="text-2xl font-extrabold text-white mt-1">Log Career Play & Milestone</h2>
+                    <span id="modal-log-sport-tag" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-400/40 uppercase">FOOTBALL PLAYBOOK</span>
+                    <h2 id="modal-log-title" class="text-2xl font-extrabold text-white mt-1">Log Career Play & Milestone</h2>
                 </div>
                 <button id="btn-close-log-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
             </div>
 
             <form id="form-log-play" class="space-y-4">
                 
+                <!-- Play Title & Date -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Play Title / Match Event</label>
-                        <input type="text" id="log-input-title" required placeholder="E.g., Hattrick vs Rival Academy" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
+                        <label class="block text-xs font-bold text-gray-300 mb-1">Play Title / Milestone Name *</label>
+                        <input type="text" id="log-input-title" required placeholder="E.g. State Championship Game Winner" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Event Date</label>
+                        <label class="block text-xs font-bold text-gray-300 mb-1">Date & Assigned Era *</label>
                         <input type="date" id="log-input-date" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
                     </div>
                 </div>
 
-                <!-- Sentiment Slider -->
+                <!-- Emotional Sentiment Slider -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-bold text-gray-300">Mental Wellness & Sentiment Score</label>
-                        <span id="log-sentiment-badge" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-400/40">90 / 100 (Peak Victory)</span>
+                        <label class="text-xs font-bold text-gray-300">Emotional Sentiment Score (0 - 100)</label>
+                        <span id="log-sentiment-badge" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-400/40">90 / 100 (Peak Victory 🌟)</span>
                     </div>
                     <input type="range" id="log-input-sentiment" min="0" max="100" value="90" class="w-full">
                 </div>
 
-                <!-- Emotion Tags -->
+                <!-- Emotion Tag Chips -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1.5">Select Emotion Tags</label>
-                    <div class="flex flex-wrap gap-1.5" id="emotion-chips-container">
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-emerald-500 text-black text-[11px] font-extrabold transition">#Victorious</button>
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition">#Determined</button>
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition">#Clutch</button>
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition">#Grateful</button>
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition">#Burnout</button>
-                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition">#Exhausted</button>
+                    <label class="block text-xs font-bold text-gray-300 mb-1.5">Emotion Tags (Click to toggle)</label>
+                    <div class="flex flex-wrap gap-1.5" id="emotion-chips-box">
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-emerald-500 text-black text-[11px] font-extrabold transition" data-tag="#Victorious">#Victorious</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Determined">#Determined</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Clutch">#Clutch</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Grateful">#Grateful</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Burnout">#Burnout</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Exhausted">#Exhausted</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Focused">#Focused</button>
                     </div>
                 </div>
 
                 <!-- Journal Entry -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Journal Entry & Play Description</label>
-                    <textarea id="log-input-journal" rows="3" required placeholder="Describe the play tactical breakdown, how you felt, and key takeaways..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none resize-none"></textarea>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Tactical Journal Entry *</label>
+                    <textarea id="log-input-journal" rows="3" required placeholder="Detail what happened, physical & mental state, and what this moment meant..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none resize-none"></textarea>
                 </div>
 
-                <!-- Media Upload -->
+                <!-- Photo Upload Box -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Upload Play Highlight / Photo</label>
-                    <input type="file" id="log-input-photo" accept="image/*" class="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-xs text-gray-300">
-                    <div id="log-photo-preview" class="mt-2 hidden">
-                        <img id="log-preview-img" src="" class="w-24 h-20 rounded-xl object-cover border border-emerald-400/40">
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Photo Upload & Caption (Optional)</label>
+                    <div class="border-2 border-dashed border-white/20 hover:border-emerald-400 rounded-2xl p-4 text-center cursor-pointer bg-black/40 transition relative">
+                        <input type="file" id="log-input-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="flex flex-col items-center gap-1 pointer-events-none">
+                            <span class="text-xl">📸</span>
+                            <p class="text-xs font-bold text-emerald-300">Click or Drag Photo Here</p>
+                        </div>
+                    </div>
+                    <div id="log-preview-box" class="mt-2 hidden flex items-center gap-3">
+                        <img id="log-preview-img" src="" class="w-16 h-16 rounded-xl object-cover border border-emerald-400/40">
+                        <input type="text" id="log-input-caption" placeholder="Enter photo caption..." class="flex-1 px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
                     </div>
                 </div>
 
@@ -385,7 +373,7 @@
     </div>
 
     <!-- ==========================================================================
-         MODAL 2: DETAILED MEMORY INSPECTION MODAL
+         MODAL 2: MEMORY INSPECTION DRAWER
          ========================================================================== -->
     <div id="modal-inspect-play" class="drawer-overlay">
         <div class="w-full max-w-2xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -405,21 +393,25 @@
                 <span id="inspect-tags-badge" class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 font-mono text-xs font-bold border border-purple-400/30">#Victorious #Clutch</span>
             </div>
 
-            <!-- Media Preview -->
-            <div id="inspect-media-box" class="hidden">
+            <!-- Uploaded Photo & Caption -->
+            <div id="inspect-photo-box" class="hidden space-y-1">
                 <img id="inspect-img" src="" class="w-full h-56 rounded-2xl object-cover border border-emerald-500/30">
+                <p id="inspect-photo-caption" class="text-[11px] font-mono text-gray-300 text-center italic"></p>
             </div>
 
             <!-- Journal Story -->
             <div class="bg-black/60 rounded-2xl p-4 border border-white/10">
-                <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1">JOURNAL ENTRY & ANALYSIS:</p>
+                <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1">TACTICAL JOURNAL ENTRY:</p>
                 <p id="inspect-journal" class="text-xs text-gray-200 leading-relaxed italic">"Detailed story text..."</p>
             </div>
 
-            <!-- Younger Self Commentary -->
-            <div class="bg-gradient-to-r from-amber-900/30 to-purple-900/30 rounded-2xl p-4 border border-amber-500/30">
-                <p class="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider mb-1">⚡ SIDELINE AI REFLECTION:</p>
-                <p id="inspect-ai-quote" class="text-xs text-amber-100 leading-relaxed">"Younger self commentary..."</p>
+            <!-- Wisdom from Your Younger Self -->
+            <div class="bg-gradient-to-r from-amber-900/30 to-purple-900/30 rounded-2xl p-4 border border-amber-500/30 space-y-2">
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] font-mono text-amber-400 font-bold uppercase">⚡ WISDOM FROM YOUR YOUNGER SELF:</p>
+                    <button id="btn-pin-wisdom" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">📌 Pin Insight</button>
+                </div>
+                <p id="inspect-ai-quote" class="text-xs text-amber-100 leading-relaxed italic">"Younger self commentary..."</p>
             </div>
 
             <div class="flex items-center justify-between pt-2">
@@ -435,44 +427,44 @@
     </div>
 
     <!-- ==========================================================================
-         MODAL 3: "⚡ SIDELINE AI" RIGHT DRAWER
+         MODAL 3: "YOUR YOUNGER SELF" RAG AI DRAWER
          ========================================================================== -->
-    <div id="drawer-sideline-ai" class="ai-drawer-card">
+    <div id="drawer-ai-companion" class="ai-drawer-card">
         <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-600 flex items-center justify-center text-black text-xl font-bold">
                     ⚡
                 </div>
                 <div>
-                    <h3 class="text-lg font-extrabold text-white">Sideline AI Companion</h3>
-                    <p class="text-[10px] font-mono text-amber-400 font-bold">YOUNGER SELF PERSONA • ACTIVE</p>
+                    <h3 class="text-lg font-extrabold text-white">YOUR YOUNGER SELF</h3>
+                    <p class="text-[10px] font-mono text-amber-400 font-bold">INSTANT-LEARNING RAG AI • ACTIVE</p>
                 </div>
             </div>
             <button id="btn-close-ai-drawer" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
         </div>
 
-        <p class="text-xs text-gray-300 mb-3">Reflect with your younger self on career plays, emotional burnout, and tactical growth.</p>
+        <p class="text-xs text-gray-300 mb-3">Reflecting with your younger self in real-time based on your logged memories & photos.</p>
 
         <!-- Quick Reply Chips -->
         <div class="space-y-1.5 mb-4">
-            <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">QUICK REFLECTION PROMPTS:</p>
+            <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">RECOMMENDED DIALOGUE PROMPTS:</p>
             <div class="flex flex-wrap gap-1.5">
                 <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"I'm feeling burnt out and tired"</button>
-                <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"We just won the big championship"</button>
+                <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"We just won the big game!"</button>
                 <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"What was our proudest play?"</button>
             </div>
         </div>
 
-        <!-- Chat History -->
+        <!-- Chat Messages -->
         <div id="ai-chat-box" class="flex-1 overflow-y-auto bg-black/60 rounded-2xl p-4 space-y-3 border border-white/10 mb-4 text-xs">
             <div class="bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20">
-                ⚡ <b>Younger Self AI:</b> Hey Marcus! I'm watching every play from the sideline. How are you feeling about your legacy today?
+                ⚡ <b>Your Younger Self:</b> Hey Marcus! I'm watching every play from the sideline. Log your milestones and photos so I can learn and reflect with you!
             </div>
         </div>
 
         <!-- Input Box -->
         <div class="flex gap-2">
-            <input type="text" id="ai-input-text" placeholder="Talk to your younger self..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/70 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
+            <input type="text" id="ai-input-text" placeholder="Talk to Your Younger Self..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/70 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
             <button id="btn-send-ai" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition">
                 Send
             </button>
@@ -495,13 +487,12 @@
                             </div>
                             <div>
                                 <h3 class="text-xl font-extrabold text-white">Marcus Vance #7</h3>
-                                <p class="text-[10px] font-mono text-emerald-400 font-bold">ALL-STAR PRO ATHLETE</p>
+                                <p id="pro-card-sport" class="text-[10px] font-mono text-emerald-400 font-bold uppercase">PRO FOOTBALL ATHLETE</p>
                             </div>
                         </div>
                         <button id="btn-close-pro-card" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm">✕</button>
                     </div>
 
-                    <!-- Attribute Stats Grid -->
                     <div class="space-y-3 py-2">
                         <div>
                             <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
@@ -510,7 +501,6 @@
                             </div>
                             <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-emerald-400 rounded-full" style="width: 94%;"></div></div>
                         </div>
-
                         <div>
                             <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
                                 <span>CLUTCH PERFORMANCE</span>
@@ -518,7 +508,6 @@
                             </div>
                             <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-emerald-400 rounded-full" style="width: 96%;"></div></div>
                         </div>
-
                         <div>
                             <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
                                 <span>LEADERSHIP & IQ</span>
@@ -526,7 +515,6 @@
                             </div>
                             <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-cyan-400 rounded-full" style="width: 91%;"></div></div>
                         </div>
-
                         <div>
                             <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
                                 <span>MENTAL RESILIENCE</span>
@@ -541,7 +529,7 @@
                     </button>
                 </div>
 
-                <!-- BACK: MENTAL WELLNESS & SENTIMENT GRAPH -->
+                <!-- BACK: MENTAL WELLNESS GRAPH -->
                 <div class="flip-card-back tactical-glass-card p-6 flex flex-col justify-between border-cyan-500/40 shadow-2xl">
                     <div class="flex items-center justify-between border-b border-white/10 pb-3">
                         <div>
@@ -551,23 +539,14 @@
                         <button id="btn-flip-to-front" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm">🔄</button>
                     </div>
 
-                    <!-- Visual Sentiment Chart Simulation -->
                     <div class="bg-black/60 rounded-2xl p-4 border border-white/10 space-y-3 flex-1 flex flex-col justify-center">
-                        <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">CAREER SENTIMENT TREND (LAST 8 PLAYS):</p>
-                        <div class="h-32 flex items-end justify-between gap-2 px-2 pt-4 border-b border-white/20">
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 90%;" title="Play #1: 90%"></div>
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 85%;" title="Play #2: 85%"></div>
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 96%;" title="Play #3: 96%"></div>
-                            <div class="w-6 bg-amber-400 rounded-t" style="height: 60%;" title="Play #4: 60%"></div>
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 92%;" title="Play #5: 92%"></div>
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 98%;" title="Play #6: 98%"></div>
-                            <div class="w-6 bg-amber-400 rounded-t" style="height: 70%;" title="Play #7: 70%"></div>
-                            <div class="w-6 bg-emerald-400 rounded-t" style="height: 95%;" title="Play #8: 95%"></div>
+                        <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">LOGGED SENTIMENT TREND:</p>
+                        <div id="sentiment-bars-container" class="h-32 flex items-end justify-between gap-2 px-2 pt-4 border-b border-white/20">
+                            <!-- Bars populated via JS -->
                         </div>
                         <div class="flex justify-between text-[9px] font-mono text-gray-400">
-                            <span>ROOKIE</span>
-                            <span>PRO DEBUT</span>
-                            <span>PRESENT</span>
+                            <span>EARLIEST</span>
+                            <span>RECENT</span>
                         </div>
                     </div>
 
@@ -581,38 +560,37 @@
     </div>
 
     <!-- ==========================================================================
-         THREE.JS 3D ENGINE & PLAYBOOK ENGINE SCRIPT
+         JAVASCRIPT CORE ENGINE: THREE.JS MULTI-SPORT & RAG AI
          ========================================================================== -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             /* ------------------------------------------------------------------
-               1. INITIAL CAREER DATA & STORAGE
+               1. STATE MANAGEMENT & ZERO HARDCODED DEFAULT NODES
                ------------------------------------------------------------------ */
-            const defaultCareerPlays = [
-                { id: 1, title: "Academy Entrance Trials", date: "2015-06-12", era: "Rookie Era (Age 14-18)", journal: "Scored hattrick during high-pressure academy trials.", sentiment: 90, tags: ["#Victorious", "#Clutch"], photo: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600" },
-                { id: 2, title: "First District Goal", date: "2016-03-20", era: "Rookie Era (Age 14-18)", journal: "Header off a corner kick in the 85th minute.", sentiment: 85, tags: ["#Determined"], photo: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600" },
-                { id: 3, title: "High School Cup Final", date: "2017-05-18", era: "Rookie Era (Age 14-18)", journal: "Lifted championship trophy with team after extra time victory.", sentiment: 96, tags: ["#Victorious", "#Grateful"], photo: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600" },
-                { id: 4, title: "State Squad Selection", date: "2018-09-04", era: "Rising Star Era (Age 19-22)", journal: "Selected for state U-18 team. High workload caused slight fatigue.", sentiment: 60, tags: ["#Exhausted", "#Determined"], photo: "https://images.unsplash.com/photo-1519766304817-4f37bda74a29?w=600" },
-                { id: 5, title: "University Derby Winner", date: "2021-10-10", era: "Rising Star Era (Age 19-22)", journal: "Started first collegiate derby game and scored two goals.", sentiment: 92, tags: ["#Victorious", "#Clutch"], photo: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600" },
-                { id: 6, title: "Pro Draft Selection", date: "2023-01-15", era: "Pro Athlete Era (Present)", journal: "Drafted into professional league. Childhood dream realized!", sentiment: 98, tags: ["#Victorious", "#Grateful"], photo: "https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600" },
-                { id: 7, title: "Mid-Season Rehabilitation", date: "2023-08-20", era: "Pro Athlete Era (Present)", journal: "Recovered from ankle sprain with dedicated physiotherapy.", sentiment: 70, tags: ["#Burnout", "#Determined"], photo: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600" },
-                { id: 8, title: "National League Winner", date: "2024-02-10", era: "Pro Athlete Era (Present)", journal: "Clinched national championship title with top scorer title.", sentiment: 95, tags: ["#Victorious", "#Clutch"], photo: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=600" }
-            ];
+            let currentSport = 'football';
+            let activeNodeIndex = -1;
 
-            let careerPlays = JSON.parse(localStorage.getItem('legacy_tactical_plays')) || defaultCareerPlays;
+            // Load stored memories or start with empty object
+            let allMemoriesStore = JSON.parse(localStorage.getItem('legacylane_memories_v2')) || {
+                football: [],
+                basketball: [],
+                soccer: [],
+                track: [],
+                cricket: [],
+                tennis: []
+            };
 
-            function sortPlaysChronologically() {
-                careerPlays.sort((a, b) => new Date(a.date) - new Date(b.date));
-                careerPlays.forEach((p, idx) => p.id = idx + 1);
-                localStorage.setItem('legacy_tactical_plays', JSON.stringify(careerPlays));
+            function getActiveMemories() {
+                return allMemoriesStore[currentSport] || [];
             }
-            sortPlaysChronologically();
 
-            let activeNodeIndex = 0;
+            function saveMemoriesStore() {
+                localStorage.setItem('legacylane_memories_v2', JSON.stringify(allMemoriesStore));
+            }
 
             /* ------------------------------------------------------------------
-               2. THREE.JS 3D SCENE & ENGINE SETUP
+               2. THREE.JS 3D SCENE & ENGINE
                ------------------------------------------------------------------ */
             const canvas = document.getElementById('webgl-canvas');
             const scene = new THREE.Scene();
@@ -620,7 +598,7 @@
             scene.fog = new THREE.FogExp2(0x04090d, 0.032);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const defaultCamPos = new THREE.Vector3(0, 18, 22);
+            const defaultCamPos = new THREE.Vector3(0, 18, 24);
             camera.position.copy(defaultCamPos);
             camera.lookAt(0, 0, 0);
 
@@ -630,15 +608,11 @@
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2;
 
-            // Orbit Controls
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2.1;
-            controls.minDistance = 8;
-            controls.maxDistance = 50;
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0x102a20, 1.2);
             scene.add(ambientLight);
 
@@ -651,55 +625,114 @@
             scene.add(spotlight);
 
             /* ------------------------------------------------------------------
-               3. 3D FIELD MESH & TACTICAL GRAPHICS
+               3. PROCEDURAL MULTI-SPORT FIELD MESH GENERATOR
                ------------------------------------------------------------------ */
-            // Create procedural turf canvas texture
-            const canvasTex = document.createElement('canvas');
-            canvasTex.width = 1024;
-            canvasTex.height = 2048;
-            const ctx = canvasTex.getContext('2d');
+            let fieldMesh = null;
 
-            // Dark turf background
-            ctx.fillStyle = '#040a0e';
-            ctx.fillRect(0, 0, 1024, 2048);
+            function createFieldTexture(sport) {
+                const cv = document.createElement('canvas');
+                cv.width = 1024;
+                cv.height = 2048;
+                const ctx = cv.getContext('2d');
 
-            // Turf stripes
-            for (let i = 0; i < 2048; i += 128) {
-                ctx.fillStyle = (i / 128) % 2 === 0 ? '#0a2419' : '#071b12';
-                ctx.fillRect(0, i, 1024, 128);
+                if (sport === 'basketball') {
+                    // Hardwood Court
+                    ctx.fillStyle = '#8d6e63';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let x = 0; x < 1024; x += 64) {
+                        ctx.fillStyle = (x / 64) % 2 === 0 ? '#795548' : '#8d6e63';
+                        ctx.fillRect(x, 0, 64, 2048);
+                    }
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(60, 60, 904, 1928);
+                    ctx.beginPath();
+                    ctx.arc(512, 1024, 200, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (sport === 'soccer') {
+                    // Emerald Grass Pitch
+                    ctx.fillStyle = '#1b5e20';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let y = 0; y < 2048; y += 128) {
+                        ctx.fillStyle = (y / 128) % 2 === 0 ? '#2e7d32' : '#1b5e20';
+                        ctx.fillRect(0, y, 1024, 128);
+                    }
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(60, 60, 904, 1928);
+                    ctx.beginPath();
+                    ctx.arc(512, 1024, 220, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (sport === 'track') {
+                    // Tartan Red Track Lanes
+                    ctx.fillStyle = '#b71c1c';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.lineWidth = 6;
+                    for (let x = 100; x < 950; x += 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, 2048);
+                        ctx.stroke();
+                    }
+                } else if (sport === 'cricket') {
+                    // Green Oval + Central Pitch Crease
+                    ctx.fillStyle = '#33691e';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.fillStyle = '#d7ccc8'; // pitch rectangle
+                    ctx.fillRect(412, 600, 200, 848);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 6;
+                    ctx.strokeRect(412, 600, 200, 848);
+                } else if (sport === 'tennis') {
+                    // Blue Tennis Court
+                    ctx.fillStyle = '#1565c0';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 10;
+                    ctx.strokeRect(120, 120, 784, 1808);
+                    ctx.beginPath();
+                    ctx.moveTo(120, 1024);
+                    ctx.lineTo(904, 1024);
+                    ctx.stroke();
+                } else {
+                    // Football Gridiron (Default)
+                    ctx.fillStyle = '#040a0e';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let y = 0; y < 2048; y += 128) {
+                        ctx.fillStyle = (y / 128) % 2 === 0 ? '#0a2419' : '#071b12';
+                        ctx.fillRect(0, y, 1024, 128);
+                    }
+                    ctx.strokeStyle = 'rgba(0, 230, 118, 0.35)';
+                    ctx.lineWidth = 6;
+                    for (let y = 100; y < 2000; y += 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(60, y);
+                        ctx.lineTo(964, y);
+                        ctx.stroke();
+                    }
+                }
+
+                const tex = new THREE.CanvasTexture(cv);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                return tex;
             }
 
-            // Yard lines & Hash marks
-            ctx.strokeStyle = 'rgba(0, 230, 118, 0.35)';
-            ctx.lineWidth = 4;
-            for (let y = 100; y < 2000; y += 150) {
-                ctx.beginPath();
-                ctx.moveTo(80, y);
-                ctx.lineTo(944, y);
-                ctx.stroke();
+            function rebuildFieldMesh(sport) {
+                if (fieldMesh) scene.remove(fieldMesh);
 
-                // Yard Numbers
-                ctx.fillStyle = 'rgba(0, 230, 118, 0.25)';
-                ctx.font = 'bold 36px monospace';
-                ctx.fillText('50', 100, y - 10);
-                ctx.fillText('50', 880, y - 10);
+                const tex = createFieldTexture(sport);
+                const fieldGeo = new THREE.PlaneGeometry(36, 90);
+                const fieldMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, metalness: 0.1 });
+                fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
+                fieldMesh.rotation.x = -Math.PI / 2;
+                scene.add(fieldMesh);
             }
 
-            const fieldTexture = new THREE.CanvasTexture(canvasTex);
-            fieldTexture.wrapS = THREE.RepeatWrapping;
-            fieldTexture.wrapT = THREE.RepeatWrapping;
+            rebuildFieldMesh('football');
 
-            const fieldGeo = new THREE.PlaneGeometry(36, 90);
-            const fieldMat = new THREE.MeshStandardMaterial({
-                map: fieldTexture,
-                roughness: 0.8,
-                metalness: 0.1
-            });
-            const fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
-            fieldMesh.rotation.x = -Math.PI / 2;
-            scene.add(fieldMesh);
-
-            // Sideline Bench Mesh
+            // Sideline Bench
             const benchGeo = new THREE.BoxGeometry(2, 0.8, 6);
             const benchMat = new THREE.MeshStandardMaterial({ color: 0x1a2e26, roughness: 0.5 });
             const benchMesh = new THREE.Mesh(benchGeo, benchMat);
@@ -707,97 +740,19 @@
             scene.add(benchMesh);
 
             /* ------------------------------------------------------------------
-               4. 3D SPLINE PATH & CHECKPOINT RINGS ENGINE
-               ------------------------------------------------------------------ */
-            let splineTubeMesh = null;
-            let checkpointRings = [];
-
-            function generateSplinePoints() {
-                const points = [];
-                const total = careerPlays.length;
-                for (let i = 0; i < total; i++) {
-                    const z = 35 - (i / Math.max(1, total - 1)) * 70;
-                    const x = Math.sin(i * 0.9) * 10;
-                    points.push(new THREE.Vector3(x, 0.3, z));
-                }
-                return points;
-            }
-
-            let splineCurve = null;
-
-            function rebuild3DSpline() {
-                if (splineTubeMesh) scene.remove(splineTubeMesh);
-                checkpointRings.forEach(r => scene.remove(r.group));
-                checkpointRings = [];
-
-                const points = generateSplinePoints();
-                if (points.length < 2) return;
-
-                splineCurve = new THREE.CatmullRomCurve3(points);
-                const tubeGeo = new THREE.TubeGeometry(splineCurve, 120, 0.18, 12, false);
-                const tubeMat = new THREE.MeshStandardMaterial({
-                    color: 0x00e676,
-                    emissive: 0x00b359,
-                    emissiveIntensity: 0.8,
-                    roughness: 0.3,
-                    metalness: 0.8
-                });
-                splineTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
-                scene.add(splineTubeMesh);
-
-                // Create 3D Checkpoint Rings at each node
-                points.forEach((pt, idx) => {
-                    const ringGroup = new THREE.Group();
-                    ringGroup.position.copy(pt);
-
-                    // Torus Ring
-                    const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
-                    const ringMat = new THREE.MeshStandardMaterial({
-                        color: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
-                        emissive: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
-                        emissiveIntensity: 1
-                    });
-                    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-                    ringMesh.rotation.x = Math.PI / 2;
-                    ringGroup.add(ringMesh);
-
-                    // Light Beam Cylinder
-                    const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3, 16, 1, true);
-                    const beamMat = new THREE.MeshBasicMaterial({
-                        color: 0x00e676,
-                        transparent: true,
-                        opacity: 0.15,
-                        side: THREE.DoubleSide
-                    });
-                    const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                    beamMesh.position.y = 1.5;
-                    ringGroup.add(beamMesh);
-
-                    ringGroup.userData = { nodeIndex: idx };
-                    scene.add(ringGroup);
-                    checkpointRings.push({ group: ringGroup, mesh: ringMesh });
-                });
-            }
-
-            rebuild3DSpline();
-
-            /* ------------------------------------------------------------------
-               5. 3D VOXEL ATHLETE AVATAR SETUP
+               4. 3D VOXEL ATHLETE AVATAR & SPLINE ENGINE
                ------------------------------------------------------------------ */
             const avatarGroup = new THREE.Group();
 
-            // Body parts
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00e676, roughness: 0.4 });
             const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 });
             const darkMat = new THREE.MeshStandardMaterial({ color: 0x08141f, roughness: 0.5 });
 
-            // Torso (Jersey #7)
             const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
             const torsoMesh = new THREE.Mesh(torsoGeo, bodyMat);
             torsoMesh.position.y = 1.15;
             avatarGroup.add(torsoMesh);
 
-            // Head & Visor
             const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
             const headMesh = new THREE.Mesh(headGeo, skinMat);
             headMesh.position.y = 2.0;
@@ -809,16 +764,6 @@
             visorMesh.position.set(0, 2.05, 0.2);
             avatarGroup.add(visorMesh);
 
-            // Legs
-            const legGeo = new THREE.BoxGeometry(0.3, 0.8, 0.3);
-            const leg1 = new THREE.Mesh(legGeo, darkMat);
-            leg1.position.set(-0.22, 0.4, 0);
-            const leg2 = new THREE.Mesh(legGeo, darkMat);
-            leg2.position.set(0.22, 0.4, 0);
-            avatarGroup.add(leg1);
-            avatarGroup.add(leg2);
-
-            // Selection Pulsing Ground Ring
             const selectionRingGeo = new THREE.RingGeometry(0.9, 1.2, 32);
             const selectionRingMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
             const selectionRingMesh = new THREE.Mesh(selectionRingGeo, selectionRingMat);
@@ -826,90 +771,187 @@
             selectionRingMesh.position.y = 0.05;
             avatarGroup.add(selectionRingMesh);
 
+            // Default Kickoff Position
+            const homeKickoffPos = new THREE.Vector3(0, 0.4, 30);
+            avatarGroup.position.copy(homeKickoffPos);
             scene.add(avatarGroup);
 
             /* ------------------------------------------------------------------
-               6. AVATAR LERP MOVEMENT & HUD SYNC
+               5. DYNAMIC CHRONOLOGICAL SPLINE & CHECKPOINT ENGINE
                ------------------------------------------------------------------ */
+            let splineTubeMesh = null;
+            let checkpointRings = [];
+            let splineCurve = null;
             let targetU = 0;
             let currentU = 0;
 
+            function rebuild3DSpline() {
+                if (splineTubeMesh) scene.remove(splineTubeMesh);
+                checkpointRings.forEach(r => scene.remove(r.group));
+                checkpointRings = [];
+
+                const memories = getActiveMemories();
+
+                if (memories.length === 0) {
+                    // Empty State: Position avatar at Kickoff
+                    gsap.to(avatarGroup.position, { x: 0, y: 0.4, z: 30, duration: 1 });
+                    updateHUDEmptyState();
+                    return;
+                }
+
+                // Generate points dynamically based on memories count
+                const points = [];
+                memories.forEach((mem, idx) => {
+                    const z = 32 - (idx / Math.max(1, memories.length - 1)) * 64;
+                    const x = Math.sin(idx * 0.95) * 11;
+                    points.push(new THREE.Vector3(x, 0.3, z));
+                });
+
+                if (points.length >= 2) {
+                    splineCurve = new THREE.CatmullRomCurve3(points);
+                    const tubeGeo = new THREE.TubeGeometry(splineCurve, 120, 0.18, 12, false);
+                    const tubeMat = new THREE.MeshStandardMaterial({
+                        color: 0x00e676,
+                        emissive: 0x00b359,
+                        emissiveIntensity: 0.8,
+                        roughness: 0.3
+                    });
+                    splineTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+                    scene.add(splineTubeMesh);
+                } else {
+                    splineCurve = null;
+                }
+
+                // Render Checkpoint Ring Meshes
+                points.forEach((pt, idx) => {
+                    const ringGroup = new THREE.Group();
+                    ringGroup.position.copy(pt);
+
+                    const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
+                    const ringMat = new THREE.MeshStandardMaterial({
+                        color: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
+                        emissive: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
+                        emissiveIntensity: 1
+                    });
+                    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                    ringMesh.rotation.x = Math.PI / 2;
+                    ringGroup.add(ringMesh);
+
+                    const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3, 16, 1, true);
+                    const beamMat = new THREE.MeshBasicMaterial({ color: 0x00e676, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+                    const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+                    beamMesh.position.y = 1.5;
+                    ringGroup.add(beamMesh);
+
+                    ringGroup.userData = { nodeIndex: idx };
+                    scene.add(ringGroup);
+                    checkpointRings.push({ group: ringGroup, mesh: ringMesh });
+                });
+
+                if (activeNodeIndex < 0 || activeNodeIndex >= memories.length) {
+                    activeNodeIndex = memories.length - 1;
+                }
+                updateActiveNode(activeNodeIndex);
+            }
+
+            function updateHUDEmptyState() {
+                activeNodeIndex = -1;
+                document.getElementById('snippet-node-tag').textContent = 'KICKOFF SPOT';
+                document.getElementById('snippet-era-tag').textContent = 'Ready to Log';
+                document.getElementById('snippet-title').textContent = `No plays logged yet for ${currentSport.toUpperCase()}.`;
+                document.getElementById('snippet-sentiment').textContent = "CLICK '+ LOG PLAY'";
+                document.getElementById('snippet-journal-preview').textContent = `"Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"`;
+                document.getElementById('snippet-progress-fill').style.width = '0%';
+                document.getElementById('snippet-progress-text').textContent = '0 / 0 PLAYS';
+                document.getElementById('plays-count-display').textContent = `0 LOGGED PLAYS • TACTICAL TIMELINE`;
+            }
+
             function updateActiveNode(index) {
-                if (index < 0 || index >= careerPlays.length) return;
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    updateHUDEmptyState();
+                    return;
+                }
+
+                if (index < 0) index = 0;
+                if (index >= memories.length) index = memories.length - 1;
                 activeNodeIndex = index;
 
-                targetU = activeNodeIndex / Math.max(1, careerPlays.length - 1);
+                targetU = memories.length > 1 ? (activeNodeIndex / (memories.length - 1)) : 0;
 
-                // Update HUD Snippet
-                const play = careerPlays[activeNodeIndex];
-                document.getElementById('snippet-node-tag').textContent = `NODE #${play.id} OF ${careerPlays.length}`;
+                const play = memories[activeNodeIndex];
+                document.getElementById('snippet-node-tag').textContent = `NODE #${play.id || (activeNodeIndex + 1)} OF ${memories.length}`;
                 document.getElementById('snippet-era-tag').textContent = play.era || 'Career Era';
                 document.getElementById('snippet-title').textContent = play.title;
                 document.getElementById('snippet-sentiment').textContent = `SENTIMENT: ${play.sentiment}/100`;
                 document.getElementById('snippet-journal-preview').textContent = `"${play.journal}"`;
 
-                const pct = ((activeNodeIndex + 1) / careerPlays.length) * 100;
+                const pct = ((activeNodeIndex + 1) / memories.length) * 100;
                 document.getElementById('snippet-progress-fill').style.width = `${pct}%`;
-                document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${careerPlays.length} PLAYS`;
+                document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${memories.length} PLAYS`;
+                document.getElementById('plays-count-display').textContent = `${memories.length} LOGGED PLAYS • TACTICAL TIMELINE`;
 
-                document.getElementById('plays-count-display').textContent = `${careerPlays.length} LOGGED PLAYS • TACTICAL TIMELINE`;
-
-                // Highlight checkpoint rings
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.material.color.setHex(idx === activeNodeIndex ? 0x00e5ff : 0x00e676);
                     r.mesh.material.emissive.setHex(idx === activeNodeIndex ? 0x00e5ff : 0x00e676);
                 });
 
-                // Move Spotlight target
-                if (splineCurve) {
+                if (splineCurve && memories.length > 1) {
                     const pt = splineCurve.getPointAt(targetU);
                     spotlight.target.position.copy(pt);
                     spotlight.position.set(pt.x, 15, pt.z + 5);
+                } else if (memories.length === 1) {
+                    const pt = new THREE.Vector3(0, 0.3, 32);
+                    gsap.to(avatarGroup.position, { x: pt.x, y: 0.4, z: pt.z, duration: 1 });
                 }
             }
 
-            updateActiveNode(0);
+            // Initial setup
+            rebuild3DSpline();
 
-            // Nav buttons
+            /* ------------------------------------------------------------------
+               6. MULTI-SPORT SWITCHER LOGIC
+               ------------------------------------------------------------------ */
+            document.querySelectorAll('.sport-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.sport-btn').forEach(b => {
+                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
+                    });
+                    btn.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition';
+
+                    currentSport = btn.dataset.sport;
+                    document.getElementById('current-sport-badge').textContent = currentSport.toUpperCase();
+                    document.getElementById('modal-log-sport-tag').textContent = `${currentSport.toUpperCase()} PLAYBOOK`;
+                    document.getElementById('modal-log-title').textContent = `Log ${currentSport.toUpperCase()} Play & Milestone`;
+                    document.getElementById('pro-card-sport').textContent = `PRO ${currentSport.toUpperCase()} ATHLETE`;
+
+                    rebuildFieldMesh(currentSport);
+                    rebuild3DSpline();
+                });
+            });
+
+            // Snippet Prev/Next Arrows
             document.getElementById('btn-prev-play').addEventListener('click', () => {
                 if (activeNodeIndex > 0) updateActiveNode(activeNodeIndex - 1);
             });
             document.getElementById('btn-next-play').addEventListener('click', () => {
-                if (activeNodeIndex < careerPlays.length - 1) updateActiveNode(activeNodeIndex + 1);
+                const memories = getActiveMemories();
+                if (activeNodeIndex < memories.length - 1) updateActiveNode(activeNodeIndex + 1);
             });
 
             /* ------------------------------------------------------------------
-               7. RAYCASTING 3D CHECKPOINT CLICKS
+               7. TACTICAL MEMORY LOGGING MODAL (+ LOG PLAY)
                ------------------------------------------------------------------ */
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
-
-            window.addEventListener('click', (e) => {
-                // Ignore clicks on UI overlays
-                if (e.target.closest('.pointer-events-auto') || e.target.closest('.drawer-overlay') || e.target.closest('.ai-drawer-card')) return;
-
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(checkpointRings.map(r => r.group), true);
-
-                if (intersects.length > 0) {
-                    let obj = intersects[0].object;
-                    while (obj.parent && obj.userData.nodeIndex === undefined) {
-                        obj = obj.parent;
-                    }
-                    if (obj.userData.nodeIndex !== undefined) {
-                        updateActiveNode(obj.userData.nodeIndex);
-                    }
-                }
-            });
-
-            /* ------------------------------------------------------------------
-               8. MODAL HANDLERS (+ LOG PLAY, INSPECT, SIDELINE AI, PRO CARD)
-               ------------------------------------------------------------------ */
-            // Modal 1: + LOG PLAY
             const modalLogPlay = document.getElementById('modal-log-play');
+            const formLogPlay = document.getElementById('form-log-play');
+            const logSentimentSlider = document.getElementById('log-input-sentiment');
+            const logSentimentBadge = document.getElementById('log-sentiment-badge');
+            const logInputFile = document.getElementById('log-input-file');
+            const logPreviewBox = document.getElementById('log-preview-box');
+            const logPreviewImg = document.getElementById('log-preview-img');
+
+            let tempBase64Photo = '';
+
             document.getElementById('btn-open-log-modal').addEventListener('click', () => {
                 document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
                 modalLogPlay.classList.add('active');
@@ -918,64 +960,118 @@
                 modalLogPlay.classList.remove('active');
             });
 
-            const logSentimentSlider = document.getElementById('log-input-sentiment');
-            const logSentimentBadge = document.getElementById('log-sentiment-badge');
-
             logSentimentSlider.addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
-                let label = "Peak Victory";
-                if (val < 40) label = "Burnout / Fatigue";
-                else if (val < 70) label = "Determined Effort";
+                let label = "Peak Victory 🌟";
+                if (val < 40) label = "Exhaustion / Burnout 🔴";
+                else if (val < 70) label = "Determined Effort 💪";
                 logSentimentBadge.textContent = `${val} / 100 (${label})`;
             });
 
-            document.getElementById('form-log-play').addEventListener('submit', (e) => {
+            // Emotion Tag Chips Toggle
+            document.querySelectorAll('#emotion-chips-box .tag-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('bg-emerald-500')) {
+                        chip.className = 'tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition';
+                    } else {
+                        chip.className = 'tag-chip px-2.5 py-1 rounded-lg bg-emerald-500 text-black text-[11px] font-extrabold transition';
+                    }
+                });
+            });
+
+            // File upload Base64
+            logInputFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (res) => {
+                        tempBase64Photo = res.target.result;
+                        logPreviewImg.src = tempBase64Photo;
+                        logPreviewBox.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function assignEraFromDate(dateStr) {
+                const year = new Date(dateStr).getFullYear();
+                if (year <= 2018) return "Rookie Era (Age 14-18)";
+                if (year <= 2022) return "College Era (Age 19-22)";
+                return "Pro Athlete Era (Present)";
+            }
+
+            formLogPlay.addEventListener('submit', (e) => {
                 e.preventDefault();
 
                 const title = document.getElementById('log-input-title').value;
                 const date = document.getElementById('log-input-date').value;
                 const journal = document.getElementById('log-input-journal').value;
                 const sentiment = parseInt(logSentimentSlider.value);
+                const caption = document.getElementById('log-input-caption').value;
+
+                const selectedTags = [];
+                document.querySelectorAll('#emotion-chips-box .bg-emerald-500').forEach(c => {
+                    selectedTags.push(c.dataset.tag);
+                });
 
                 const newPlay = {
-                    id: careerPlays.length + 1,
+                    id: (allMemoriesStore[currentSport] ? allMemoriesStore[currentSport].length : 0) + 1,
                     title: title,
                     date: date,
-                    era: "Pro Athlete Era (Present)",
+                    era: assignEraFromDate(date),
                     journal: journal,
                     sentiment: sentiment,
-                    tags: ["#Victorious", "#Clutch"],
-                    photo: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600"
+                    tags: selectedTags.length > 0 ? selectedTags : ["#Victorious"],
+                    photo: tempBase64Photo || "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600",
+                    caption: caption
                 };
 
-                careerPlays.push(newPlay);
-                sortPlaysChronologically();
-                rebuild3DSpline();
-                updateActiveNode(careerPlays.length - 1);
+                if (!allMemoriesStore[currentSport]) allMemoriesStore[currentSport] = [];
+                allMemoriesStore[currentSport].push(newPlay);
+                allMemoriesStore[currentSport].sort((a, b) => new Date(a.date) - new Date(b.date));
+                allMemoriesStore[currentSport].forEach((p, idx) => p.id = idx + 1);
 
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                saveMemoriesStore();
 
-                document.getElementById('form-log-play').reset();
+                confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+
+                // Reset form
+                formLogPlay.reset();
+                tempBase64Photo = '';
+                logPreviewBox.classList.add('hidden');
                 modalLogPlay.classList.remove('active');
+
+                rebuild3DSpline();
+                updateActiveNode(allMemoriesStore[currentSport].length - 1);
             });
 
-            // Modal 2: INSPECT MEMORY
+            /* ------------------------------------------------------------------
+               8. MEMORY INSPECTION DRAWER
+               ------------------------------------------------------------------ */
             const modalInspect = document.getElementById('modal-inspect-play');
+
             document.getElementById('snippet-clickable-area').addEventListener('click', () => {
-                const play = careerPlays[activeNodeIndex];
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    document.getElementById('btn-open-log-modal').click();
+                    return;
+                }
+
+                const play = memories[activeNodeIndex];
                 document.getElementById('inspect-node-badge').textContent = `NODE #${play.id}`;
                 document.getElementById('inspect-date-badge').textContent = play.date;
                 document.getElementById('inspect-title').textContent = play.title;
                 document.getElementById('inspect-sentiment-badge').textContent = `SENTIMENT: ${play.sentiment}/100`;
                 document.getElementById('inspect-tags-badge').textContent = (play.tags || []).join(' ');
                 document.getElementById('inspect-journal').textContent = `"${play.journal}"`;
-                document.getElementById('inspect-ai-quote').textContent = `"I remember writing this play down right after the final whistle! Your score of ${play.sentiment}/100 shows how dedicated we were."`;
+                document.getElementById('inspect-ai-quote').textContent = `"I remember writing down '${play.title}' on ${play.date}! Your sentiment of ${play.sentiment}/100 shows how dedicated we were."`;
 
                 if (play.photo) {
-                    document.getElementById('inspect-media-box').classList.remove('hidden');
+                    document.getElementById('inspect-photo-box').classList.remove('hidden');
                     document.getElementById('inspect-img').src = play.photo;
+                    document.getElementById('inspect-photo-caption').textContent = play.caption ? `📸 "${play.caption}"` : '';
                 } else {
-                    document.getElementById('inspect-media-box').classList.add('hidden');
+                    document.getElementById('inspect-photo-box').classList.add('hidden');
                 }
 
                 modalInspect.classList.add('active');
@@ -983,61 +1079,81 @@
 
             document.getElementById('btn-close-inspect-modal').addEventListener('click', () => modalInspect.classList.remove('active'));
             document.getElementById('btn-close-inspect').addEventListener('click', () => modalInspect.classList.remove('active'));
+
             document.getElementById('btn-delete-play').addEventListener('click', () => {
-                if (careerPlays.length > 1) {
-                    careerPlays.splice(activeNodeIndex, 1);
-                    sortPlaysChronologically();
-                    rebuild3DSpline();
-                    updateActiveNode(Math.max(0, activeNodeIndex - 1));
+                const memories = getActiveMemories();
+                if (memories.length > 0 && activeNodeIndex !== -1) {
+                    memories.splice(activeNodeIndex, 1);
+                    memories.forEach((p, idx) => p.id = idx + 1);
+                    saveMemoriesStore();
                     modalInspect.classList.remove('active');
+                    rebuild3DSpline();
                 }
             });
 
-            // Modal 3: ⚡ SIDELINE AI DRAWER & CAMERA FOCUS
-            const drawerAI = document.getElementById('drawer-sideline-ai');
-            const btnSidelineAI = document.getElementById('btn-open-sideline-ai');
+            /* ------------------------------------------------------------------
+               9. "YOUR YOUNGER SELF" INSTANT-LEARNING RAG AI DRAWER
+               ------------------------------------------------------------------ */
+            const drawerAI = document.getElementById('drawer-ai-companion');
+            const btnAICompanion = document.getElementById('btn-open-ai-companion');
             const btnCloseAIDrawer = document.getElementById('btn-close-ai-drawer');
+            const aiChatBox = document.getElementById('ai-chat-box');
+            const aiInputText = document.getElementById('ai-input-text');
+            const btnSendAI = document.getElementById('btn-send-ai');
 
-            btnSidelineAI.addEventListener('click', () => {
+            btnAICompanion.addEventListener('click', () => {
                 drawerAI.classList.add('active');
-                // Smooth camera zoom to bench view
                 gsap.to(camera.position, { x: 14, y: 3.5, z: 4, duration: 1.5, ease: 'power2.inOut' });
                 gsap.to(controls.target, { x: 16, y: 0.4, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
             btnCloseAIDrawer.addEventListener('click', () => {
                 drawerAI.classList.remove('active');
-                // Camera reset
                 gsap.to(camera.position, { x: defaultCamPos.x, y: defaultCamPos.y, z: defaultCamPos.z, duration: 1.5, ease: 'power2.inOut' });
                 gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            // AI Chat
-            const aiChatBox = document.getElementById('ai-chat-box');
-            const aiInputText = document.getElementById('ai-input-text');
-            const btnSendAI = document.getElementById('btn-send-ai');
+            // RAG Semantic Engine & Persona Simulation
+            function performRAGQuery(userPrompt) {
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    return `Hey Marcus! I'm watching the field from the sideline. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
+                }
 
-            function sendAIMessage(msgText) {
-                if (!msgText.trim()) return;
+                // Search for matching memory keyword or grab active memory
+                const query = userPrompt.toLowerCase();
+                let matchedMemory = memories.find(m => 
+                    m.title.toLowerCase().includes(query) || 
+                    m.journal.toLowerCase().includes(query) ||
+                    (m.tags && m.tags.some(t => t.toLowerCase().includes(query)))
+                ) || memories[activeNodeIndex >= 0 ? activeNodeIndex : 0];
+
+                const quotes = [
+                    `I remember when we played in '${matchedMemory.title}' on ${matchedMemory.date}! You wrote: "${matchedMemory.journal.slice(0, 50)}...". With a sentiment score of ${matchedMemory.sentiment}/100, we proved how hard we work!`,
+                    `Looking back at '${matchedMemory.title}', coach drew that play in the dirt and we executed perfectly! You tagged it as ${matchedMemory.tags.join(' ')}. Are we still giving 100% every single day?`,
+                    `Thinking about '${matchedMemory.title}'... We were so focused that day! Keep pushing forward Marcus!`
+                ];
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            }
+
+            function sendAIMessage(promptText) {
+                if (!promptText.trim()) return;
 
                 const userEl = document.createElement('div');
                 userEl.className = 'bg-emerald-900/30 text-emerald-200 p-2.5 rounded-2xl border border-emerald-500/20 text-right font-medium';
-                userEl.textContent = msgText;
+                userEl.textContent = promptText;
                 aiChatBox.appendChild(userEl);
 
                 aiInputText.value = '';
 
                 setTimeout(() => {
-                    const play = careerPlays[activeNodeIndex];
-                    const reply = `Reflecting on "${play.title}"... You wrote: "${play.journal.slice(0, 45)}...". We showed true resilience on the field that day!`;
-                    
+                    const aiReply = performRAGQuery(promptText);
                     const aiEl = document.createElement('div');
                     aiEl.className = 'bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20 font-medium';
-                    aiEl.innerHTML = `⚡ <b>Younger Self:</b> ${reply}`;
+                    aiEl.innerHTML = `⚡ <b>Your Younger Self:</b> ${aiReply}`;
                     aiChatBox.appendChild(aiEl);
-
                     aiChatBox.scrollTop = aiChatBox.scrollHeight;
-                }, 600);
+                }, 500);
             }
 
             btnSendAI.addEventListener('click', () => sendAIMessage(aiInputText.value));
@@ -1045,28 +1161,47 @@
                 btn.addEventListener('click', () => sendAIMessage(btn.textContent.replace(/"/g, '')));
             });
 
-            // Modal 4: 📇 PRO CARD & 3D FLIP
+            /* ------------------------------------------------------------------
+               10. 📇 PRO CARD & 3D FLIP
+               ------------------------------------------------------------------ */
             const modalProCard = document.getElementById('modal-pro-card');
             const proCardInner = document.getElementById('pro-card-inner');
 
             document.getElementById('btn-open-pro-card').addEventListener('click', () => {
+                // Update graph bars
+                const memories = getActiveMemories();
+                const container = document.getElementById('sentiment-bars-container');
+                container.innerHTML = '';
+
+                if (memories.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-gray-400 italic">No plays logged yet to generate sentiment graph.</p>`;
+                } else {
+                    memories.forEach(m => {
+                        const bar = document.createElement('div');
+                        bar.className = 'w-6 bg-emerald-400 rounded-t transition-all hover:scale-110';
+                        bar.style.height = `${m.sentiment}%`;
+                        bar.title = `${m.title}: ${m.sentiment}%`;
+                        container.appendChild(bar);
+                    });
+                }
+
                 modalProCard.classList.add('active');
             });
+
             document.getElementById('btn-close-pro-card').addEventListener('click', () => modalProCard.classList.remove('active'));
             document.getElementById('btn-close-pro-card-back').addEventListener('click', () => modalProCard.classList.remove('active'));
-
             document.getElementById('btn-flip-to-back').addEventListener('click', () => proCardInner.classList.add('flipped'));
             document.getElementById('btn-flip-to-front').addEventListener('click', () => proCardInner.classList.remove('flipped'));
 
             // Live Search
-            const liveSearchInput = document.getElementById('live-search-input');
-            liveSearchInput.addEventListener('input', (e) => {
+            document.getElementById('live-search-input').addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase().trim();
+                const memories = getActiveMemories();
                 if (!query) {
                     document.getElementById('search-count-badge').textContent = 'ALL';
                     return;
                 }
-                const foundIdx = careerPlays.findIndex(p => 
+                const foundIdx = memories.findIndex(p => 
                     p.title.toLowerCase().includes(query) || 
                     p.journal.toLowerCase().includes(query) ||
                     (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
@@ -1080,7 +1215,7 @@
             });
 
             /* ------------------------------------------------------------------
-               9. ANIMATION LOOP (60FPS)
+               11. ANIMATION LOOP (60FPS)
                ------------------------------------------------------------------ */
             const clock = new THREE.Clock();
 
@@ -1090,9 +1225,9 @@
                 const delta = clock.getDelta();
                 const time = clock.getElapsedTime();
 
-                // Smooth Lerp Avatar position along 3D Spline
-                currentU += (targetU - currentU) * 0.08;
-                if (splineCurve) {
+                const memories = getActiveMemories();
+                if (splineCurve && memories.length > 1) {
+                    currentU += (targetU - currentU) * 0.08;
                     const pos = splineCurve.getPointAt(currentU);
                     avatarGroup.position.copy(pos);
 
@@ -1101,10 +1236,7 @@
                     avatarGroup.rotation.y = angle;
                 }
 
-                // Pulsing Selection Ring
                 selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
-
-                // Rotate Checkpoint Rings slightly
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.rotation.z = time * 0.5 + idx;
                 });
@@ -1115,7 +1247,6 @@
 
             animate();
 
-            // Window Resize
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
