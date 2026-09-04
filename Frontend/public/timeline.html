@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LegacyLane — Score! Hero 3D Vertical Progression Path</title>
+    <title>LegacyLane — Score! Hero 3D Vertical Progression Path & AI Companion</title>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@500;700&family=Cinzel:wght@700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,13 +30,15 @@
                             amber: '#ff8f00',
                             red: '#d32f2f',
                             cyan: '#00e5ff',
+                            purple: '#a855f7',
                             green: '#00e676'
                         }
                     },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                         teko: ['"Teko"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace']
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        display: ['"Cinzel"', 'serif']
                     }
                 }
             }
@@ -56,7 +58,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0d1b2a;
+            background-color: #080d14;
             color: #ffffff;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -90,7 +92,7 @@
             }
         }
 
-        /* Dynamic Playing Field Background (Football Grass Stripes) */
+        /* Ground Field Background Themes */
         .field-football {
             background: repeating-linear-gradient(
                 0deg,
@@ -101,7 +103,6 @@
             );
         }
 
-        /* Basketball Hardwood Ground */
         .field-basketball {
             background: repeating-linear-gradient(
                 90deg,
@@ -112,19 +113,22 @@
             );
         }
 
-        /* Tennis Blue Ground */
         .field-tennis {
             background: #1565c0;
         }
 
-        /* Side Cloud Fog Overlays (Exact Score! Hero Framing) */
+        .field-stadium {
+            background: radial-gradient(circle at 50% 30%, #0f2b48 0%, #08101a 70%, #04070c 100%);
+        }
+
+        /* Side Cloud Fog Overlays (Score! Hero Frame) */
         .cloud-border-left {
             position: fixed;
             top: 0;
             left: -30px;
             width: 90px;
             height: 100%;
-            background: radial-gradient(ellipse at left, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+            background: radial-gradient(ellipse at left, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
             filter: blur(12px);
             pointer-events: none;
             z-index: 15;
@@ -136,22 +140,22 @@
             right: -30px;
             width: 90px;
             height: 100%;
-            background: radial-gradient(ellipse at right, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+            background: radial-gradient(ellipse at right, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
             filter: blur(12px);
             pointer-events: none;
             z-index: 15;
         }
 
-        /* Score! Hero Glassmorphic Header & HUD */
+        /* Glassmorphic Score HUD */
         .score-hud-glass {
-            background: rgba(13, 27, 42, 0.88);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            background: rgba(10, 20, 32, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1.5px solid rgba(255, 255, 255, 0.18);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        /* Top HUD Header Stagger Slide Animation */
+        /* Header Slide Down Animation */
         .header-slide-down {
             animation: slideDownHeader 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
             transform: translateY(-100%);
@@ -161,7 +165,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Bottom HUD Nav Bar Stagger Slide Animation */
+        /* Footer Slide Up Animation */
         .footer-slide-up {
             animation: slideUpFooter 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
             transform: translateY(100%);
@@ -171,7 +175,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Side Quest Banner Stagger Slide */
+        /* Banner Slide Animations */
         .banner-slide-left {
             animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
             transform: translateX(-120%);
@@ -190,7 +194,7 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Continuous SVG Path Overlay */
+        /* Continuous Dynamic SVG Path Overlay */
         #svg-path-container {
             position: absolute;
             top: 0;
@@ -201,29 +205,38 @@
             z-index: 5;
         }
 
+        .animated-svg-path {
+            stroke-dasharray: 12 12;
+            animation: dashFlow 30s linear infinite;
+        }
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -1000; }
+        }
+
         /* Node Styling */
         .node-circle {
             position: absolute;
-            width: 68px;
-            height: 68px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Teko', sans-serif;
-            font-size: 2rem;
+            font-size: 2.1rem;
             font-weight: 700;
             z-index: 10;
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, background 0.3s ease;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
         }
 
         .node-circle:hover {
-            transform: scale(1.18) translateY(-4px);
+            transform: scale(1.22) translateY(-6px);
+            z-index: 25;
         }
 
-        /* Node State 1: Completed Node (Solid Gold Gradient + Stars) */
+        /* Completed Node */
         .node-completed {
             background: linear-gradient(135deg, #ffe082 0%, #ffb300 50%, #ff6f00 100%);
             border: 3.5px solid #ffffff;
@@ -232,9 +245,9 @@
             box-shadow: 0 10px 25px rgba(255, 179, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.8);
         }
 
-        /* Node State 2: Active Node (Pulsing Aura + Orange/Yellow Fill + Avatar Badge) */
+        /* Active Node */
         .node-active {
-            background: linear-gradient(135deg, #fff176 0%, #fbc02d 50%, #f57f17 100%);
+            background: linear-gradient(135deg, #a855f7 0%, #00e5ff 50%, #00e676 100%);
             border: 4px solid #ffffff;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
@@ -243,27 +256,26 @@
 
         @keyframes heroActivePulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8), 0 10px 25px rgba(255, 111, 0, 0.5);
-                transform: scale(1.04);
+                box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.8), 0 10px 25px rgba(168, 85, 247, 0.6);
+                transform: scale(1.06);
             }
             100% {
-                box-shadow: 0 0 0 22px rgba(255, 193, 7, 0), 0 15px 35px rgba(255, 111, 0, 0.8);
-                transform: scale(1.14);
+                box-shadow: 0 0 0 24px rgba(0, 229, 255, 0), 0 18px 35px rgba(0, 230, 118, 0.8);
+                transform: scale(1.16);
             }
         }
 
-        /* Node State 3: Locked Node (Faded Grey / Dark Obsidian) */
+        /* Locked Node */
         .node-locked {
-            background: rgba(13, 27, 42, 0.75);
-            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            background: rgba(12, 22, 34, 0.8);
+            border: 2.5px solid rgba(255, 255, 255, 0.25);
             color: rgba(255, 255, 255, 0.4);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        /* Stars on Top of Completed/Active Node */
         .node-stars-row {
             position: absolute;
-            top: -18px;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -271,26 +283,20 @@
             z-index: 12;
         }
 
-        .star-icon {
-            font-size: 1.15rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-        }
-
-        /* Active Badge pinned to active node */
         .active-avatar-badge {
             position: absolute;
-            bottom: -14px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
-            background: #d32f2f;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: #ffffff;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 900;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
             border: 2px solid #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             white-space: nowrap;
         }
 
@@ -298,46 +304,50 @@
         .polaroid-card {
             position: absolute;
             background: #ffffff;
-            padding: 8px 8px 24px 8px;
-            border-radius: 6px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 2px 5px rgba(0,0,0,0.2);
-            transform: rotate(-4deg);
+            padding: 7px 7px 20px 7px;
+            border-radius: 8px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), 0 3px 8px rgba(0,0,0,0.3);
+            transform: rotate(-5deg);
             z-index: 8;
-            max-width: 140px;
-            transition: transform 0.3s ease;
+            max-width: 145px;
+            cursor: pointer;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .polaroid-card:hover {
-            transform: rotate(0deg) scale(1.1);
-            z-index: 14;
+            transform: rotate(0deg) scale(1.15);
+            z-index: 28;
         }
         .polaroid-img {
-            width: 124px;
-            height: 95px;
+            width: 131px;
+            height: 100px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 5px;
         }
         .polaroid-caption {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 800;
-            color: #1a202c;
+            color: #0f172a;
             text-align: center;
             margin-top: 6px;
             line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* Drawer Overlay */
+        /* Drawer Overlay Base */
         .drawer-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(4, 10, 18, 0.82);
-            backdrop-filter: blur(12px);
+            background: rgba(4, 10, 18, 0.84);
+            backdrop-filter: blur(16px);
             z-index: 100;
             display: flex;
             align-items: flex-end;
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .drawer-overlay.active {
@@ -347,20 +357,80 @@
 
         .bottom-sheet-card {
             width: 100%;
-            max-width: 540px;
-            background: rgba(13, 27, 42, 0.95);
-            border-top-left-radius: 28px;
-            border-top-right-radius: 28px;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: linear-gradient(180deg, rgba(15, 27, 44, 0.97) 0%, rgba(8, 15, 26, 0.99) 100%);
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
             border: 1.5px solid rgba(255, 255, 255, 0.2);
             border-bottom: none;
-            padding: 24px 24px 32px 24px;
-            box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.8);
+            padding: 28px 26px 36px 26px;
+            box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.85);
             transform: translateY(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .drawer-overlay.active .bottom-sheet-card {
             transform: translateY(0);
+        }
+
+        /* Side Drawer for AI Companion */
+        .side-drawer-card {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 440px;
+            background: linear-gradient(180deg, rgba(12, 22, 36, 0.98) 0%, rgba(6, 11, 20, 0.99) 100%);
+            border-left: 1.5px solid rgba(0, 229, 255, 0.3);
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.85);
+            z-index: 110;
+            padding: 28px 24px;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+
+        .side-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 8, 14, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 105;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .side-drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .side-drawer-overlay.active + .side-drawer-card,
+        .side-drawer-card.active {
+            transform: translateX(0);
+        }
+
+        /* Dynamic Image Preview Scroll Box */
+        .img-preview-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .img-preview-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid rgba(0, 229, 255, 0.4);
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -375,11 +445,11 @@
 
         <!-- Continuous SVG Vector Path Lines -->
         <svg id="svg-path-container">
-            <path id="svg-dotted-path" d="" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="10 10" stroke-linecap="round" />
+            <path id="svg-dotted-path" class="animated-svg-path" d="" fill="none" stroke="#00e5ff" stroke-width="5" stroke-linecap="round" />
         </svg>
 
         <!-- Pitch Markings Overlay (Soccer Pitch) -->
-        <div id="pitch-markings" class="absolute inset-0 pointer-events-none opacity-40">
+        <div id="pitch-markings" class="absolute inset-0 pointer-events-none opacity-30">
             <!-- Goal & Penalty Area (Top) -->
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 border-2 border-white rounded-b-xl"></div>
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-14 border-2 border-white rounded-b-lg"></div>
@@ -394,15 +464,15 @@
         </div>
 
         <!-- Node Progression Container (Populated via JS) -->
-        <div id="nodes-layer" class="relative w-full h-[1800px] py-32 pointer-events-auto"></div>
+        <div id="nodes-layer" class="relative w-full py-32 pointer-events-auto min-h-[2200px]"></div>
 
     </div>
 
     <!-- ==========================================================================
-         1. FIXED TOP STATUS HUD (SCORE! HERO EXACT METRICS)
+         1. FIXED TOP STATUS HUD (SCORE! HERO METRICS)
          ========================================================================== -->
     <div class="fixed top-3 left-0 right-0 z-50 px-3 md:px-6 pointer-events-none header-slide-down">
-        <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
 
             <!-- Left: Energy Bar + Currency + Stars HUD Group -->
             <div class="flex items-center gap-2 pointer-events-auto">
@@ -419,10 +489,10 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1">
-                            <span class="font-teko text-xl font-bold text-amber-400 leading-none">49/80</span>
+                            <span id="stamina-display" class="font-teko text-xl font-bold text-amber-400 leading-none">65/80</span>
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         </div>
-                        <p class="text-[9px] font-mono text-gray-300 font-bold tracking-tight">+6 ready in 7m 44s</p>
+                        <p class="text-[9px] font-mono text-gray-300 font-bold tracking-tight">+6 ready in 4m 12s</p>
                     </div>
                 </div>
 
@@ -431,7 +501,7 @@
                     <div class="w-7 h-7 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-sm">
                         💵
                     </div>
-                    <span class="font-teko text-xl font-bold text-cyan-300 leading-none">2,963</span>
+                    <span id="currency-display" class="font-teko text-xl font-bold text-cyan-300 leading-none">3,450</span>
                 </div>
 
                 <!-- Total Stars Badge -->
@@ -439,7 +509,7 @@
                     <div class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-sm">
                         ⭐
                     </div>
-                    <span id="top-stars-count" class="font-teko text-xl font-bold text-emerald-400 leading-none">242</span>
+                    <span id="top-stars-count" class="font-teko text-xl font-bold text-emerald-400 leading-none">0</span>
                 </div>
 
             </div>
@@ -452,12 +522,13 @@
                     <button id="btn-sport-football" title="Football Pitch" class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shadow-md transition">⚽</button>
                     <button id="btn-sport-basketball" title="Basketball Court" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm transition">🏀</button>
                     <button id="btn-sport-tennis" title="Tennis Court" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm transition">🎾</button>
+                    <button id="btn-sport-stadium" title="Night Stadium" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm transition">🏟️</button>
                 </div>
 
                 <!-- User Avatar Badge -->
                 <div class="score-hud-glass px-3 py-1.5 rounded-2xl flex items-center gap-2">
                     <div id="user-avatar-circle" class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 border-2 border-white flex items-center justify-center font-extrabold text-black text-xs shadow-md">
-                        EE
+                        LL
                     </div>
                     <div class="hidden sm:block text-left">
                         <p id="user-display-name" class="text-xs font-extrabold text-white leading-tight">Marcus Vance</p>
@@ -475,38 +546,28 @@
          ========================================================================== -->
     <div class="fixed top-24 left-3 z-40 space-y-2 pointer-events-auto banner-slide-left hidden sm:block">
         <!-- Daily Match Banner -->
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-amber-500/40">
+        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[135px] border-amber-500/40">
             <div class="flex items-center gap-1.5 text-[10px] font-extrabold text-amber-400 uppercase tracking-wider">
                 <span>🔥 STREAK</span>
-                <span class="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[9px]">36</span>
+                <span id="streak-counter" class="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[9px]">42</span>
             </div>
-            <p class="text-xs font-bold text-white mt-0.5">DAILY MATCH</p>
-            <p class="text-[9px] font-mono text-gray-300">18h 09m left</p>
-        </div>
-
-        <!-- Division Banner -->
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-cyan-500/40">
-            <div class="flex items-center gap-1 text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider">
-                <span>🏆 DIV 3</span>
-            </div>
-            <p class="text-xs font-bold text-white mt-0.5">RANK #89</p>
-            <p class="text-[9px] font-mono text-gray-300">5d 18h left</p>
+            <p class="text-xs font-bold text-white mt-0.5">TIMELINE VAULT</p>
+            <p id="memories-count-badge" class="text-[9px] font-mono text-cyan-300 font-bold">0 Memories Logged</p>
         </div>
     </div>
 
-    <!-- Right Side Quest Banner -->
-    <div class="fixed top-24 right-3 z-40 space-y-2 pointer-events-auto banner-slide-right hidden sm:block">
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-emerald-500/40 text-right">
-            <span class="px-2 py-0.5 rounded bg-emerald-500 text-black text-[9px] font-extrabold">NEW</span>
-            <p class="text-xs font-bold text-white mt-1">OFFERS HUB</p>
-            <p class="text-[9px] font-mono text-gray-300">5h 47m left</p>
-        </div>
-    </div>
+    <!-- Right Side Floating Buttons -->
+    <div class="fixed bottom-24 right-4 z-40 flex flex-col gap-3 pointer-events-auto">
+        
+        <!-- Add Memory Floating Button -->
+        <button id="btn-open-add-modal" title="Add New Memory Milestone" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 text-white font-extrabold flex items-center justify-center text-2xl shadow-xl shadow-cyan-500/40 border-2 border-white hover:scale-110 active:scale-95 transition">
+            ➕
+        </button>
 
-    <!-- Floating Action Action Buttons -->
-    <div class="fixed bottom-24 right-4 z-40 flex flex-col gap-2 pointer-events-auto">
-        <button id="btn-open-ai-companion" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 text-black font-bold flex items-center justify-center text-xl shadow-xl shadow-amber-500/40 border-2 border-white hover:scale-110 transition">
-            ⚡
+        <!-- Your Younger Self AI Floating Companion Button -->
+        <button id="btn-open-ai-companion" title="Talk to Your Younger Self AI" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 text-white font-bold flex items-center justify-center text-2xl shadow-xl shadow-purple-500/50 border-2 border-white hover:scale-110 active:scale-95 transition relative">
+            🤖
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 border-2 border-black animate-ping"></span>
         </button>
     </div>
 
@@ -516,85 +577,97 @@
     <div class="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-3 pointer-events-none footer-slide-up">
         <div class="max-w-md mx-auto score-hud-glass rounded-3xl p-1.5 flex items-center justify-around pointer-events-auto shadow-2xl">
 
-            <!-- Tab 1: SHOP -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">🛒</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">SHOP</span>
+            <button id="nav-tab-add" class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-300 hover:text-white transition">
+                <span class="text-xl">➕</span>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider">NEW NODE</span>
             </button>
 
-            <!-- Tab 2: HERO -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
+            <button id="nav-tab-hero" class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-300 hover:text-white transition">
                 <span class="text-xl">👤</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">HERO</span>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider">PROFILE</span>
             </button>
 
-            <!-- Tab 3: SEASON (ACTIVE GLOWING TAB) -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-4 rounded-2xl bg-gradient-to-b from-emerald-500 to-green-700 text-white shadow-lg shadow-emerald-500/40 border border-emerald-300 scale-105">
+            <button class="flex flex-col items-center gap-1 py-1.5 px-4 rounded-2xl bg-gradient-to-b from-cyan-500 to-blue-700 text-white shadow-lg shadow-cyan-500/40 border border-cyan-300 scale-105">
                 <span class="text-xl">⚽</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">SEASON</span>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider">TIMELINE</span>
             </button>
 
-            <!-- Tab 4: EVENTS -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">📅</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">EVENTS</span>
-            </button>
-
-            <!-- Tab 5: PRIZES -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">🎁</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">PRIZES</span>
+            <button id="nav-tab-ai" class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-300 hover:text-white transition">
+                <span class="text-xl">🤖</span>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider">AI SELF</span>
             </button>
 
         </div>
     </div>
 
     <!-- ==========================================================================
-         4. INTERACTIVE LEVEL INPUT BOTTOM-SHEET OVERLAY
+         4. MODAL A: CREATE NEW MEMORY NODE MODAL
          ========================================================================== -->
-    <div id="level-modal-overlay" class="drawer-overlay">
+    <div id="modal-add-overlay" class="drawer-overlay">
         <div class="bottom-sheet-card">
             
             <div class="flex items-center justify-between mb-4">
-                <div>
-                    <span id="modal-level-tag" class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-400 font-teko text-lg font-bold border border-amber-400/40">LEVEL 1095</span>
-                    <h3 id="modal-level-title" class="text-xl font-extrabold text-white mt-1">Championship Goal Milestone</h3>
-                </div>
-                <button id="btn-close-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
-            </div>
-
-            <!-- Goal Star Objectives -->
-            <div class="bg-black/40 rounded-2xl p-3 border border-white/10 mb-4 space-y-1.5">
-                <p class="text-[10px] font-mono text-gray-400 uppercase font-bold tracking-wider">CHALLENGE OBJECTIVES:</p>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 1 Star: Log Play Description & Journal</div>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 2 Stars: Add Performance Stats & Date</div>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 3 Stars: Sentiment > 80% or Upload Highlight Photo</div>
-            </div>
-
-            <form id="level-input-form" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Play Title / Match Event</label>
-                    <input type="text" id="input-title" required placeholder="E.g., High School District Cup Final" class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Event Date</label>
-                        <input type="date" id="input-date" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-lg text-white font-bold shadow-lg">
+                        ➕
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Sentiment Rating</label>
-                        <input type="range" id="input-sentiment" min="1" max="100" value="85" class="w-full mt-2">
+                        <span class="px-2.5 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-400/30 uppercase">NEW CHRONOLOGICAL NODE</span>
+                        <h3 class="text-xl font-extrabold text-white">Log Memory Milestone</h3>
+                    </div>
+                </div>
+                <button id="btn-close-add-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+            </div>
+
+            <p class="text-xs text-gray-300 mb-4">Add when your memory happened, describe your day in your own words, and upload pictures. Nodes auto-sort chronologically!</p>
+
+            <form id="form-create-memory" class="space-y-4">
+                
+                <!-- Title & Date -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-extrabold text-gray-200 mb-1">Play Title / What Event Happened?</label>
+                        <input type="text" id="add-input-title" required placeholder="E.g. Scored Hattrick in State Final" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-cyan-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-gray-200 mb-1">When Did It Happen? (Date)</label>
+                        <input type="date" id="add-input-date" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-cyan-400 focus:outline-none">
                     </div>
                 </div>
 
+                <!-- Sentiment Slider -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Memory Story / Journal Notes</label>
-                    <textarea id="input-journal" rows="3" required placeholder="Write down the details of this play..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none resize-none"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-extrabold text-gray-200">Emotional Score / Sentiment</label>
+                        <span id="add-sentiment-badge" class="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/40">92% Euphoric Victory 🌟</span>
+                    </div>
+                    <input type="range" id="add-input-sentiment" min="1" max="100" value="90" class="w-full">
                 </div>
 
-                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-extrabold text-sm tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-500/40">
-                    🏆 SUBMIT PLAY & UNLOCK NEXT LEVEL!
+                <!-- Story Text Box -->
+                <div>
+                    <label class="block text-xs font-extrabold text-gray-200 mb-1">Describe The Day In Your Own Words</label>
+                    <textarea id="add-input-journal" rows="3" required placeholder="Write down how you felt, what happened during the play or day..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-cyan-400 focus:outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Upload Pictures Area -->
+                <div>
+                    <label class="block text-xs font-extrabold text-gray-200 mb-1">Upload Relevant Pictures (Photos & Highlights)</label>
+                    <div class="border-2 border-dashed border-white/20 hover:border-cyan-400 rounded-2xl p-4 text-center cursor-pointer bg-black/40 transition relative">
+                        <input type="file" id="add-input-photos" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="flex flex-col items-center gap-1.5 pointer-events-none">
+                            <span class="text-2xl">📸</span>
+                            <p class="text-xs font-bold text-cyan-300">Click or Drag & Drop Photos Here</p>
+                            <p class="text-[10px] text-gray-400">PNG, JPG, WEBP up to 5MB each</p>
+                        </div>
+                    </div>
+                    <!-- Live Image Previews -->
+                    <div id="add-photos-preview" class="img-preview-grid mt-3 hidden"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 text-white font-extrabold text-sm tracking-wider hover:brightness-110 transition shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2">
+                    <span>🚀 CREATE NODE & TRAIN YOUNGER SELF AI</span>
                 </button>
             </form>
 
@@ -602,66 +675,241 @@
     </div>
 
     <!-- ==========================================================================
-         5. JAVASCRIPT CORE ENGINE (SCORE! HERO NODE PATH & CHRONOLOGICAL SORTING)
+         5. MODAL B: VIEW DETAILED MEMORY POPUP MODAL
+         ========================================================================== -->
+    <div id="modal-view-overlay" class="drawer-overlay">
+        <div class="bottom-sheet-card">
+            
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span id="view-level-badge" class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-teko text-lg font-bold border border-amber-400/40">LEVEL 1</span>
+                    <span id="view-date-badge" class="text-xs font-mono text-gray-300 font-bold">2023-06-30</span>
+                </div>
+                <button id="btn-close-view-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+            </div>
+
+            <h3 id="view-memory-title" class="text-2xl font-extrabold text-white mb-2 leading-tight">Championship Winner</h3>
+            
+            <!-- Stars & Sentiment Pill -->
+            <div class="flex items-center gap-3 mb-4">
+                <div id="view-stars-container" class="flex items-center gap-1 text-lg">⭐ ⭐ ⭐</div>
+                <span id="view-sentiment-pill" class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-extrabold border border-cyan-400/30">95% Euphoric Glow</span>
+            </div>
+
+            <!-- Uploaded Pictures Carousel / Showcase -->
+            <div id="view-photos-box" class="mb-4">
+                <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1.5">UPLOADED MEMORY GALLERY:</p>
+                <div id="view-photos-container" class="flex gap-2 overflow-x-auto pb-2"></div>
+            </div>
+
+            <!-- Story Text -->
+            <div class="bg-black/50 rounded-2xl p-4 border border-white/10 mb-4">
+                <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1">IN YOUR OWN WORDS:</p>
+                <p id="view-journal-text" class="text-xs text-gray-200 leading-relaxed italic">"Unbelievable bicycle kick goal in extra time!"</p>
+            </div>
+
+            <!-- AI Younger Self Reaction Box -->
+            <div class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-2xl p-4 border border-purple-500/30 mb-4">
+                <div class="flex items-center gap-2 text-xs font-extrabold text-purple-300 mb-1">
+                    <span>🤖 YOUR YOUNGER SELF SAYS:</span>
+                </div>
+                <p id="view-ai-reflection" class="text-xs text-purple-100 leading-relaxed">"I remember how we practiced that move for months! That extra time goal proved how unstoppable we are when we stay focused."</p>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+                <button id="btn-delete-memory" class="py-2.5 px-4 rounded-xl bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold text-xs border border-red-500/30 transition">
+                    🗑️ Delete Node
+                </button>
+                <button id="btn-close-view-drawer" class="py-2.5 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs transition">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         6. SIDE DRAWER: YOUR YOUNGER SELF AI INTELLIGENCE PORTAL
+         ========================================================================== -->
+    <div id="drawer-ai-overlay" class="side-drawer-overlay"></div>
+    <div id="drawer-ai-card" class="side-drawer-card">
+        
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center text-2xl text-white font-bold shadow-lg">
+                    🤖
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-white leading-none">Your Younger Self AI</h3>
+                    <p id="ai-sync-level" class="text-[10px] font-mono text-cyan-300 font-bold mt-1">SYNC LEVEL 8 • 94% MATRICES ALIGNED</p>
+                </div>
+            </div>
+            <button id="btn-close-ai-drawer" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+        </div>
+
+        <!-- Personality & Memory Intelligence Stats -->
+        <div class="bg-black/60 rounded-2xl p-4 border border-purple-500/30 mb-5 space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-300">
+                <span>🧠 Memories Learned:</span>
+                <span id="ai-stat-memories" class="text-purple-300 font-mono">0 Logged</span>
+            </div>
+            <div class="flex items-center justify-between text-xs font-bold text-gray-300">
+                <span>📸 Photos Scanned:</span>
+                <span id="ai-stat-photos" class="text-cyan-300 font-mono">0 Uploaded</span>
+            </div>
+            <div class="flex items-center justify-between text-xs font-bold text-gray-300">
+                <span>🌟 Dominant Emotion:</span>
+                <span id="ai-stat-emotion" class="text-amber-300 font-mono">Euphoric & Driven</span>
+            </div>
+        </div>
+
+        <!-- AI Memory Insights Log -->
+        <div class="mb-5 flex-1 overflow-y-auto space-y-2">
+            <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider">AI INSIGHTS LEARNED FROM UPLOADS:</p>
+            <div id="ai-insights-list" class="space-y-2">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- Interactive AI Chat Box -->
+        <div class="pt-3 border-t border-white/10 space-y-2">
+            <p class="text-[10px] font-mono text-purple-300 font-bold uppercase">TALK TO YOUR YOUNGER SELF:</p>
+            <div id="ai-chat-messages" class="h-36 overflow-y-auto bg-black/70 rounded-2xl p-3 space-y-2 text-xs border border-white/10">
+                <div class="bg-purple-900/30 text-purple-200 p-2.5 rounded-xl border border-purple-500/20">
+                    👋 Hey! I'm your Younger Self AI. Upload memories and photos to train me! What do you want to reflect on today?
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="ai-chat-input" placeholder="Ask your younger self anything..." class="flex-1 px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-purple-400 focus:outline-none">
+                <button id="btn-send-ai-chat" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs transition">
+                    Send
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         7. JAVASCRIPT CORE ENGINE (CHRONOLOGICAL NODES & AI LEARNING)
          ========================================================================== -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // 1. Context & Mode Detection (URL Query Mode & localStorage)
+
+            /* ------------------------------------------------------------------
+               1. STATE & MODE DETECTOR
+               ------------------------------------------------------------------ */
             const urlParams = new URLSearchParams(window.location.search);
-            const journeyMode = urlParams.get('mode') || localStorage.getItem('legacy_journey_mode') || 'SPORTS';
+            const rawMode = (urlParams.get('mode') || localStorage.getItem('legacy_journey_mode') || 'SPORTS').toUpperCase();
+            const journeyMode = rawMode === 'LIFE' ? 'LIFE' : 'SPORTS';
             const storageKey = journeyMode === 'LIFE' ? 'legacy_life_memories' : 'legacy_sports_memories';
             
-            // Update Top Header Info
+            const storedUser = localStorage.getItem('legacy_user') || localStorage.getItem('username') || 'Marcus Vance';
             const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
             const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
-            const username = athleteProfile.position || lifeProfile.focus || 'Marcus Vance';
-            const selectedSport = athleteProfile.sport || 'Football';
 
-            document.getElementById('user-display-name').textContent = username;
-            document.getElementById('user-mode-label').textContent = `${journeyMode} MODE (${selectedSport})`;
+            const nameParts = storedUser.trim().split(' ');
+            const initials = (nameParts[0] ? nameParts[0][0] : 'L') + (nameParts[1] ? nameParts[1][0] : 'L');
 
-            // 2. Default Score! Hero Level Nodes Specification (Level 1087 to 1100)
-            const defaultNodesData = [
-                { id: 1087, title: "Early Academy Trials", date: "2015-06-12", stars: 3, journal: "Scored hattrick in trial match." },
-                { id: 1088, title: "First District Goal", date: "2016-03-20", stars: 3, journal: "Header off a corner kick." },
-                { id: 1089, title: "High School Cup Victory", date: "2017-05-18", stars: 3, journal: "Lifted the championship trophy!" },
-                { id: 1090, title: "State Team Selection", date: "2018-09-04", stars: 3, journal: "Selected for state U-18 squad." },
-                { id: 1091, title: "Regional Semi-Final", date: "2019-11-15", stars: 2, journal: "Assisted winning goal in 89th minute." },
-                { id: 1092, title: "National Youth Tournament", date: "2020-08-22", stars: 3, journal: "Voted MVP of the tournament." },
-                { id: 1093, title: "College Varsity Debut", date: "2021-10-10", stars: 3, journal: "Started first collegiate game." },
-                { id: 1094, title: "Inter-State Derby Win", date: "2022-04-05", stars: 3, journal: "Scored double against arch rivals." },
-                { id: 1095, title: "Championship Winner", date: "2023-06-30", stars: 3, journal: "Unbelievable bicycle kick goal!" },
-                { id: 1096, title: "Professional Contract", date: "2024-01-15", stars: 0, journal: "", isActive: true },
-                { id: 1097, title: "National League Start", date: "Locked", stars: 0, isLocked: true },
-                { id: 1098, title: "First International Cap", date: "Locked", stars: 0, isLocked: true },
-                { id: 1099, title: "World Cup Qualifier", date: "Locked", stars: 0, isLocked: true },
-                { id: 1100, title: "Global Hero Trophy", date: "Locked", stars: 0, isLocked: true }
+            let modeSubLabel = journeyMode === 'LIFE' 
+                ? `LIFE MODE (${lifeProfile.focus || 'Personal Vault'})` 
+                : `SPORTS MODE (${athleteProfile.sport || 'Football'})`;
+
+            document.getElementById('user-display-name').textContent = storedUser;
+            document.getElementById('user-mode-label').textContent = modeSubLabel;
+            const avatarCircle = document.getElementById('user-avatar-circle');
+            if (avatarCircle) avatarCircle.textContent = initials.toUpperCase();
+
+            /* ------------------------------------------------------------------
+               2. DEFAULT INITIAL MEMORIES
+               ------------------------------------------------------------------ */
+            const defaultSportsNodes = [
+                { id: 1, title: "Early Academy Trials", date: "2015-06-12", journal: "Scored hattrick in trial match.", sentiment: 92, stars: 3, images: ["https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500"] },
+                { id: 2, title: "First District Goal", date: "2016-03-20", journal: "Header off a corner kick in 85th minute.", sentiment: 88, stars: 3, images: ["https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500"] },
+                { id: 3, title: "High School Cup Victory", date: "2017-05-18", journal: "Lifted the championship trophy with the squad!", sentiment: 96, stars: 3, images: ["https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500"] },
+                { id: 4, title: "State Team Selection", date: "2018-09-04", journal: "Selected for state U-18 squad after intense trials.", sentiment: 90, stars: 3, images: ["https://images.unsplash.com/photo-1519766304817-4f37bda74a29?w=500"] },
+                { id: 5, title: "Championship Winner", date: "2023-06-30", journal: "Unbelievable bicycle kick goal in extra time!", sentiment: 98, stars: 3, images: ["https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500"] }
             ];
 
-            let memoryNodes = JSON.parse(localStorage.getItem(storageKey)) || defaultNodesData;
+            const defaultLifeNodes = [
+                { id: 1, title: "Childhood Bike Ride", date: "2008-04-10", journal: "Learned to ride a bicycle in the neighborhood park.", sentiment: 85, stars: 3, images: ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500"] },
+                { id: 2, title: "High School Graduation", date: "2018-06-15", journal: "Graduated with honors alongside best friends.", sentiment: 94, stars: 3, images: ["https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500"] },
+                { id: 3, title: "University Admission", date: "2018-09-01", journal: "Moved into campus dorms to study Computer Science.", sentiment: 89, stars: 3, images: ["https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?w=500"] },
+                { id: 4, title: "Career Launch", date: "2022-08-01", journal: "Joined tech startup as junior developer.", sentiment: 95, stars: 3, images: ["https://images.unsplash.com/photo-1519671282429-b8f0d7f3b3c0?w=500"] }
+            ];
 
-            // 3. Render Winding Path of Nodes on Ground Field
+            let rawStored = localStorage.getItem(storageKey);
+            let memoryNodes = rawStored ? JSON.parse(rawStored) : (journeyMode === 'LIFE' ? defaultLifeNodes : defaultSportsNodes);
+
+            /* ------------------------------------------------------------------
+               3. CHRONOLOGICAL SORTING & PATH RENDER ENGINE
+               ------------------------------------------------------------------ */
+            function getSentimentLabel(val) {
+                if (val >= 90) return `${val}% Euphoric & Victorious 🌟`;
+                if (val >= 75) return `${val}% Highly Focused 🔥`;
+                if (val >= 50) return `${val}% Determined 💪`;
+                return `${val}% Reflective 🌿`;
+            }
+
+            function generateAIReflection(title, journal, sentiment) {
+                const quotes = [
+                    `I remember how hard we worked before ${title}! Reading '${journal.slice(0, 30)}...' reminds me of our dedication.`,
+                    `Looking back at ${title}, that score of ${sentiment}% shows how passionate we were that day!`,
+                    `This milestone in ${title} was a turning point. Keep this energy going forever!`
+                ];
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            }
+
+            function sortNodesChronologically(list) {
+                // Filter out existing valid nodes
+                let valid = list.filter(n => n && n.date && n.date !== 'Locked');
+                // Sort ascending by date (oldest memory = Level 1)
+                valid.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                // Re-assign IDs (1, 2, 3...)
+                valid.forEach((node, idx) => {
+                    node.id = idx + 1;
+                    if (!node.sentimentLabel) node.sentimentLabel = getSentimentLabel(node.sentiment || 85);
+                    if (!node.aiReflection) node.aiReflection = generateAIReflection(node.title, node.journal || '', node.sentiment || 85);
+                    if (!node.stars) node.stars = 3;
+                });
+
+                // Add active next node + locked nodes
+                const lastId = valid.length;
+                const activeNode = { id: lastId + 1, title: "Log Next Milestone", date: "Ready to Log", stars: 0, isActive: true };
+                const locked1 = { id: lastId + 2, title: "Championship Season Goal", date: "Locked", stars: 0, isLocked: true };
+                const locked2 = { id: lastId + 3, title: "Global Hall of Fame", date: "Locked", stars: 0, isLocked: true };
+
+                return [...valid, activeNode, locked1, locked2];
+            }
+
             const nodesContainer = document.getElementById('nodes-layer');
             const svgPath = document.getElementById('svg-dotted-path');
 
             function renderNodesPath() {
+                // Perform chronological sort
+                memoryNodes = sortNodesChronologically(memoryNodes);
+                localStorage.setItem(storageKey, JSON.stringify(memoryNodes));
+
+                // Update Stats
+                const completedCount = memoryNodes.filter(n => n.stars > 0).length;
+                const totalStars = completedCount * 3;
+                document.getElementById('top-stars-count').textContent = totalStars;
+                document.getElementById('memories-count-badge').textContent = `${completedCount} Memories Logged`;
+
                 nodesContainer.innerHTML = '';
                 const coords = [];
                 const containerWidth = nodesContainer.clientWidth || window.innerWidth;
                 
-                // Calculate snaking S-curve positions
+                // Adjust container height dynamically
+                nodesContainer.style.minHeight = `${memoryNodes.length * 125 + 300}px`;
+
                 memoryNodes.forEach((node, idx) => {
-                    const total = memoryNodes.length;
-                    const topPos = 120 + idx * 110; // Vertical spacing
-                    
-                    // Sine-wave X position for realistic snaking pitch path
+                    const topPos = 120 + idx * 120;
                     const xFactor = Math.sin(idx * 0.75);
-                    const leftPos = (containerWidth / 2) + (xFactor * (containerWidth > 640 ? 160 : 100)) - 34;
+                    const leftPos = (containerWidth / 2) + (xFactor * (containerWidth > 640 ? 160 : 100)) - 36;
 
-                    coords.push({ x: leftPos + 34, y: topPos + 34 });
+                    coords.push({ x: leftPos + 36, y: topPos + 36 });
 
-                    // Determine Node State
                     let stateClass = 'node-locked';
                     let starIcons = '';
                     let badgeHtml = '';
@@ -671,7 +919,7 @@
                         starIcons = `<div class="node-stars-row">
                             ${'⭐'.repeat(node.stars)}
                         </div>`;
-                    } else if (node.isActive || idx === memoryNodes.findIndex(n => !n.stars)) {
+                    } else if (node.isActive) {
                         stateClass = 'node-active';
                         starIcons = `<div class="node-stars-row">
                             <span class="star-icon text-gray-400">☆</span>
@@ -681,7 +929,6 @@
                         badgeHtml = `<div class="active-avatar-badge">YOU HERE!</div>`;
                     }
 
-                    // Build Node Element
                     const nodeEl = document.createElement('div');
                     nodeEl.className = `node-circle ${stateClass}`;
                     nodeEl.style.left = `${leftPos}px`;
@@ -692,24 +939,28 @@
                         ${badgeHtml}
                     `;
 
-                    nodeEl.addEventListener('click', () => openLevelModal(node, idx));
+                    nodeEl.addEventListener('click', () => handleNodeClick(node, idx));
                     nodesContainer.appendChild(nodeEl);
 
-                    // Render Polaroid Photo Pin for Milestone Node 1095
-                    if (node.id === 1095) {
+                    // Render Polaroid photo pin if node has images
+                    if (node.images && node.images.length > 0) {
                         const polaroid = document.createElement('div');
                         polaroid.className = 'polaroid-card';
-                        polaroid.style.left = `${leftPos - 130}px`;
-                        polaroid.style.top = `${topPos - 20}px`;
+                        polaroid.style.left = `${leftPos - (idx % 2 === 0 ? 140 : -80)}px`;
+                        polaroid.style.top = `${topPos - 15}px`;
                         polaroid.innerHTML = `
-                            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300" class="polaroid-img" alt="Play Highlight">
-                            <div class="polaroid-caption">Finishing in Style</div>
+                            <img src="${node.images[0]}" class="polaroid-img" alt="Memory Photo" />
+                            <div class="polaroid-caption">${node.title}</div>
                         `;
+                        polaroid.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openViewMemoryModal(node, idx);
+                        });
                         nodesContainer.appendChild(polaroid);
                     }
                 });
 
-                // Update SVG Dashed Path string
+                // Update Curved SVG Path
                 if (coords.length > 0) {
                     let d = `M ${coords[0].x} ${coords[0].y}`;
                     for (let i = 1; i < coords.length; i++) {
@@ -721,92 +972,315 @@
                     svgPath.setAttribute('d', d);
                 }
 
-                // Scroll to active node automatically
-                const activeEl = document.querySelector('.node-active');
-                if (activeEl) {
-                    setTimeout(() => {
-                        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 600);
-                }
+                updateAICompanionStats();
             }
 
-            // Initial Render
             renderNodesPath();
 
-            // 4. Modal Bottom Sheet Handlers
-            const modalOverlay = document.getElementById('level-modal-overlay');
-            const closeModalBtn = document.getElementById('btn-close-modal');
-            const inputForm = document.getElementById('level-input-form');
-            let currentActiveIdx = -1;
+            /* ------------------------------------------------------------------
+               4. NODE CLICK & MODAL HANDLERS
+               ------------------------------------------------------------------ */
+            const modalAddOverlay = document.getElementById('modal-add-overlay');
+            const btnOpenAddModal = document.getElementById('btn-open-add-modal');
+            const btnCloseAddModal = document.getElementById('btn-close-add-modal');
+            const formCreateMemory = document.getElementById('form-create-memory');
 
-            function openLevelModal(node, idx) {
-                currentActiveIdx = idx;
-                document.getElementById('modal-level-tag').textContent = `LEVEL ${node.id}`;
-                document.getElementById('modal-level-title').textContent = node.title;
-                document.getElementById('input-title').value = node.title;
-                document.getElementById('input-date').value = node.date !== 'Locked' ? node.date : new Date().toISOString().split('T')[0];
-                modalOverlay.classList.add('active');
+            const modalViewOverlay = document.getElementById('modal-view-overlay');
+            const btnCloseViewModal = document.getElementById('btn-close-view-modal');
+            const btnCloseViewDrawer = document.getElementById('btn-close-view-drawer');
+            const btnDeleteMemory = document.getElementById('btn-delete-memory');
+
+            let currentViewingIdx = -1;
+
+            function openAddMemoryModal() {
+                // Set default date to today
+                document.getElementById('add-input-date').value = new Date().toISOString().split('T')[0];
+                modalAddOverlay.classList.add('active');
             }
 
-            closeModalBtn.addEventListener('click', () => {
-                modalOverlay.classList.remove('active');
-            });
+            function closeAddMemoryModal() {
+                modalAddOverlay.classList.remove('active');
+            }
 
-            // 5. Data Submission & Chronological Node Unlock Logic
-            inputForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+            btnOpenAddModal.addEventListener('click', openAddMemoryModal);
+            document.getElementById('nav-tab-add').addEventListener('click', openAddMemoryModal);
+            btnCloseAddModal.addEventListener('click', closeAddMemoryModal);
 
-                if (currentActiveIdx !== -1) {
-                    const title = document.getElementById('input-title').value;
-                    const date = document.getElementById('input-date').value;
-                    const journal = document.getElementById('input-journal').value;
-                    const sentiment = parseInt(document.getElementById('input-sentiment').value);
+            function handleNodeClick(node, idx) {
+                if (node.isLocked) {
+                    playSynthSound(220, 'sawtooth', 0.15, 0.05);
+                    return;
+                }
+                if (node.isActive || node.stars === 0) {
+                    openAddMemoryModal();
+                } else {
+                    openViewMemoryModal(node, idx);
+                }
+            }
 
-                    // Compute Earned Stars
-                    const starsEarned = sentiment >= 80 ? 3 : (sentiment >= 50 ? 2 : 1);
+            function openViewMemoryModal(node, idx) {
+                currentViewingIdx = idx;
+                document.getElementById('view-level-badge').textContent = `LEVEL ${node.id}`;
+                document.getElementById('view-date-badge').textContent = node.date;
+                document.getElementById('view-memory-title').textContent = node.title;
+                document.getElementById('view-stars-container').textContent = '⭐'.repeat(node.stars || 3);
+                document.getElementById('view-sentiment-pill').textContent = node.sentimentLabel || getSentimentLabel(node.sentiment || 90);
+                document.getElementById('view-journal-text').textContent = `"${node.journal}"`;
+                document.getElementById('view-ai-reflection').textContent = `"${node.aiReflection || generateAIReflection(node.title, node.journal, node.sentiment)}"`;
 
-                    // Update completed node
-                    memoryNodes[currentActiveIdx].title = title;
-                    memoryNodes[currentActiveIdx].date = date;
-                    memoryNodes[currentActiveIdx].journal = journal;
-                    memoryNodes[currentActiveIdx].stars = starsEarned;
-                    memoryNodes[currentActiveIdx].isActive = false;
+                // Render Photos
+                const container = document.getElementById('view-photos-container');
+                container.innerHTML = '';
+                if (node.images && node.images.length > 0) {
+                    document.getElementById('view-photos-box').classList.remove('hidden');
+                    node.images.forEach(imgUrl => {
+                        const img = document.createElement('img');
+                        img.src = imgUrl;
+                        img.className = 'w-24 h-20 rounded-xl object-cover border-2 border-cyan-400/40 cursor-pointer hover:scale-105 transition';
+                        img.addEventListener('click', () => window.open(imgUrl, '_blank'));
+                        container.appendChild(img);
+                    });
+                } else {
+                    document.getElementById('view-photos-box').classList.add('hidden');
+                }
 
-                    // Unlock next node N+1 automatically
-                    if (currentActiveIdx + 1 < memoryNodes.length) {
-                        memoryNodes[currentActiveIdx + 1].isActive = true;
-                        memoryNodes[currentActiveIdx + 1].isLocked = false;
-                        memoryNodes[currentActiveIdx + 1].date = "Ready to Log";
-                    }
+                modalViewOverlay.classList.add('active');
+                playSynthSound(580, 'sine', 0.25, 0.06);
+            }
 
-                    // Save updated array to localStorage
+            function closeViewMemoryModal() {
+                modalViewOverlay.classList.remove('active');
+            }
+
+            btnCloseViewModal.addEventListener('click', closeViewMemoryModal);
+            btnCloseViewDrawer.addEventListener('click', closeViewMemoryModal);
+
+            // Delete Memory Handler
+            btnDeleteMemory.addEventListener('click', () => {
+                if (currentViewingIdx !== -1) {
+                    memoryNodes.splice(currentViewingIdx, 1);
                     localStorage.setItem(storageKey, JSON.stringify(memoryNodes));
-
-                    // Trigger Confetti Celebration!
-                    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
-
-                    modalOverlay.classList.remove('active');
+                    closeViewMemoryModal();
                     renderNodesPath();
+                    playSynthSound(300, 'sawtooth', 0.2, 0.05);
                 }
             });
 
-            // 6. Ground Pitch Texture Switcher (Football vs Basketball vs Tennis)
+            /* ------------------------------------------------------------------
+               5. UPLOAD PICTURES & NEW MEMORY SUBMISSION
+               ------------------------------------------------------------------ */
+            const addInputPhotos = document.getElementById('add-input-photos');
+            const addPhotosPreview = document.getElementById('add-photos-preview');
+            const addSentimentSlider = document.getElementById('add-input-sentiment');
+            const addSentimentBadge = document.getElementById('add-sentiment-badge');
+
+            let tempUploadedImages = [];
+
+            addSentimentSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                addSentimentBadge.textContent = getSentimentLabel(val);
+            });
+
+            addInputPhotos.addEventListener('change', async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+
+                tempUploadedImages = [];
+                addPhotosPreview.innerHTML = '';
+                addPhotosPreview.classList.remove('hidden');
+
+                for (let file of files) {
+                    const base64 = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = res => resolve(res.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                    tempUploadedImages.push(base64);
+
+                    const img = document.createElement('img');
+                    img.src = base64;
+                    img.className = 'img-preview-thumb';
+                    addPhotosPreview.appendChild(img);
+                }
+            });
+
+            formCreateMemory.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const title = document.getElementById('add-input-title').value;
+                const date = document.getElementById('add-input-date').value;
+                const journal = document.getElementById('add-input-journal').value;
+                const sentiment = parseInt(addSentimentSlider.value);
+
+                const newMemory = {
+                    title: title,
+                    date: date,
+                    journal: journal,
+                    sentiment: sentiment,
+                    sentimentLabel: getSentimentLabel(sentiment),
+                    stars: sentiment >= 80 ? 3 : (sentiment >= 50 ? 2 : 1),
+                    images: [...tempUploadedImages],
+                    aiReflection: generateAIReflection(title, journal, sentiment),
+                    createdAt: new Date().toISOString()
+                };
+
+                memoryNodes.push(newMemory);
+
+                // Confetti Explosion
+                confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+                playSynthSound(880, 'sine', 0.3, 0.08);
+
+                // Reset form & temp images
+                formCreateMemory.reset();
+                tempUploadedImages = [];
+                addPhotosPreview.innerHTML = '';
+                addPhotosPreview.classList.add('hidden');
+                closeAddMemoryModal();
+
+                // Re-render path chronologically
+                renderNodesPath();
+            });
+
+            /* ------------------------------------------------------------------
+               6. "YOUR YOUNGER SELF" AI INTELLIGENCE COMPANION ENGINE
+               ------------------------------------------------------------------ */
+            const drawerAIOverlay = document.getElementById('drawer-ai-overlay');
+            const drawerAICard = document.getElementById('drawer-ai-card');
+            const btnOpenAICompanion = document.getElementById('btn-open-ai-companion');
+            const btnCloseAIDrawer = document.getElementById('btn-close-ai-drawer');
+            const aiChatInput = document.getElementById('ai-chat-input');
+            const btnSendAIChat = document.getElementById('btn-send-ai-chat');
+            const aiChatMessages = document.getElementById('ai-chat-messages');
+
+            function openAIDrawer() {
+                drawerAIOverlay.classList.add('active');
+                drawerAICard.classList.add('active');
+                playSynthSound(720, 'sine', 0.2, 0.06);
+            }
+
+            function closeAIDrawer() {
+                drawerAIOverlay.classList.remove('active');
+                drawerAICard.classList.remove('active');
+            }
+
+            btnOpenAICompanion.addEventListener('click', openAIDrawer);
+            document.getElementById('nav-tab-ai').addEventListener('click', openAIDrawer);
+            btnCloseAIDrawer.addEventListener('click', closeAIDrawer);
+            drawerAIOverlay.addEventListener('click', closeAIDrawer);
+
+            function updateAICompanionStats() {
+                const validNodes = memoryNodes.filter(n => n.stars > 0);
+                let totalPhotos = 0;
+                validNodes.forEach(n => {
+                    if (n.images) totalPhotos += n.images.length;
+                });
+
+                document.getElementById('ai-stat-memories').textContent = `${validNodes.length} Logged`;
+                document.getElementById('ai-stat-photos').textContent = `${totalPhotos} Photos`;
+                document.getElementById('ai-sync-level').textContent = `SYNC LEVEL ${validNodes.length + 1} • ${(85 + validNodes.length * 2)}% ALIGNED`;
+
+                // Update Insights List
+                const list = document.getElementById('ai-insights-list');
+                list.innerHTML = '';
+                if (validNodes.length === 0) {
+                    list.innerHTML = `<p class="text-xs text-gray-400 italic">No memories uploaded yet. Log a milestone to begin training your AI Younger Self!</p>`;
+                } else {
+                    validNodes.slice(-3).reverse().forEach(n => {
+                        const item = document.createElement('div');
+                        item.className = 'bg-purple-900/20 rounded-xl p-2.5 border border-purple-500/20 text-xs text-purple-200';
+                        item.innerHTML = `💡 <b>${n.date} (${n.title}):</b> Learned that you felt <i>"${n.journal.slice(0, 40)}..."</i> with ${n.sentiment}% confidence!`;
+                        list.appendChild(item);
+                    });
+                }
+            }
+
+            btnSendAIChat.addEventListener('click', () => {
+                const msg = aiChatInput.value.trim();
+                if (!msg) return;
+
+                // Append user message
+                const userMsgEl = document.createElement('div');
+                userMsgEl.className = 'bg-cyan-900/40 text-cyan-200 p-2.5 rounded-xl border border-cyan-500/20 text-right font-semibold';
+                userMsgEl.textContent = msg;
+                aiChatMessages.appendChild(userMsgEl);
+
+                aiChatInput.value = '';
+
+                // Generate AI Response
+                setTimeout(() => {
+                    const validNodes = memoryNodes.filter(n => n.stars > 0);
+                    let reply = "I'm listening! Keep adding your memories and photos so I can understand your journey even better.";
+                    if (validNodes.length > 0) {
+                        const randomMemory = validNodes[Math.floor(Math.random() * validNodes.length)];
+                        reply = `Thinking about "${randomMemory.title}" from ${randomMemory.date}... You wrote '${randomMemory.journal}'. That was a huge step in our legacy!`;
+                    }
+
+                    const aiMsgEl = document.createElement('div');
+                    aiMsgEl.className = 'bg-purple-900/40 text-purple-200 p-2.5 rounded-xl border border-purple-500/30 font-medium';
+                    aiMsgEl.innerHTML = `🤖 <b>Younger Self:</b> ${reply}`;
+                    aiChatMessages.appendChild(aiMsgEl);
+
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                    playSynthSound(640, 'sine', 0.15, 0.04);
+                }, 500);
+            });
+
+            /* ------------------------------------------------------------------
+               7. SYNTHESIZED UI SOUND ENGINE (Web Audio API)
+               ------------------------------------------------------------------ */
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            let audioCtx = null;
+
+            function playSynthSound(freq = 440, type = 'sine', duration = 0.15, gainVal = 0.05) {
+                try {
+                    if (!audioCtx) audioCtx = new AudioCtx();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {}
+            }
+
+            /* ------------------------------------------------------------------
+               8. GROUND PITCH TEXTURE SWITCHER
+               ------------------------------------------------------------------ */
             const mainViewport = document.getElementById('main-viewport');
             const pitchMarkings = document.getElementById('pitch-markings');
 
             document.getElementById('btn-sport-football').addEventListener('click', () => {
                 mainViewport.className = 'cinematic-entry field-football';
                 pitchMarkings.style.display = 'block';
+                playSynthSound(500, 'sine', 0.1, 0.03);
             });
 
             document.getElementById('btn-sport-basketball').addEventListener('click', () => {
                 mainViewport.className = 'cinematic-entry field-basketball';
                 pitchMarkings.style.display = 'none';
+                playSynthSound(550, 'sine', 0.1, 0.03);
             });
 
             document.getElementById('btn-sport-tennis').addEventListener('click', () => {
                 mainViewport.className = 'cinematic-entry field-tennis';
                 pitchMarkings.style.display = 'none';
+                playSynthSound(600, 'sine', 0.1, 0.03);
+            });
+
+            document.getElementById('btn-sport-stadium').addEventListener('click', () => {
+                mainViewport.className = 'cinematic-entry field-stadium';
+                pitchMarkings.style.display = 'block';
+                playSynthSound(650, 'sine', 0.1, 0.03);
             });
 
         });
