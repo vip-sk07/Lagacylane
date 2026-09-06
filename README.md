@@ -22,9 +22,6 @@
 
 ---
 
-> 📸 **Demo Showcase**  
-> *Recommended: Insert a short screen recording or GIF here demonstrating the 3D tactical pitch, the interactive Score! Hero roadmap, dynamic domain switching, and live dialogue with the Younger Self AI Companion.*
-
 ---
 
 ## 💡 Why LegacyLane (Problem → Solution)
