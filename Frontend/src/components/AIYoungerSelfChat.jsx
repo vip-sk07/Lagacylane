@@ -1,13 +1,63 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Bot, User, Sparkles, RefreshCw, Cpu, CheckCircle2 } from 'lucide-react';
+import { X, Send, Bot, User, Sparkles, RefreshCw, Cpu, CheckCircle2, BookOpen, Trophy } from 'lucide-react';
+import { isSportsJourney, getActiveDomainDescriptor } from '../utils/journey';
+import { JOURNEY_TYPES } from '../data/journeyConfig';
+import { API_BASE_URL, testApiConnection } from '../utils/api';
 
-export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)', onClose, levels = [], currentUser }) {
-  const [selectedEra, setSelectedEra] = useState(initialEra);
+export default function AIYoungerSelfChat({
+  activeJourney,
+  initialEra,
+  onClose,
+  levels = [],
+  currentUser
+}) {
+  const isLife = activeJourney ? !isSportsJourney(activeJourney) : false;
+  const descriptor = getActiveDomainDescriptor(activeJourney);
+  const domainLabel = isLife ? 'Life Journal' : descriptor?.label || 'Sports';
+  const domainId = activeJourney?.domain || (isLife ? 'life' : 'football');
+
+  // Scope levels strictly to the active domain
+  const domainLevels = levels.filter((l) => {
+    if (isLife) {
+      return l.journeyType === JOURNEY_TYPES.LIFE || !l.journeyType;
+    }
+    return (!l.journeyType || l.journeyType === JOURNEY_TYPES.SPORTS) && (!l.domain || l.domain === domainId);
+  });
+
+  // Dynamically derive eras from active domain memories only
+  const derivedEras = Array.from(new Set(domainLevels.map((l) => l.era).filter(Boolean)));
+  const fallbackEras = isLife
+    ? ['College Days (2018-2022)', 'Career & Adulthood (2022+)', 'Present Day Reflections']
+    : ['Youth Era (2018-2020)', 'Pro Debut Era (2021-2023)', 'Championship Era (2024+)'];
+
+  const availableEras = derivedEras.length > 0 ? derivedEras : fallbackEras;
+
+  // Determine starting era
+  const defaultEra = initialEra && availableEras.includes(initialEra) ? initialEra : availableEras[0];
+  const [selectedEra, setSelectedEra] = useState(defaultEra);
+
+  // Initial greeting generator
+  const getInitialGreeting = (era) => {
+    if (isLife) {
+      return `Hey! I'm your AI Younger Self from your Life Journal during ${era}. I hold the memories of your personal choices, college milestones, and early reflections. What would you like to explore today?`;
+    }
+    if (domainId === 'cricket') {
+      return `Hey! I'm your AI Younger Self from your Cricket journey during ${era}. I remember swinging the new ball, perfecting our seam position, and fighting hard in every innings. What match or memory are we discussing today?`;
+    }
+    if (domainId === 'basketball') {
+      return `Hey! I'm your AI Younger Self from your Basketball days during ${era}. I remember the morning drills on the hardwood and the rush of game-winning buzzer beaters. What's on your mind today?`;
+    }
+    if (domainId === 'athletics') {
+      return `Hey! I'm your AI Younger Self from your Track & Field career during ${era}. I remember the interval training on the track and chasing every split second. What race or milestone are we revisiting?`;
+    }
+    return `Hey! I'm your AI Younger Self from your Football career during ${era}. I remember tying my boots before the academy trials and dreaming of leading the attack. What's on your mind today?`;
+  };
+
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'ai',
-      text: `Hey! I'm your AI Younger Self from the ${initialEra}. I remember tying my boots before the academy trials and dreaming of making it big. What's on your mind today?`,
+      text: getInitialGreeting(defaultEra),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -22,17 +72,23 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
 
   // Check if backend service is reachable
   useEffect(() => {
-    fetch('http://localhost:5000/api/memories/test-connection')
-      .then(() => setOllamaStatus('connected'))
-      .catch(() => setOllamaStatus('fallback'));
+    testApiConnection().then((isLive) => {
+      setOllamaStatus(isLive ? 'connected' : 'fallback');
+    });
   }, []);
 
   const handleEraChange = (era) => {
     setSelectedEra(era);
+    const eraMemories = domainLevels.filter((l) => l.era === era);
+    const memoryHint =
+      eraMemories.length > 0
+        ? ` I have ${eraMemories.length} logged ${domainLabel} memories from this time, including "${eraMemories[0].title}".`
+        : '';
+
     const newGreeting = {
       id: Date.now(),
       sender: 'ai',
-      text: `Switched era to ${era}! I'm locked in with your memories logged during this period. Ask me about our training, match feelings, or how we handled pressure back then!`,
+      text: `Switched era to ${era}! I'm now locked into your ${domainLabel} memories from this period.${memoryHint} What would you like to ask me about back then?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setMessages((prev) => [...prev, newGreeting]);
@@ -54,15 +110,20 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
     setInputText('');
     setIsLoading(true);
 
+    // Scoped payload for RAG retrieval on backend (Phase 6 ready)
+    const ragPayload = {
+      userId: currentUser?.id || '',
+      journeyType: isLife ? JOURNEY_TYPES.LIFE : JOURNEY_TYPES.SPORTS,
+      domain: isLife ? null : domainId,
+      era: selectedEra,
+      userMessage: currentInput
+    };
+
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: currentUser?.id || '',
-          era: selectedEra,
-          userMessage: currentInput
-        })
+        body: JSON.stringify(ragPayload)
       });
 
       const data = await response.json();
@@ -78,12 +139,25 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
         }
       ]);
     } catch (err) {
+      // Domain-grounded fallback RAG response
+      const matchingMemories = domainLevels.filter((l) => l.era === selectedEra);
+      let fallbackText = `I'm right here with you! During ${selectedEra} in our ${domainLabel} journey, our commitment was 100%.`;
+
+      if (matchingMemories.length > 0) {
+        const topMemory = matchingMemories[0];
+        if (isLife) {
+          fallbackText = `Thinking back to ${selectedEra}, especially "${topMemory.title}" (${topMemory.date}): "${topMemory.content}" That lesson shaped who we are today. Whatever challenges you are facing right now, trust the resilience we discovered back then!`;
+        } else {
+          fallbackText = `Looking back at ${selectedEra}, especially our match milestone in "${topMemory.title}" (${topMemory.matchDetails}): We gave everything on the pitch. The discipline and composure we forged then are with you every step today!`;
+        }
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           sender: 'ai',
-          text: `I'm right here with you! During ${selectedEra}, our focus was 100% on grinding and improving every single day.`,
+          text: fallbackText,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -103,13 +177,15 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-white">AI Younger Self Chat</h3>
+                <h3 className="text-lg font-black text-white">AI Younger Self — {domainLabel}</h3>
                 <span className="flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
                   <Cpu className="w-3 h-3" />
-                  {ollamaStatus === 'connected' ? 'Ollama Llama3 (Live)' : 'Persona Engine'}
+                  {ollamaStatus === 'connected' ? 'Ollama RAG (Live)' : 'Domain Persona'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Conversational Era Persona Grounded on Logged Memories</p>
+              <p className="text-xs text-slate-400">
+                Persona scoped to your {domainLabel} memories • Zero cross-domain leakage
+              </p>
             </div>
           </div>
 
@@ -121,17 +197,21 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
           </button>
         </div>
 
-        {/* Era Selector Toolbar */}
+        {/* Domain-Scoped Era Selector Toolbar */}
         <div className="px-5 py-2.5 bg-slate-900/60 border-b border-slate-800/80 flex items-center justify-between text-xs">
-          <span className="text-slate-400 font-semibold">Active Era Persona:</span>
+          <span className="text-slate-400 font-semibold flex items-center gap-1.5">
+            <span>Active {domainLabel} Era:</span>
+          </span>
           <select
             value={selectedEra}
             onChange={(e) => handleEraChange(e.target.value)}
             className="px-3 py-1 rounded-xl bg-slate-950 border border-slate-700 text-purple-300 font-bold focus:outline-none focus:border-purple-400"
           >
-            <option value="Youth Era (2018-2020)">Youth Era (2018-2020)</option>
-            <option value="Pro Debut Era (2021-2023)">Pro Debut Era (2021-2023)</option>
-            <option value="Championship Era (2024+)">Championship Era (2024+)</option>
+            {availableEras.map((era) => (
+              <option key={era} value={era}>
+                {era}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -176,7 +256,7 @@ export default function AIYoungerSelfChat({ initialEra = 'Youth Era (2018-2020)'
               </div>
               <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-purple-300 flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 animate-bounce" />
-                <span>Thinking back to {selectedEra}...</span>
+                <span>Thinking back to {selectedEra} in {domainLabel}...</span>
               </div>
             </div>
           )}

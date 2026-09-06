@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { isSportsJourney, getActiveDomainDescriptor } from '../utils/journey';
 import { JOURNEY_TYPES } from '../data/journeyConfig';
+import { uploadMediaApi } from '../utils/api';
 
 const LIFE_PRESET_TAGS = ['Grateful', 'Milestone', 'Family', 'Growth', 'Resilience', 'Nostalgia', 'Creative', 'Reflective'];
 const SPORT_PRESET_TAGS = ['Victory', 'Championship', 'Comeback', 'MOTM', 'Debut', 'PersonalBest', 'Milestone'];
@@ -76,13 +77,9 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
     formData.append('media', file);
 
     try {
-      const res = await fetch('http://localhost:5000/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.url) {
-        setMediaUrl(data.url);
+      const url = await uploadMediaApi(file);
+      if (url) {
+        setMediaUrl(url);
       }
     } catch (err) {
       console.error('File Upload Error:', err);

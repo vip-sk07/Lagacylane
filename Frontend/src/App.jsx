@@ -9,9 +9,11 @@ import MultiUserFollowModal from './components/MultiUserFollowModal';
 import SentimentAnalyticsModal from './components/SentimentAnalyticsModal';
 import AuthModal from './components/AuthModal';
 import HomePage from './components/HomePage';
+import ToastContainer from './components/Toast';
 import { ATHLETE_PROFILES, LIFE_PROFILE, INITIAL_PROFILES } from './data/mockData';
 import { JOURNEY_TYPES, DEFAULT_JOURNEY } from './data/journeyConfig';
 import { getActiveProfile, isSportsJourney, loadSavedJourney, saveJourney } from './utils/journey';
+import { saveMemoryApi, fetchMemoriesApi, updateUserProfileApi } from './utils/api';
 import JourneySelector from './components/JourneySelector';
 
 export default function App() {
@@ -19,6 +21,7 @@ export default function App() {
   const [activeJourney, setActiveJourney] = useState(() => loadSavedJourney());
   const [profiles, setProfiles] = useState(INITIAL_PROFILES);
   const [currentUser, setCurrentUser] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
   // Modal States
   const [selectedLevel, setSelectedLevel] = useState(null);
@@ -32,27 +35,56 @@ export default function App() {
 
   const currentProfile = getActiveProfile(activeJourney, profiles);
 
+  // Toast notification helper
+  const addToast = (type, message, title = '') => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, type, message, title }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  const handleDismissToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const handleJourneyChange = (journey) => {
     setActiveJourney(journey);
     saveJourney(journey);
+
+    // Persist journey choice to user's remote cloud profile if authenticated
+    if (currentUser?.id) {
+      updateUserProfileApi(currentUser.id, {
+        activeJourney: journey,
+        sportType: journey.domain || 'football'
+      }).catch((err) => {
+        console.warn('Cloud account journey sync note:', err.message);
+      });
+    }
   };
 
   // Handle successful login or account creation
   const handleAuthSuccess = (user) => {
     setCurrentUser(user);
-    const userSport = (user.sport || 'football').toLowerCase();
 
-    // Dynamically update active journey & UI theme based on registered passion
+    // 1. Determine active journey (from user profile or registered sport)
     let nextJourney;
-    if (userSport === 'journaler' || userSport === 'life') {
-      nextJourney = { type: JOURNEY_TYPES.LIFE, domain: null };
-    } else if (['football', 'cricket', 'basketball', 'athletics'].includes(userSport)) {
-      nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: userSport };
+    if (user.activeJourney && user.activeJourney.type) {
+      nextJourney = user.activeJourney;
     } else {
-      nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: 'football' };
+      const userSport = (user.sport || user.sportType || 'football').toLowerCase();
+      if (userSport === 'journaler' || userSport === 'life') {
+        nextJourney = { type: JOURNEY_TYPES.LIFE, domain: null };
+      } else if (['football', 'cricket', 'basketball', 'athletics'].includes(userSport)) {
+        nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: userSport };
+      } else {
+        nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: 'football' };
+      }
     }
+
     handleJourneyChange(nextJourney);
 
+    // 2. Update user profile information in local state
     setProfiles((prev) => {
       if (nextJourney.type === JOURNEY_TYPES.LIFE) {
         return {
@@ -82,46 +114,108 @@ export default function App() {
       };
     });
 
+    // 3. Fetch remote memories scoped by the active journey
+    fetchMemoriesApi(user.id, nextJourney.type, nextJourney.domain)
+      .then((remoteMemories) => {
+        if (remoteMemories && remoteMemories.length > 0) {
+          setProfiles((prev) => {
+            if (nextJourney.type === JOURNEY_TYPES.LIFE) {
+              return {
+                ...prev,
+                life: {
+                  ...prev.life,
+                  levels: remoteMemories
+                }
+              };
+            }
+            const d = nextJourney.domain;
+            return {
+              ...prev,
+              sports: {
+                ...prev.sports,
+                [d]: {
+                  ...(prev.sports[d] || prev.sports.football),
+                  levels: remoteMemories
+                }
+              }
+            };
+          });
+          addToast(
+            'success',
+            `Loaded ${remoteMemories.length} cloud memories for your ${nextJourney.domain || 'life'} journey.`,
+            'Cloud Sync Complete'
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn('Cloud memories fetch note:', err.message);
+        addToast(
+          'info',
+          'Cloud database unreachable. Running in local offline roadmap mode.',
+          'Offline Mode'
+        );
+      });
+
     // Transition smoothly to the 3D Ground Roadmap view
     setCurrentView('ground');
+    addToast('success', `Welcome back, ${user.name}!`, 'Signed In');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setCurrentView('home');
+    addToast('info', 'You have been signed out.', 'Logged Out');
   };
 
   const handleAddLevel = async (newLevelData) => {
+    const isLife = !isSportsJourney(activeJourney);
+    const domain = isLife ? null : (activeJourney.domain || 'football');
+    const journeyType = isLife ? JOURNEY_TYPES.LIFE : JOURNEY_TYPES.SPORTS;
+
+    const nextLevelNumber = (currentProfile?.levels?.length || 0) + 1;
+
+    const newLevel = {
+      ...newLevelData,
+      id: Date.now(),
+      levelNumber: nextLevelNumber,
+      status: 'completed',
+      journeyType,
+      domain,
+      media: newLevelData.mediaUrl || newLevelData.media
+    };
+
+    // Attempt to persist to remote cloud database if logged in
     if (currentUser) {
       try {
-        await fetch('http://localhost:5000/api/memories', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: currentUser.id,
-            ...newLevelData
-          })
+        await saveMemoryApi({
+          userId: currentUser.id,
+          journeyType,
+          domain,
+          ...newLevel
         });
+        addToast(
+          'success',
+          `Milestone "${newLevel.title}" synced to cloud database. AI persona updated!`,
+          'Memory Saved'
+        );
       } catch (err) {
-        console.error('Failed to sync memory to SQLite backend:', err);
+        console.error('Failed to sync memory to cloud:', err);
+        addToast(
+          'warning',
+          'Cloud database unreachable. Milestone saved locally to this device.',
+          'Cloud Sync Warning'
+        );
       }
+    } else {
+      addToast(
+        'info',
+        `Milestone "${newLevel.title}" logged locally. Sign in to sync across devices.`,
+        'Saved to Local Session'
+      );
     }
 
+    // Always update local UI state immediately
     setProfiles((prev) => {
-      const targetProfile = getActiveProfile(activeJourney, prev);
-      const nextLevelNumber = (targetProfile?.levels?.length || 0) + 1;
-      const isLife = !isSportsJourney(activeJourney);
-
-      const newLevel = {
-        ...newLevelData,
-        id: Date.now(),
-        levelNumber: nextLevelNumber,
-        status: 'completed',
-        journeyType: isLife ? JOURNEY_TYPES.LIFE : JOURNEY_TYPES.SPORTS,
-        domain: isLife ? null : (activeJourney.domain || 'football'),
-        media: newLevelData.mediaUrl || newLevelData.media
-      };
-
       if (isLife) {
         return {
           ...prev,
@@ -132,14 +226,14 @@ export default function App() {
         };
       }
 
-      const domain = activeJourney.domain || 'football';
-      const currentDomainProfile = prev.sports[domain] || prev.sports.football;
+      const d = domain || 'football';
+      const currentDomainProfile = prev.sports[d] || prev.sports.football;
 
       return {
         ...prev,
         sports: {
           ...prev.sports,
-          [domain]: {
+          [d]: {
             ...currentDomainProfile,
             levels: [...(currentDomainProfile?.levels || []), newLevel]
           }
@@ -155,6 +249,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-[#070a12] text-slate-100 selection:bg-emerald-500 selection:text-black flex flex-col font-sans">
+      {/* User-facing Toast Notification Alerts */}
+      <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
+
       {/* -------------------------------------------------- */}
       {/* HOME PAGE VIEW (Clean Landing Dashboard) */}
       {/* -------------------------------------------------- */}
@@ -175,7 +272,7 @@ export default function App() {
             setCurrentView('ground');
           }}
           onOpenJourneySelector={() => setIsJourneySelectorOpen(true)}
-          onOpenAuthModal={() => setIsAuthModalOpen(false) || setIsAuthModalOpen(true)}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
           currentUser={currentUser}
           onOpenAIChat={() => setIsAIChatOpen(true)}
           onOpenFollowModal={() => setIsFollowModalOpen(true)}
@@ -257,6 +354,7 @@ export default function App() {
 
       {isAIChatOpen && (
         <AIYoungerSelfChat
+          activeJourney={activeJourney}
           initialEra={initialAIChatEra}
           onClose={() => setIsAIChatOpen(false)}
           levels={currentProfile?.levels || []}
@@ -278,6 +376,8 @@ export default function App() {
         <SentimentAnalyticsModal
           onClose={() => setIsSentimentModalOpen(false)}
           profile={currentProfile}
+          activeJourney={activeJourney}
+          allProfiles={profiles}
         />
       )}
 

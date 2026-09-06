@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, User, Lock, Mail, Trophy, Sparkles, LogIn, UserPlus } from 'lucide-react';
+import { API_BASE_URL } from '../utils/api';
 
 export default function AuthModal({ onClose, onAuthSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,7 +22,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
       const googleUserEmail = email || 'karan.sharma.athlete@gmail.com';
       const googleUserName = name || 'Karan Sharma';
 
-      const res = await fetch('http://localhost:5000/api/auth/google', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -56,7 +57,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
 
     try {
       if (isLogin) {
-        const res = await fetch('http://localhost:5000/api/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -72,7 +73,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
         onAuthSuccess(data.user);
         onClose();
       } else {
-        const res = await fetch('http://localhost:5000/api/auth/register', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
