@@ -52,7 +52,9 @@ export async function ingestMemoryPayload(memoryPayload) {
     emotionTags = [],
     contextTags = [],
     sentimentScore,
-    mediaUrl = null
+    mediaUrl = null,
+    journeyType = null,   // [Audit H-2] domain scoping
+    domain = null         // [Audit H-2] domain scoping
   } = memoryPayload;
 
   // 1. Unique Memory ID Generation
@@ -83,6 +85,8 @@ export async function ingestMemoryPayload(memoryPayload) {
     userId,
     title,
     era,
+    journeyType,   // [Audit H-2]
+    domain,        // [Audit H-2]
     entryDate,
     emotionTags: Array.isArray(emotionTags) ? emotionTags : [emotionTags],
     contextTags: Array.isArray(contextTags) ? contextTags : [contextTags],

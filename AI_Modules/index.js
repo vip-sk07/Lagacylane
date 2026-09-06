@@ -4,12 +4,15 @@
  * Handles vector embedding generation, AES-256 memory encryption, Era-Filtered RAG retrieval, Persona Orchestration, and WebSocket Token Streaming.
  */
 
+// Load .env into process.env for standalone CLI usage (tests, scripts)
+import 'dotenv/config';
+
 import { generateYoungerSelfResponse } from './personaOrchestrator.js';
 
 // Re-export vector embedding, encryption, vector storage, ingestion service, RAG, Persona Orchestrator & WebSocket modules
 export { generateEmbedding } from './embeddings.js';
 export { encryptText, decryptText } from './encryption.js';
-export { storeVectorEmbedding, searchVectorStore, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
+export { storeVectorEmbedding, searchVectorStore, removeUserVectors, getSupabaseSchemaSQL, cosineSimilarity } from './vectorStore.js';
 export { formatEmbeddingPayload, ingestMemoryPayload, searchMemoriesByQuery } from './ingestionService.js';
 export { retrieveEraContext, estimateTokens } from './ragEngine.js';
 export { 
