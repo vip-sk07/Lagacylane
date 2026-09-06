@@ -39,7 +39,9 @@ function compressText(text, maxChars = 300) {
  * 
  * Executes an era-constrained semantic retrieval pipeline:
  *  1. Hard Metadata Filtering (Stage 1): Filters strictly by userId AND selectedEra.
- *     Ensures ZERO context bleeding from other eras/years.
+ *     When journeyType and domain are provided, also filters by those fields to
+ *     ensure ZERO cross-domain context bleeding (e.g. Cricket chat cannot surface
+ *     Football or Life Journal memories even if they share the same era string).
  *  2. Vector Similarity Matching (Stage 2): Vectorizes userPrompt & computes Cosine Similarity.
  *  3. Fallback Handling: Returns sparse-data warning if zero memories match the era.
  *  4. Token-Budgeted Context Compression: Formats into condensed markdown (< 800 tokens).
@@ -48,10 +50,12 @@ function compressText(text, maxChars = 300) {
  * @param {string} params.userId - User ID
  * @param {string} params.selectedEra - Selected Era string (e.g., "Youth Era (2018-2020)")
  * @param {string} params.userPrompt - Input prompt from user
+ * @param {string} [params.journeyType] - 'sports' | 'life' | undefined (no filter if omitted)
+ * @param {string} [params.domain] - e.g. 'football' | 'cricket' | undefined (no filter if omitted)
  * @param {number} [params.topK=4] - Max entries to retrieve (3 to 5)
  * @returns {Promise<object>} RAG Context Result payload
  */
-export async function retrieveEraContext({ userId, selectedEra, userPrompt, topK = 4 }) {
+export async function retrieveEraContext({ userId, selectedEra, userPrompt, journeyType, domain, topK = 4 }) {
   const fallbackResponse = {
     isSparse: true,
     count: 0,
@@ -67,12 +71,15 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, topK
   }
 
   // -------------------------------------------------------------
-  // STAGE 1: Hard Metadata Filtering (userId = :userId AND era = :selectedEra)
-  // Under NO circumstances may memories from future/other eras be retrieved.
+  // STAGE 1: Hard Metadata Filtering
+  // userId + era are always required.
+  // journeyType + domain added when provided for cross-domain isolation.
   // -------------------------------------------------------------
   const stage1Filters = {
     userId: userId,
-    era: selectedEra
+    era: selectedEra,
+    ...(journeyType ? { journeyType } : {}),
+    ...(domain      ? { domain }      : {})
   };
 
   // Perform search with zero prompt first to retrieve all candidates for Stage 1 check

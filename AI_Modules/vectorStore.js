@@ -58,6 +58,8 @@ export async function storeVectorEmbedding({ memoryId, userId, embedding, metada
     title: metadata.title,
     encrypted_text: encryptedText,
     era: metadata.era,
+    journey_type: metadata.journeyType || null,  // [Audit H-2] domain scoping
+    domain: metadata.domain || null,              // [Audit H-2] domain scoping
     entry_date: metadata.entryDate,
     emotion_tags: metadata.emotionTags || [],
     context_tags: metadata.contextTags || [],
@@ -133,6 +135,13 @@ export async function searchVectorStore(queryVector, filters = {}, topK = 5) {
   if (filters.era) {
     candidates = candidates.filter(c => c.era === filters.era);
   }
+  // Audit H-2: Domain scoping — prevents cross-domain RAG leakage
+  if (filters.journeyType) {
+    candidates = candidates.filter(c => c.journey_type === filters.journeyType);
+  }
+  if (filters.domain) {
+    candidates = candidates.filter(c => c.domain === filters.domain);
+  }
   if (filters.minSentiment !== undefined) {
     candidates = candidates.filter(c => c.sentiment_score >= filters.minSentiment);
   }
@@ -142,6 +151,8 @@ export async function searchVectorStore(queryVector, filters = {}, topK = 5) {
     memoryId: c.id,
     title: c.title,
     era: c.era,
+    journeyType: c.journey_type,
+    domain: c.domain,
     entryDate: c.entry_date,
     sentimentScore: c.sentiment_score,
     encryptedText: c.encrypted_text,
@@ -150,6 +161,19 @@ export async function searchVectorStore(queryVector, filters = {}, topK = 5) {
 
   scoredResults.sort((a, b) => b.similarity - a.similarity);
   return scoredResults.slice(0, topK);
+}
+
+/**
+ * Removes all vector embeddings for a given userId from the local in-memory index.
+ * Called on account deletion to prevent orphaned vectors [Audit M-1].
+ * @param {string} userId
+ */
+export function removeUserVectors(userId) {
+  const before = localVectorIndex.length;
+  const afterList = localVectorIndex.filter(r => r.user_id !== userId);
+  localVectorIndex.length = 0;
+  afterList.forEach(r => localVectorIndex.push(r));
+  console.log(`Vector store: removed ${before - localVectorIndex.length} embeddings for user ${userId}`);
 }
 
 /**

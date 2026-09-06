@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -14,8 +15,10 @@ import {
   getSupabaseSchemaSQL,
   retrieveEraContext,
   generateYoungerSelfResponse,
-  initSidelineWebSocketServer
+  initSidelineWebSocketServer,
+  removeUserVectors
 } from '../AI_Modules/index.js';
+import { encryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,9 +26,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 
-app.use(cors());
-app.use(express.json());
+// CORS — restrict to configured frontend origin
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Ensure uploads folder exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -36,18 +45,31 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve uploaded images statically
 app.use('/uploads', express.static(uploadsDir));
 
-// Storage Engine for Image Uploads
+// Storage Engine for Image Uploads — with file-type and size guards
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname) || '.jpg';
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
     cb(null, 'media-' + uniqueSuffix + ext);
   }
 });
-const upload = multer({ storage });
+
+const ALLOWED_MIME_TYPES = /^(image\/(jpeg|jpg|png|gif|webp)|video\/(mp4|quicktime|mov))$/;
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB max
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported file type: ${file.mimetype}. Only images and videos allowed.`), false);
+    }
+  }
+});
 
 // ----------------------------------------------------
 // 1. AUTHENTICATION & USER MANAGEMENT ENDPOINTS
@@ -229,51 +251,44 @@ app.post('/api/upload', upload.single('media'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded.' });
   }
-  const fileUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+  // Use API_BASE_URL env var so deployed URL is correct (not hardcoded localhost)
+  const fileUrl = `${API_BASE_URL}/uploads/${req.file.filename}`;
   res.json({ url: fileUrl });
+});
+
+// Multer error handler (catches fileFilter rejections)
+app.use((err, req, res, next) => {
+  if (err && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large. Maximum upload size is 20 MB.' });
+  }
+  if (err && err.message && err.message.includes('Unsupported file type')) {
+    return res.status(415).json({ error: err.message });
+  }
+  next(err);
 });
 
 // ----------------------------------------------------
 // 4. CHRONOLOGICAL TIMELINE & MEMORY LOGS (MongoDB NoSQL)
 // ----------------------------------------------------
 
-app.get('/api/memories/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const collection = getCollection('MemoryLogs');
-    const rows = await collection.find({ User_ID: userId }).toArray();
-
-    const memories = rows.map((r, idx) => ({
-      id: r.Memory_ID,
-      levelNumber: r.LevelNumber || idx + 1,
-      title: r.Title,
-      era: r.Era || r.Tags?.era || 'Youth Era (2018-2020)',
-      date: r.EntryDate,
-      stars: r.Stars || 3,
-      status: r.Status || (idx === rows.length - 1 ? 'current' : 'completed'),
-      matchDetails: r.MatchDetails,
-      content: r.TextEncrypted,
-      victoryMessage: r.VictoryMessage || '',
-      sentiment: r.SentimentScore,
-      media: r.MediaAssets ? r.MediaAssets[0]?.url : null,
-      tags: r.Tags?.context || []
-    }));
-
-    res.json({ memories });
-  } catch (err) {
-    console.error('Fetch Memories Error:', err);
-    res.status(500).json({ error: 'Server error fetching memories.' });
-  }
+// Health-check / test-connection probe used by Frontend
+app.get('/api/memories/test-connection', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Semantic Search & Tag Filtering Endpoint (SRS Page 16 - REQ-3)
+// IMPORTANT: must be registered BEFORE /api/memories/:userId to avoid
+// Express matching 'search' as the :userId parameter
 app.get('/api/memories/search/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { q, era, tag } = req.query;
+    const { q, era, tag, journeyType, domain } = req.query;
 
     const collection = getCollection('MemoryLogs');
-    const rows = await collection.find({ User_ID: userId }).toArray();
+    const dbQuery = { User_ID: userId };
+    if (journeyType) dbQuery.JourneyType = journeyType;
+    if (domain)      dbQuery.Domain = domain;
+    const rows = await collection.find(dbQuery).toArray();
 
     let filtered = rows;
 
@@ -287,7 +302,6 @@ app.get('/api/memories/search/:userId', async (req, res) => {
       const query = q.toLowerCase();
       filtered = filtered.filter(r =>
         r.Title?.toLowerCase().includes(query) ||
-        r.TextEncrypted?.toLowerCase().includes(query) ||
         r.MatchDetails?.toLowerCase().includes(query) ||
         r.VictoryMessage?.toLowerCase().includes(query)
       );
@@ -299,14 +313,66 @@ app.get('/api/memories/search/:userId', async (req, res) => {
     res.status(500).json({ error: 'Server error searching memories.' });
   }
 });
+
+// GET memories with domain scoping and pagination
+app.get('/api/memories/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { journeyType, domain, page = 1, limit = 50 } = req.query;
+    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+
+    const collection = getCollection('MemoryLogs');
+    const dbQuery = { User_ID: userId };
+    if (journeyType) dbQuery.JourneyType = journeyType;
+    if (domain)      dbQuery.Domain = domain;
+
+    const rows = await collection.find(dbQuery).skip(skip).limit(parseInt(limit, 10)).toArray();
+
+    const memories = rows.map((r, idx) => ({
+      id: r.Memory_ID,
+      levelNumber: r.LevelNumber || skip + idx + 1,
+      title: r.Title,
+      era: r.Era || r.Tags?.era || 'Youth Era (2018-2020)',
+      journeyType: r.JourneyType || 'sports',
+      domain: r.Domain || 'football',
+      date: r.EntryDate,
+      stars: r.Stars || 3,
+      status: r.Status || 'completed',
+      matchDetails: r.MatchDetails,
+      content: r.TextEncrypted,  // encrypted — decrypt client-side or via /api/chat
+      victoryMessage: r.VictoryMessage || '',
+      sentiment: r.SentimentScore,
+      media: r.MediaAssets ? r.MediaAssets[0]?.url : null,
+      tags: r.Tags?.context || []
+    }));
+
+    res.json({ memories, page: parseInt(page, 10), limit: parseInt(limit, 10) });
+  } catch (err) {
+    console.error('Fetch Memories Error:', err);
+    res.status(500).json({ error: 'Server error fetching memories.' });
+  }
+});
+
 app.post('/api/memories', async (req, res) => {
   try {
-    const { userId, title, era, date, matchDetails, content, victoryMessage, stars, mediaUrl, tags } = req.body;
+    const {
+      userId, title, era, date, matchDetails, content, victoryMessage,
+      stars, mediaUrl, tags,
+      journeyType = 'sports',  // Phase 5/6 domain-scoped fields
+      domain = 'football'
+    } = req.body;
+
+    if (!userId || !title) {
+      return res.status(400).json({ error: 'userId and title are required.' });
+    }
 
     const memoryId = 'mem_' + Date.now();
-    
+
     // Analyze sentiment dynamically using the AI module
-    const sentimentScore = analyzeSentiment(title, content + ' ' + (victoryMessage || ''));
+    const sentimentScore = analyzeSentiment(title, (content || '') + ' ' + (victoryMessage || ''));
+
+    // AES-256-GCM encrypt the journal text before storage (SRS requirement)
+    const encryptedPayload = encryptText(content || '');
 
     // Ingest into Vector Store asynchronously
     ingestMemoryPayload({
@@ -318,17 +384,21 @@ app.post('/api/memories', async (req, res) => {
       emotionTags: tags,
       contextTags: tags,
       sentimentScore,
-      mediaUrl
+      mediaUrl,
+      journeyType,
+      domain
     }).catch(err => console.error('Background Vector Ingest Warning:', err.message));
 
     const doc = {
       Memory_ID: memoryId,
       User_ID: userId,
+      JourneyType: journeyType,  // domain-scoped
+      Domain: domain,            // domain-scoped
       EntryDate: date || new Date().toISOString().split('T')[0],
       Title: title,
       Era: era || 'Youth Era (2018-2020)',
       MatchDetails: matchDetails || title,
-      TextEncrypted: content,
+      TextEncrypted: encryptedPayload.encoded,  // AES-256-GCM encrypted
       VictoryMessage: victoryMessage || '',
       Stars: Number(stars) || 3,
       Status: 'completed',
@@ -538,7 +608,7 @@ app.delete('/api/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Delete from SQLite
+    // Delete from SQLite (cascades to AthleteProfiles, UserConnections, FamilyAccessControl via FK)
     db.prepare('DELETE FROM Users WHERE User_ID = ?').run(userId);
 
     // Delete from MongoDB
@@ -547,6 +617,11 @@ app.delete('/api/users/:userId', async (req, res) => {
 
     const chatCollection = getCollection('ChatSessions');
     await chatCollection.deleteMany({ User_ID: userId });
+
+    // Purge from in-memory vector store [Audit M-1: prevents orphaned embeddings post-delete]
+    if (typeof removeUserVectors === 'function') {
+      removeUserVectors(userId);
+    }
 
     res.json({ message: 'User account and all personal timeline memories permanently deleted.' });
   } catch (err) {
