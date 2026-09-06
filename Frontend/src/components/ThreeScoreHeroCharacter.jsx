@@ -1,15 +1,63 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { getActiveDomainDescriptor, getActiveTheme } from '../utils/journey';
 
-export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
+export default function ThreeScoreHeroCharacter({ journey, sport = 'football' }) {
   const mountRef = useRef(null);
 
+  // Persistent refs
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const characterGroupRef = useRef(null);
+  const accessoryGroupRef = useRef(null);
+  const torsoMatRef = useRef(null);
+  const sockMatRef = useRef(null);
+  const ringMatRef = useRef(null);
+  const rimLightRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const isIntersectingRef = useRef(true);
+  const isDocumentVisibleRef = useRef(true);
+  const clockRef = useRef(new THREE.Clock());
+  const shouldRotateAccessoryRef = useRef(true);
+
+  const activeDescriptor = getActiveDomainDescriptor(journey || sport);
+  const activeTheme = journey ? getActiveTheme(journey) : activeDescriptor.theme;
+  const domainId = activeDescriptor.id;
+  const jerseyColor = activeTheme?.threeColors?.primary ?? 0x10b981;
+  const accentColor = activeTheme?.threeColors?.secondary ?? 0x34d399;
+
+  // Helper to dispose geometries and materials recursively
+  const disposeObject = (obj) => {
+    if (!obj) return;
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) {
+        obj.material.forEach((m) => m.dispose());
+      } else {
+        obj.material.dispose();
+      }
+    }
+    if (obj.children) {
+      while (obj.children.length > 0) {
+        const child = obj.children[0];
+        obj.remove(child);
+        disposeObject(child);
+      }
+    }
+  };
+
+  // ----------------------------------------------------
+  // 1. ONE-TIME SETUP: Rig, Camera, Renderer, Animation Loop
+  // ----------------------------------------------------
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
-    // Scene, Camera, Renderer
+    // Scene & Camera
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
     const camera = new THREE.PerspectiveCamera(
       50,
       container.clientWidth / container.clientHeight,
@@ -18,19 +66,14 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
     );
     camera.position.set(0, 3.8, 11);
     camera.lookAt(0, 2.5, 0);
+    cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Persistent WebGLRenderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
-
-    // Color theme
-    let jerseyColor = 0x10b981; // Emerald Green for Football
-    let accentColor = 0x34d399;
-    if (sport === 'cricket') {
-      jerseyColor = 0x84cc16; // Lime Green/White for Cricket
-      accentColor = 0xa3e635;
-    }
+    rendererRef.current = renderer;
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -43,20 +86,21 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
     const rimLight = new THREE.SpotLight(jerseyColor, 3, 30, Math.PI / 4, 0.5);
     rimLight.position.set(-5, 8, -5);
     scene.add(rimLight);
+    rimLightRef.current = rimLight;
 
     // ----------------------------------------------------
-    // 3D SCORE! HERO CHARACTER MODEL ASSEMBLY
+    // ASSEMBLE PERSISTENT SCORE! HERO CHARACTER MODEL RIG
     // ----------------------------------------------------
     const characterGroup = new THREE.Group();
+    characterGroupRef.current = characterGroup;
 
     // 1. Head & Hair
     const headGeo = new THREE.SphereGeometry(0.7, 24, 24);
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xf3d5b5, roughness: 0.5 }); // Skin tone
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xf3d5b5, roughness: 0.5 });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.y = 4.2;
     characterGroup.add(head);
 
-    // Stylized Score! Hero Hair
     const hairGeo = new THREE.ConeGeometry(0.8, 0.8, 16);
     const hairMat = new THREE.MeshStandardMaterial({ color: 0x1e1b18, roughness: 0.8 });
     const hair = new THREE.Mesh(hairGeo, hairMat);
@@ -64,18 +108,19 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
     hair.rotation.x = -0.2;
     characterGroup.add(hair);
 
-    // 2. Torso / Jersey (#10)
+    // 2. Torso / Jersey (with mutable material ref)
     const torsoGeo = new THREE.CylinderGeometry(0.85, 0.75, 2.2, 16);
     const torsoMat = new THREE.MeshStandardMaterial({
       color: jerseyColor,
       roughness: 0.3,
       metalness: 0.1
     });
+    torsoMatRef.current = torsoMat;
     const torso = new THREE.Mesh(torsoGeo, torsoMat);
     torso.position.y = 2.7;
     characterGroup.add(torso);
 
-    // Jersey Number #10 Emblem
+    // Number #10 Emblem
     const numGeo = new THREE.PlaneGeometry(0.6, 0.6);
     const numMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
     const numEmblem = new THREE.Mesh(numGeo, numMat);
@@ -89,21 +134,23 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
     shorts.position.y = 1.45;
     characterGroup.add(shorts);
 
-    // 4. Legs & Athletic Cleats/Pads
+    // 4. Legs, Socks & Cleats
+    const sockMat = new THREE.MeshStandardMaterial({ color: accentColor });
+    sockMatRef.current = sockMat;
+
     const createLeg = (xPos) => {
       const legGeo = new THREE.CylinderGeometry(0.3, 0.25, 1.4, 12);
       const legMat = new THREE.MeshStandardMaterial({ color: 0xf3d5b5 });
       const leg = new THREE.Mesh(legGeo, legMat);
       leg.position.set(xPos, 0.6, 0);
 
-      // Socks
+      // Sock
       const sockGeo = new THREE.CylinderGeometry(0.31, 0.28, 0.8, 12);
-      const sockMat = new THREE.MeshStandardMaterial({ color: accentColor });
       const sock = new THREE.Mesh(sockGeo, sockMat);
       sock.position.set(xPos, 0.4, 0);
       characterGroup.add(sock);
 
-      // Cleats/Shoes
+      // Shoe / Cleat
       const shoeGeo = new THREE.BoxGeometry(0.4, 0.3, 0.8);
       const shoeMat = new THREE.MeshStandardMaterial({ color: 0x020617 });
       const shoe = new THREE.Mesh(shoeGeo, shoeMat);
@@ -129,72 +176,161 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
     rightArm.rotation.z = -0.3;
     characterGroup.add(rightArm);
 
-    // 6. Sport Specific Accessory (Soccer Ball or Cricket Bat)
-    let accessory;
-    if (sport === 'football') {
-      const ballGeo = new THREE.IcosahedronGeometry(0.7, 2);
-      const ballMat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
-      accessory = new THREE.Mesh(ballGeo, ballMat);
-      accessory.position.set(0.9, 0.35, 0.6);
-    } else {
-      // Cricket Bat
-      const batGeo = new THREE.BoxGeometry(0.3, 1.8, 0.1);
-      const batMat = new THREE.MeshStandardMaterial({ color: 0xca8a04 }); // Wood
-      accessory = new THREE.Mesh(batGeo, batMat);
-      accessory.position.set(1.1, 1.8, 0.3);
-      accessory.rotation.z = -0.4;
-    }
-    characterGroup.add(accessory);
-
-    // 7. Base Podium Ring
+    // 6. Base Podium Ring (with mutable material ref)
     const ringGeo = new THREE.RingGeometry(1.8, 2.2, 32);
     const ringMat = new THREE.MeshBasicMaterial({ color: jerseyColor, side: THREE.DoubleSide });
+    ringMatRef.current = ringMat;
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.02;
     characterGroup.add(ring);
 
+    // 7. Persistent Accessory Container Group (Swapped via refs)
+    const accessoryGroup = new THREE.Group();
+    characterGroup.add(accessoryGroup);
+    accessoryGroupRef.current = accessoryGroup;
+
     scene.add(characterGroup);
 
-    // Animation Loop
-    let animationFrameId;
-    const clock = new THREE.Clock();
+    // Animation Loop with Visibility Safeguards
+    let isRunning = false;
 
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+    const tick = () => {
+      if (!isRunning) return;
+
+      const elapsedTime = clockRef.current.getElapsedTime();
 
       // Rotate Score! Hero character smoothly
-      characterGroup.rotation.y = Math.sin(elapsedTime * 0.5) * 0.4;
-      characterGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.08;
+      if (characterGroupRef.current) {
+        characterGroupRef.current.rotation.y = Math.sin(elapsedTime * 0.5) * 0.4;
+        characterGroupRef.current.position.y = Math.sin(elapsedTime * 1.5) * 0.08;
+      }
 
-      if (accessory && sport === 'football') {
-        accessory.rotation.y = elapsedTime * 1.2;
+      // Rotate accessory if applicable (e.g. soccer ball or basketball)
+      if (accessoryGroupRef.current && shouldRotateAccessoryRef.current) {
+        accessoryGroupRef.current.rotation.y = elapsedTime * 1.2;
       }
 
       renderer.render(scene, camera);
+      animFrameRef.current = requestAnimationFrame(tick);
     };
 
-    animate();
+    const startLoop = () => {
+      if (!isRunning && isIntersectingRef.current && isDocumentVisibleRef.current) {
+        isRunning = true;
+        animFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
 
+    const stopLoop = () => {
+      if (isRunning) {
+        isRunning = false;
+        if (animFrameRef.current) {
+          cancelAnimationFrame(animFrameRef.current);
+          animFrameRef.current = null;
+        }
+      }
+    };
+
+    startLoop();
+
+    // IntersectionObserver to pause rendering when offscreen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersectingRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
+
+    // Page Visibility API
+    const handleVisibilityChange = () => {
+      isDocumentVisibleRef.current = !document.hidden;
+      if (!document.hidden && isIntersectingRef.current) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Resize listener
     const handleResize = () => {
-      if (!container) return;
+      if (!container || !camera || !renderer) return;
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
+
+      disposeObject(characterGroup);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
-  }, [sport]);
+  }, []); // Mounts once
+
+  // ----------------------------------------------------
+  // 2. DOMAIN SYNC EFFECT: In-place material & accessory swapping
+  // ----------------------------------------------------
+  useEffect(() => {
+    if (!sceneRef.current) return;
+
+    // 1. Update Jersey Color
+    if (torsoMatRef.current) {
+      torsoMatRef.current.color.setHex(jerseyColor);
+    }
+
+    // 2. Update Socks Accent Color
+    if (sockMatRef.current) {
+      sockMatRef.current.color.setHex(accentColor);
+    }
+
+    // 3. Update Base Podium Ring Color
+    if (ringMatRef.current) {
+      ringMatRef.current.color.setHex(jerseyColor);
+    }
+
+    // 4. Update Rim Spotlight Color
+    if (rimLightRef.current) {
+      rimLightRef.current.color.setHex(jerseyColor);
+    }
+
+    // 5. Swap Character Accessory via Domain Descriptor
+    if (accessoryGroupRef.current) {
+      disposeObject(accessoryGroupRef.current);
+
+      if (typeof activeDescriptor.buildAccessory === 'function') {
+        const newAccessory = activeDescriptor.buildAccessory(THREE, activeTheme);
+        accessoryGroupRef.current.add(newAccessory);
+      }
+
+      shouldRotateAccessoryRef.current = domainId === 'football' || domainId === 'basketball';
+    }
+  }, [domainId, jerseyColor, accentColor]);
+
+  const roleLabel =
+    domainId === 'football'
+      ? 'Footballer'
+      : domainId === 'cricket'
+      ? 'Cricketer'
+      : domainId === 'basketball'
+      ? 'Hooper'
+      : domainId === 'athletics'
+      ? 'Runner / Athlete'
+      : 'Chronicler';
 
   return (
     <div className="relative w-full h-[380px] rounded-3xl overflow-hidden glass-panel border border-slate-800 shadow-2xl flex items-center justify-center my-6">
@@ -203,11 +339,11 @@ export default function ThreeScoreHeroCharacter({ sport = 'football' }) {
       {/* Score! Hero Character Badge Overlay */}
       <div className="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-slate-950/90 text-xs font-black text-white border border-slate-800 shadow-lg flex items-center gap-2">
         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-        <span>3D Score! Hero {sport === 'football' ? 'Footballer' : 'Cricketer'} #10</span>
+        <span>3D Score! Hero {roleLabel} #10</span>
       </div>
 
       <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-slate-950/90 text-slate-300 text-[10px] font-extrabold border border-slate-800 shadow-md">
-        Dynamically Customized to Registered Athlete
+        Dynamically Customized to Active Domain
       </div>
     </div>
   );

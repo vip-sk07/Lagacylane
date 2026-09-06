@@ -1,15 +1,59 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { getActiveDomainDescriptor, getActiveTheme } from '../utils/journey';
 
-export default function ThreeCanvas({ sport = 'football' }) {
+export default function ThreeCanvas({ journey, sport = 'football' }) {
   const mountRef = useRef(null);
 
+  // Persistent Three.js instance refs
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const groundGroupRef = useRef(null);
+  const propGroupRef = useRef(null);
+  const mainSpotLightRef = useRef(null);
+  const particlesRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const isIntersectingRef = useRef(true);
+  const isDocumentVisibleRef = useRef(true);
+  const clockRef = useRef(new THREE.Clock());
+
+  const activeDescriptor = getActiveDomainDescriptor(journey || sport);
+  const activeTheme = journey ? getActiveTheme(journey) : activeDescriptor.theme;
+  const domainId = activeDescriptor.id;
+  const primaryColor = activeTheme?.threeColors?.primary ?? 0x10b981;
+
+  // Helper to dispose geometries and materials recursively
+  const disposeObject = (obj) => {
+    if (!obj) return;
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) {
+        obj.material.forEach((m) => m.dispose());
+      } else {
+        obj.material.dispose();
+      }
+    }
+    if (obj.children) {
+      while (obj.children.length > 0) {
+        const child = obj.children[0];
+        obj.remove(child);
+        disposeObject(child);
+      }
+    }
+  };
+
+  // ----------------------------------------------------
+  // 1. ONE-TIME SETUP: Scene, Camera, Renderer, Loop (Mount Once)
+  // ----------------------------------------------------
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
-    // Scene, Camera, Renderer setup
+    // Scene & Perspective Camera
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
     const camera = new THREE.PerspectiveCamera(
       60,
       container.clientWidth / container.clientHeight,
@@ -18,34 +62,23 @@ export default function ThreeCanvas({ sport = 'football' }) {
     );
     camera.position.set(0, 22, 36);
     camera.lookAt(0, 0, 0);
+    cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Persistent WebGLRenderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
 
-    // Color definitions per sport
-    let primaryColor = 0x10b981; // Green for Football
-    let secondaryColor = 0x059669;
-
-    if (sport === 'cricket') {
-      primaryColor = 0x22c55e; // Grass green for Cricket
-      secondaryColor = 0xd97706; // Clay brown pitch
-    } else if (sport === 'basketball') {
-      primaryColor = 0xf97316; // Orange for Basketball
-      secondaryColor = 0xea580c; // Hardwood
-    } else if (sport === 'journaler') {
-      primaryColor = 0x06b6d4; // Cyan galaxy
-      secondaryColor = 0x3b82f6;
-    }
-
-    // Ambient and Stadium Floodlights
+    // Lighting (persistent lights)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambientLight);
 
     const mainSpotLight = new THREE.SpotLight(primaryColor, 4, 120, Math.PI / 4, 0.5);
     mainSpotLight.position.set(0, 35, 20);
     scene.add(mainSpotLight);
+    mainSpotLightRef.current = mainSpotLight;
 
     const stadiumLight2 = new THREE.SpotLight(0x3b82f6, 2.5, 120, Math.PI / 4, 0.5);
     stadiumLight2.position.set(-30, 30, -30);
@@ -55,140 +88,20 @@ export default function ThreeCanvas({ sport = 'football' }) {
     stadiumLight3.position.set(30, 30, -30);
     scene.add(stadiumLight3);
 
-    // ----------------------------------------------------
-    // DYNAMIC GROUND GENERATION BASED ON SPORT PASSION
-    // ----------------------------------------------------
-
+    // Persistent Containers for Ground and Floating Prop
     const groundGroup = new THREE.Group();
-
-    if (sport === 'football') {
-      // ⚽ FOOTBALL PITCH GROUND
-      const pitchGeo = new THREE.PlaneGeometry(60, 90);
-      const pitchMat = new THREE.MeshStandardMaterial({
-        color: 0x062817,
-        roughness: 0.8,
-        metalness: 0.1
-      });
-      const pitchMesh = new THREE.Mesh(pitchGeo, pitchMat);
-      pitchMesh.rotation.x = -Math.PI / 2;
-      groundGroup.add(pitchMesh);
-
-      // Pitch White Lines & Grid Helper
-      const grid = new THREE.GridHelper(90, 30, 0x22c55e, 0x14532d);
-      grid.position.y = 0.05;
-      groundGroup.add(grid);
-
-      // Center Circle Line
-      const circleGeo = new THREE.RingGeometry(8, 8.4, 32);
-      const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-      const circleMesh = new THREE.Mesh(circleGeo, lineMat);
-      circleMesh.rotation.x = -Math.PI / 2;
-      circleMesh.position.y = 0.08;
-      groundGroup.add(circleMesh);
-    } else if (sport === 'cricket') {
-      // 🏏 CRICKET STADIUM & PITCH GROUND
-      // Circular Green Outfield Ground
-      const outfieldGeo = new THREE.CircleGeometry(42, 48);
-      const outfieldMat = new THREE.MeshStandardMaterial({
-        color: 0x0a331c,
-        roughness: 0.7
-      });
-      const outfieldMesh = new THREE.Mesh(outfieldGeo, outfieldMat);
-      outfieldMesh.rotation.x = -Math.PI / 2;
-      groundGroup.add(outfieldMesh);
-
-      // Rectangular Brown Clay Pitch Strip in Center
-      const pitchStripGeo = new THREE.PlaneGeometry(10, 30);
-      const pitchStripMat = new THREE.MeshStandardMaterial({
-        color: 0xb45309, // Clay brown
-        roughness: 0.9
-      });
-      const pitchStripMesh = new THREE.Mesh(pitchStripGeo, pitchStripMat);
-      pitchStripMesh.rotation.x = -Math.PI / 2;
-      pitchStripMesh.position.y = 0.06;
-      groundGroup.add(pitchStripMesh);
-
-      // 3D Cricket Wickets / Stumps (at both ends of pitch)
-      const createStumps = (zPos) => {
-        for (let i = -1; i <= 1; i++) {
-          const stumpGeo = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 12);
-          const stumpMat = new THREE.MeshStandardMaterial({ color: 0xfef08a }); // Wooden yellow
-          const stump = new THREE.Mesh(stumpGeo, stumpMat);
-          stump.position.set(i * 0.5, 1.25, zPos);
-          groundGroup.add(stump);
-        }
-      };
-      createStumps(13);
-      createStumps(-13);
-    } else if (sport === 'basketball') {
-      // 🏀 BASKETBALL HARDWOOD COURT GROUND
-      const courtGeo = new THREE.PlaneGeometry(55, 80);
-      const courtMat = new THREE.MeshStandardMaterial({
-        color: 0x431407, // Dark hardwood
-        roughness: 0.3,
-        metalness: 0.2
-      });
-      const courtMesh = new THREE.Mesh(courtGeo, courtMat);
-      courtMesh.rotation.x = -Math.PI / 2;
-      groundGroup.add(courtMesh);
-
-      // Court Lines Grid
-      const courtGrid = new THREE.GridHelper(80, 20, 0xf97316, 0x7c2d12);
-      courtGrid.position.y = 0.05;
-      groundGroup.add(courtGrid);
-
-      // Key Paint Rectangles
-      const keyGeo = new THREE.PlaneGeometry(14, 20);
-      const keyMat = new THREE.MeshBasicMaterial({ color: 0xc2410c, side: THREE.DoubleSide });
-      const keyMesh = new THREE.Mesh(keyGeo, keyMat);
-      keyMesh.rotation.x = -Math.PI / 2;
-      keyMesh.position.set(0, 0.07, -25);
-      groundGroup.add(keyMesh);
-    } else {
-      // 📖 JOURNALER GALAXY HORIZON
-      const grid = new THREE.GridHelper(100, 40, 0x06b6d4, 0x0f172a);
-      grid.position.y = 0.05;
-      groundGroup.add(grid);
-    }
-
     scene.add(groundGroup);
+    groundGroupRef.current = groundGroup;
 
-    // ----------------------------------------------------
-    // FLOATING 3D SPORT BALL / TROPHY OBJECT
-    // ----------------------------------------------------
+    const propGroup = new THREE.Group();
+    scene.add(propGroup);
+    propGroupRef.current = propGroup;
 
-    let ballGeo = new THREE.IcosahedronGeometry(2.8, 2);
-    let ballMat = new THREE.MeshStandardMaterial({
-      color: primaryColor,
-      wireframe: true,
-      emissive: primaryColor,
-      emissiveIntensity: 0.5,
-      roughness: 0.2
-    });
-
-    if (sport === 'cricket') {
-      ballGeo = new THREE.SphereGeometry(2.5, 24, 24);
-      ballMat = new THREE.MeshStandardMaterial({
-        color: 0xd97706, // Leather red/gold
-        roughness: 0.3,
-        metalness: 0.3,
-        emissive: 0x92400e,
-        emissiveIntensity: 0.4
-      });
-    }
-
-    const floatingBall = new THREE.Mesh(ballGeo, ballMat);
-    floatingBall.position.set(0, 9, -15);
-    scene.add(floatingBall);
-
-    // ----------------------------------------------------
-    // FLOATING STADIUM LIGHT PARTICLES
-    // ----------------------------------------------------
+    // Floating Particles System
     const particleCount = 250;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
-
     const tempColor = new THREE.Color(primaryColor);
 
     for (let i = 0; i < particleCount; i++) {
@@ -214,53 +127,171 @@ export default function ThreeCanvas({ sport = 'football' }) {
 
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
+    particlesRef.current = particles;
 
-    // Animation Loop
-    let animationFrameId;
-    const clock = new THREE.Clock();
+    // Animation Loop with Visibility Safeguard
+    let isRunning = false;
 
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+    const tick = () => {
+      if (!isRunning) return;
 
-      // Rotate floating ball
-      floatingBall.rotation.x = elapsedTime * 0.4;
-      floatingBall.rotation.y = elapsedTime * 0.5;
-      floatingBall.position.y = 9 + Math.sin(elapsedTime * 1.5) * 1.2;
+      const elapsedTime = clockRef.current.getElapsedTime();
 
-      // Animate particles floating
-      const posArr = particles.geometry.attributes.position.array;
-      for (let i = 0; i < particleCount; i++) {
-        posArr[i * 3 + 1] += Math.sin(elapsedTime + i) * 0.012;
+      // Animate floating prop group smoothly
+      if (propGroupRef.current) {
+        propGroupRef.current.rotation.x = elapsedTime * 0.4;
+        propGroupRef.current.rotation.y = elapsedTime * 0.5;
+        propGroupRef.current.position.y = 9 + Math.sin(elapsedTime * 1.5) * 1.2;
       }
-      particles.geometry.attributes.position.needsUpdate = true;
 
-      // Subtle camera rotation
-      camera.position.x = Math.sin(elapsedTime * 0.25) * 3;
+      // Animate particle drift
+      if (particlesRef.current) {
+        const posArr = particlesRef.current.geometry.attributes.position.array;
+        for (let i = 0; i < particleCount; i++) {
+          posArr[i * 3 + 1] += Math.sin(elapsedTime + i) * 0.012;
+        }
+        particlesRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Subtle camera floating movement
+      if (cameraRef.current) {
+        cameraRef.current.position.x = Math.sin(elapsedTime * 0.25) * 3;
+      }
 
       renderer.render(scene, camera);
+      animFrameRef.current = requestAnimationFrame(tick);
     };
 
-    animate();
+    const startLoop = () => {
+      if (!isRunning && isIntersectingRef.current && isDocumentVisibleRef.current) {
+        isRunning = true;
+        animFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
 
+    const stopLoop = () => {
+      if (isRunning) {
+        isRunning = false;
+        if (animFrameRef.current) {
+          cancelAnimationFrame(animFrameRef.current);
+          animFrameRef.current = null;
+        }
+      }
+    };
+
+    startLoop();
+
+    // IntersectionObserver to pause rendering when off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersectingRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+
+    // Page Visibility API to pause rendering when tab is inactive
+    const handleVisibilityChange = () => {
+      isDocumentVisibleRef.current = !document.hidden;
+      if (!document.hidden && isIntersectingRef.current) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Resize Handler
     const handleResize = () => {
-      if (!container) return;
+      if (!container || !camera || !renderer) return;
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
+
+      // Clean up meshes, materials, and renderer
+      disposeObject(groundGroup);
+      disposeObject(propGroup);
+      disposeObject(particles);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
-  }, [sport]);
+  }, []); // Mounts once
+
+  // ----------------------------------------------------
+  // 2. DOMAIN SYNC EFFECT: Config-driven geometry swapping via refs
+  // ----------------------------------------------------
+  useEffect(() => {
+    if (!sceneRef.current) return;
+
+    // 1. Update Spotlight Color without scene re-creation
+    if (mainSpotLightRef.current) {
+      mainSpotLightRef.current.color.setHex(primaryColor);
+    }
+
+    // 2. Update Particle Colors
+    if (particlesRef.current) {
+      const colors = particlesRef.current.geometry.attributes.color.array;
+      const count = colors.length / 3;
+      const tempColor = new THREE.Color(primaryColor);
+      for (let i = 0; i < count; i++) {
+        colors[i * 3] = tempColor.r + (Math.random() - 0.5) * 0.25;
+        colors[i * 3 + 1] = tempColor.g + (Math.random() - 0.5) * 0.25;
+        colors[i * 3 + 2] = tempColor.b + (Math.random() - 0.5) * 0.25;
+      }
+      particlesRef.current.geometry.attributes.color.needsUpdate = true;
+    }
+
+    // 3. Swap Ground Geometry driven by domain descriptor
+    if (groundGroupRef.current) {
+      disposeObject(groundGroupRef.current);
+      if (typeof activeDescriptor.buildGround === 'function') {
+        const newGround = activeDescriptor.buildGround(THREE, activeTheme);
+        groundGroupRef.current.add(newGround);
+      } else {
+        // Safe fallback generic grid
+        const fallbackGrid = new THREE.GridHelper(90, 30, primaryColor, 0x14532d);
+        fallbackGrid.position.y = 0.05;
+        groundGroupRef.current.add(fallbackGrid);
+      }
+    }
+
+    // 4. Swap Floating Ball / Prop Geometry driven by domain descriptor
+    if (propGroupRef.current) {
+      disposeObject(propGroupRef.current);
+      if (typeof activeDescriptor.buildBall === 'function') {
+        const newProp = activeDescriptor.buildBall(THREE, activeTheme);
+        propGroupRef.current.add(newProp);
+      } else {
+        // Safe fallback wireframe icosahedron
+        const fallbackBall = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(2.8, 2),
+          new THREE.MeshStandardMaterial({
+            color: primaryColor,
+            wireframe: true,
+            emissive: primaryColor,
+            emissiveIntensity: 0.5
+          })
+        );
+        fallbackBall.position.set(0, 9, -15);
+        propGroupRef.current.add(fallbackBall);
+      }
+    }
+  }, [domainId, primaryColor]);
 
   return (
     <div

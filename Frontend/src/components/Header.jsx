@@ -1,8 +1,12 @@
-import React from 'react';
-import { Trophy, Bot, Users, Activity, PlusCircle, LogIn, LogOut, User, Home } from 'lucide-react';
-import { ATHLETE_PROFILES } from '../data/mockData';
+import React, { useState, useEffect, useRef } from 'react';
+import { Trophy, Bot, Users, Activity, PlusCircle, LogIn, LogOut, User, Home, ChevronDown } from 'lucide-react';
+import { JOURNEY_TYPES } from '../data/journeyConfig';
+import { isSportsJourney, getActiveDomainDescriptor } from '../utils/journey';
+import JourneySelector from './JourneySelector';
 
 export default function Header({
+  activeJourney,
+  onJourneyChange,
   activeSport,
   onSportChange,
   currentUser,
@@ -12,10 +16,51 @@ export default function Header({
   onOpenFollowModal,
   onOpenSentimentModal,
   onOpenAddLevelModal,
+  onOpenJourneySelector,
   onGoHome,
   pendingRequestsCount = 1
 }) {
-  const currentProfile = ATHLETE_PROFILES[activeSport] || ATHLETE_PROFILES.football;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const isSport = activeJourney ? isSportsJourney(activeJourney) : activeSport !== 'journaler';
+  const descriptor = getActiveDomainDescriptor(activeJourney);
+
+  // Close dropdown on click outside or Escape
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleSelect = (domain) => {
+    if (domain === 'journaler' || domain === 'life') {
+      if (onJourneyChange) {
+        onJourneyChange({ type: JOURNEY_TYPES.LIFE, domain: null });
+      } else if (onSportChange) {
+        onSportChange('journaler');
+      }
+    } else {
+      if (onJourneyChange) {
+        onJourneyChange({ type: JOURNEY_TYPES.SPORTS, domain });
+      } else if (onSportChange) {
+        onSportChange(domain);
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 px-4 md:px-8 py-3 flex flex-col gap-2">
@@ -38,14 +83,14 @@ export default function Header({
           >
             🔑 Legacy Login
           </a>
-          <a
-            href="/journey-selection.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-[11px] transition-all"
+          <button
+            type="button"
+            onClick={onOpenJourneySelector || (() => window.open('/journey-selection.html', '_blank'))}
+            className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-[11px] transition-all flex items-center gap-1.5"
+            title="Open Full Journey Selector"
           >
-            🚀 Journey Selection
-          </a>
+            <span>🚀</span> Journey Selection
+          </button>
         </div>
       </div>
 
@@ -77,55 +122,53 @@ export default function Header({
           </div>
         </div>
 
-      {/* Dynamic Role / Sport Switcher */}
-      <div className="flex items-center bg-slate-900/90 p-1 rounded-2xl border border-slate-800/80 shadow-inner overflow-x-auto">
+      {/* Compact Journey & Domain Switcher */}
+      <div className="relative" ref={dropdownRef}>
         <button
-          onClick={() => onSportChange('football')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-            activeSport === 'football'
-              ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-slate-950 shadow-md shadow-emerald-500/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          type="button"
+          onClick={() => setIsDropdownOpen((prev) => !prev)}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all duration-300 border shadow-lg ${
+            !isSport
+              ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-slate-900 text-cyan-300 border-cyan-500/50 shadow-cyan-950/40 hover:border-cyan-400'
+              : 'bg-gradient-to-r from-emerald-500/20 via-slate-900 to-slate-900 text-emerald-300 border-emerald-500/50 shadow-emerald-950/40 hover:border-emerald-400'
           }`}
+          aria-haspopup="true"
+          aria-expanded={isDropdownOpen}
+          aria-label="Active Journey Switcher"
         >
-          <span>⚽</span>
-          <span>Football Pitch</span>
+          <span className="text-base">{descriptor?.icon || '🏆'}</span>
+          <div className="text-left leading-tight hidden sm:block">
+            <span className="text-[9px] uppercase font-bold text-slate-400 block">
+              {isSport ? 'Sport Domain' : 'Journey'}
+            </span>
+            <span className="font-extrabold text-white text-xs">
+              {descriptor?.label || 'Select Domain'}
+            </span>
+          </div>
+          <span className="sm:hidden font-extrabold text-white text-xs">
+            {descriptor?.label || 'Select'}
+          </span>
+          <ChevronDown
+            className={`w-3.5 h-3.5 ml-0.5 text-slate-400 transition-transform duration-200 ${
+              isDropdownOpen ? 'rotate-180 text-white' : ''
+            }`}
+          />
         </button>
 
-        <button
-          onClick={() => onSportChange('cricket')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-            activeSport === 'cricket'
-              ? 'bg-gradient-to-r from-green-500 to-lime-600 text-slate-950 shadow-md shadow-lime-500/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <span>🏏</span>
-          <span>Cricket Ground</span>
-        </button>
-
-        <button
-          onClick={() => onSportChange('basketball')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-            activeSport === 'basketball'
-              ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-md shadow-amber-500/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <span>🏀</span>
-          <span>Basketball Court</span>
-        </button>
-
-        <button
-          onClick={() => onSportChange('journaler')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-            activeSport === 'journaler'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <span>📖</span>
-          <span>Life Galaxy</span>
-        </button>
+        {/* Dropdown Popover */}
+        {isDropdownOpen && (
+          <div className="absolute top-full left-0 mt-2 z-50 animate-fadeIn">
+            <JourneySelector
+              mode="compact"
+              activeJourney={activeJourney}
+              onSelectJourney={(journey) => {
+                if (onJourneyChange) onJourneyChange(journey);
+                setIsDropdownOpen(false);
+              }}
+              onClose={() => setIsDropdownOpen(false)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Action Controls & User Auth */}

@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Trophy, ArrowRight, Sparkles, LogIn, User } from 'lucide-react';
 import ThreeScoreHeroCharacter from './ThreeScoreHeroCharacter';
+import JourneySelector from './JourneySelector';
 
 export default function HomePage({
   onOpenAuthModal,
   currentUser,
-  onEnterRoadmap
+  onEnterRoadmap,
+  onSelectSport,
+  onSelectJourney,
+  activeJourney
 }) {
+  const selectorRef = useRef(null);
   const userSport = currentUser ? (currentUser.sport || 'football').toLowerCase() : 'football';
+  const characterJourney =
+    userSport === 'journaler' || userSport === 'life'
+      ? { type: 'life', domain: null }
+      : { type: 'sports', domain: userSport };
 
   return (
     <div className="min-h-screen bg-[#070a12] text-slate-100 flex flex-col font-sans relative overflow-hidden">
@@ -46,13 +55,22 @@ export default function HomePage({
               </button>
             </div>
           ) : (
-            <button
-              onClick={onOpenAuthModal}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Sign In / Create Account</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => selectorRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-bold text-xs hover:text-white transition-all flex items-center gap-1.5"
+              >
+                <span>Choose Journey</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={onOpenAuthModal}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In / Create Account</span>
+              </button>
+            </div>
           )}
         </div>
       </nav>
@@ -78,35 +96,46 @@ export default function HomePage({
             >
               🔑 Legacy Login
             </a>
-            <a
-              href="/journey-selection.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-xs transition-all shadow-md"
+            <button
+              type="button"
+              onClick={() => selectorRef.current?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 font-bold text-xs transition-all shadow-md flex items-center gap-1.5"
             >
-              🚀 Journey Selection
-            </a>
+              <span>🚀</span> Journey Selection
+            </button>
           </div>
         </div>
 
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold mb-4">
           <Sparkles className="w-4 h-4" />
-          <span>3D Score! Hero Character & AI Learning Ground Platform</span>
+          <span>Interactive 2-Step Journey & 3D Ground Platform</span>
         </div>
 
         {/* Main Headline */}
         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight max-w-4xl leading-tight">
-          Talk to Your Younger Self Across Your Sports Ground Journey.
+          Talk to Your Younger Self Across Your Ground Journey.
         </h2>
 
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mt-3 leading-relaxed font-normal">
-          Log victory notes and match images. Your AI Younger Self automatically learns from every update to converse about your past victories!
+          Select between your Personal Life Chronicle or Athletic Career Ground. Log victory notes and match images to train your AI Younger Self!
         </p>
+
+        {/* PRIMARY ENTRY ACTION: TWO-STEP JOURNEY SELECTOR */}
+        <div ref={selectorRef} className="w-full mt-8">
+          <JourneySelector
+            mode="hero"
+            activeJourney={activeJourney}
+            onSelectJourney={(journey) => {
+              if (onSelectJourney) onSelectJourney(journey);
+              onEnterRoadmap();
+            }}
+          />
+        </div>
 
         {/* DYNAMIC 3D SCORE! HERO CHARACTER MODEL */}
         <div className="w-full max-w-3xl mt-6">
-          <ThreeScoreHeroCharacter sport={userSport} />
+          <ThreeScoreHeroCharacter journey={activeJourney || characterJourney} sport={userSport} />
         </div>
       </main>
 

@@ -3,6 +3,29 @@ import * as THREE from 'three';
 
 export default function ThreeYouthToOldSelf() {
   const mountRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const isIntersectingRef = useRef(true);
+  const isDocumentVisibleRef = useRef(true);
+
+  // Helper to dispose geometries and materials recursively
+  const disposeObject = (obj) => {
+    if (!obj) return;
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) {
+        obj.material.forEach((m) => m.dispose());
+      } else {
+        obj.material.dispose();
+      }
+    }
+    if (obj.children) {
+      while (obj.children.length > 0) {
+        const child = obj.children[0];
+        obj.remove(child);
+        disposeObject(child);
+      }
+    }
+  };
 
   useEffect(() => {
     const container = mountRef.current;
@@ -19,7 +42,7 @@ export default function ThreeYouthToOldSelf() {
     camera.position.set(0, 4, 18);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
@@ -111,12 +134,12 @@ export default function ThreeYouthToOldSelf() {
       particles.push(particle);
     }
 
-    // Animation Loop
-    let animationFrameId;
+    // Animation Loop with Visibility Safeguards
+    let isRunning = false;
     const clock = new THREE.Clock();
 
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
+    const tick = () => {
+      if (!isRunning) return;
       const elapsedTime = clock.getElapsedTime();
 
       // Rotate Avatars
@@ -140,9 +163,52 @@ export default function ThreeYouthToOldSelf() {
       camera.position.x = Math.sin(elapsedTime * 0.3) * 1.2;
 
       renderer.render(scene, camera);
+      animFrameRef.current = requestAnimationFrame(tick);
     };
 
-    animate();
+    const startLoop = () => {
+      if (!isRunning && isIntersectingRef.current && isDocumentVisibleRef.current) {
+        isRunning = true;
+        animFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    const stopLoop = () => {
+      if (isRunning) {
+        isRunning = false;
+        if (animFrameRef.current) {
+          cancelAnimationFrame(animFrameRef.current);
+          animFrameRef.current = null;
+        }
+      }
+    };
+
+    startLoop();
+
+    // IntersectionObserver to pause rendering when off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersectingRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
+
+    // Page Visibility API
+    const handleVisibilityChange = () => {
+      isDocumentVisibleRef.current = !document.hidden;
+      if (!document.hidden && isIntersectingRef.current) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     const handleResize = () => {
       if (!container) return;
@@ -150,12 +216,19 @@ export default function ThreeYouthToOldSelf() {
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
+
+      disposeObject(youthAvatar);
+      disposeObject(oldAvatar);
+      disposeObject(bridgeMesh);
+      particles.forEach((p) => disposeObject(p));
+
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }

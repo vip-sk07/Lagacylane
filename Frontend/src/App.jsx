@@ -9,12 +9,15 @@ import MultiUserFollowModal from './components/MultiUserFollowModal';
 import SentimentAnalyticsModal from './components/SentimentAnalyticsModal';
 import AuthModal from './components/AuthModal';
 import HomePage from './components/HomePage';
-import { ATHLETE_PROFILES } from './data/mockData';
+import { ATHLETE_PROFILES, LIFE_PROFILE, INITIAL_PROFILES } from './data/mockData';
+import { JOURNEY_TYPES, DEFAULT_JOURNEY } from './data/journeyConfig';
+import { getActiveProfile, isSportsJourney, loadSavedJourney, saveJourney } from './utils/journey';
+import JourneySelector from './components/JourneySelector';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home' or 'ground'
-  const [activeSport, setActiveSport] = useState('football');
-  const [profiles, setProfiles] = useState(ATHLETE_PROFILES);
+  const [activeJourney, setActiveJourney] = useState(() => loadSavedJourney());
+  const [profiles, setProfiles] = useState(INITIAL_PROFILES);
   const [currentUser, setCurrentUser] = useState(null);
 
   // Modal States
@@ -25,30 +28,59 @@ export default function App() {
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isJourneySelectorOpen, setIsJourneySelectorOpen] = useState(false);
 
-  const currentProfile = profiles[activeSport] || profiles.football;
+  const currentProfile = getActiveProfile(activeJourney, profiles);
+
+  const handleJourneyChange = (journey) => {
+    setActiveJourney(journey);
+    saveJourney(journey);
+  };
 
   // Handle successful login or account creation
   const handleAuthSuccess = (user) => {
     setCurrentUser(user);
     const userSport = (user.sport || 'football').toLowerCase();
 
-    // Dynamically change 3D Ground & UI Theme based on registered sport passion
-    if (['football', 'cricket', 'basketball', 'journaler'].includes(userSport)) {
-      setActiveSport(userSport);
+    // Dynamically update active journey & UI theme based on registered passion
+    let nextJourney;
+    if (userSport === 'journaler' || userSport === 'life') {
+      nextJourney = { type: JOURNEY_TYPES.LIFE, domain: null };
+    } else if (['football', 'cricket', 'basketball', 'athletics'].includes(userSport)) {
+      nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: userSport };
     } else {
-      setActiveSport('football');
+      nextJourney = { type: JOURNEY_TYPES.SPORTS, domain: 'football' };
     }
+    handleJourneyChange(nextJourney);
 
-    setProfiles((prev) => ({
-      ...prev,
-      [userSport || 'football']: {
-        ...prev[userSport || 'football'],
-        name: user.name,
-        position: user.position || prev[userSport || 'football'].position,
-        team: user.team || prev[userSport || 'football'].team
+    setProfiles((prev) => {
+      if (nextJourney.type === JOURNEY_TYPES.LIFE) {
+        return {
+          ...prev,
+          life: {
+            ...prev.life,
+            name: user.name,
+            position: user.position || prev.life.position,
+            team: user.team || prev.life.team
+          }
+        };
       }
-    }));
+
+      const domain = nextJourney.domain;
+      const targetDomainProfile = prev.sports[domain] || prev.sports.football;
+      return {
+        ...prev,
+        sports: {
+          ...prev.sports,
+          [domain]: {
+            ...targetDomainProfile,
+            name: user.name,
+            position: user.position || targetDomainProfile.position,
+            team: user.team || targetDomainProfile.team
+          }
+        }
+      };
+    });
 
     // Transition smoothly to the 3D Ground Roadmap view
     setCurrentView('ground');
@@ -76,22 +108,41 @@ export default function App() {
     }
 
     setProfiles((prev) => {
-      const targetProfile = prev[activeSport];
-      const nextLevelNumber = targetProfile.levels.length + 1;
+      const targetProfile = getActiveProfile(activeJourney, prev);
+      const nextLevelNumber = (targetProfile?.levels?.length || 0) + 1;
+      const isLife = !isSportsJourney(activeJourney);
 
       const newLevel = {
         ...newLevelData,
         id: Date.now(),
         levelNumber: nextLevelNumber,
         status: 'completed',
+        journeyType: isLife ? JOURNEY_TYPES.LIFE : JOURNEY_TYPES.SPORTS,
+        domain: isLife ? null : (activeJourney.domain || 'football'),
         media: newLevelData.mediaUrl || newLevelData.media
       };
 
+      if (isLife) {
+        return {
+          ...prev,
+          life: {
+            ...prev.life,
+            levels: [...(prev.life?.levels || []), newLevel]
+          }
+        };
+      }
+
+      const domain = activeJourney.domain || 'football';
+      const currentDomainProfile = prev.sports[domain] || prev.sports.football;
+
       return {
         ...prev,
-        [activeSport]: {
-          ...targetProfile,
-          levels: [...targetProfile.levels, newLevel]
+        sports: {
+          ...prev.sports,
+          [domain]: {
+            ...currentDomainProfile,
+            levels: [...(currentDomainProfile?.levels || []), newLevel]
+          }
         }
       };
     });
@@ -109,11 +160,21 @@ export default function App() {
       {/* -------------------------------------------------- */}
       {currentView === 'home' ? (
         <HomePage
+          activeJourney={activeJourney}
           onEnterRoadmap={() => setCurrentView('ground')}
           onSelectSport={(sport) => {
-            setActiveSport(sport);
+            if (sport === 'journaler' || sport === 'life') {
+              handleJourneyChange({ type: JOURNEY_TYPES.LIFE, domain: null });
+            } else {
+              handleJourneyChange({ type: JOURNEY_TYPES.SPORTS, domain: sport });
+            }
             setCurrentView('ground');
           }}
+          onSelectJourney={(journey) => {
+            handleJourneyChange(journey);
+            setCurrentView('ground');
+          }}
+          onOpenJourneySelector={() => setIsJourneySelectorOpen(true)}
           onOpenAuthModal={() => setIsAuthModalOpen(false) || setIsAuthModalOpen(true)}
           currentUser={currentUser}
           onOpenAIChat={() => setIsAIChatOpen(true)}
@@ -126,13 +187,25 @@ export default function App() {
         /* -------------------------------------------------- */
         <>
           {/* 3D WebGL Background Ground Canvas */}
-          <ThreeCanvas sport={activeSport} />
+          <ThreeCanvas
+            journey={activeJourney}
+            sport={activeJourney.domain || 'journaler'}
+          />
 
           {/* Top Header Navigation */}
           <Header
-            activeSport={activeSport}
-            onSportChange={setActiveSport}
+            activeJourney={activeJourney}
+            onJourneyChange={handleJourneyChange}
+            activeSport={activeJourney.domain || 'journaler'}
+            onSportChange={(sport) => {
+              if (sport === 'journaler' || sport === 'life') {
+                handleJourneyChange({ type: JOURNEY_TYPES.LIFE, domain: null });
+              } else {
+                handleJourneyChange({ type: JOURNEY_TYPES.SPORTS, domain: sport });
+              }
+            }}
             currentUser={currentUser}
+            onOpenJourneySelector={() => setIsJourneySelectorOpen(true)}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
             onLogout={handleLogout}
             onOpenAIChat={() => setIsAIChatOpen(true)}
@@ -142,12 +215,16 @@ export default function App() {
             onGoHome={() => setCurrentView('home')}
           />
 
-          {/* Main Content Area: Score! Hero Level Progression Map */}
+          {/* Main Content Area: Score! Hero Level Progression Map or Life Chronological Timeline */}
           <main className="flex-1 relative z-10">
             <ScoreHeroLevelMap
               profile={currentProfile}
+              activeJourney={activeJourney}
+              allProfiles={profiles}
+              onJourneyChange={handleJourneyChange}
               onSelectLevel={setSelectedLevel}
               onAddLevelClick={() => setIsAddLevelOpen(true)}
+              onOpenAIChatForEra={handleOpenAIChatForEra}
             />
           </main>
 
@@ -173,7 +250,8 @@ export default function App() {
         <AddLevelModal
           onClose={() => setIsAddLevelOpen(false)}
           onAddLevel={handleAddLevel}
-          currentSport={activeSport}
+          activeJourney={activeJourney}
+          currentSport={activeJourney.domain || 'life'}
         />
       )}
 
@@ -181,7 +259,7 @@ export default function App() {
         <AIYoungerSelfChat
           initialEra={initialAIChatEra}
           onClose={() => setIsAIChatOpen(false)}
-          levels={currentProfile.levels}
+          levels={currentProfile?.levels || []}
           currentUser={currentUser}
         />
       )}
@@ -207,6 +285,19 @@ export default function App() {
         <AuthModal
           onClose={() => setIsAuthModalOpen(false)}
           onAuthSuccess={handleAuthSuccess}
+        />
+      )}
+
+      {isJourneySelectorOpen && (
+        <JourneySelector
+          mode="modal"
+          activeJourney={activeJourney}
+          onSelectJourney={(journey) => {
+            handleJourneyChange(journey);
+            setIsJourneySelectorOpen(false);
+            setCurrentView('ground');
+          }}
+          onClose={() => setIsJourneySelectorOpen(false)}
         />
       )}
     </div>

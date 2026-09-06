@@ -26,6 +26,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 1,
         levelNumber: 1,
+        journeyType: 'sports',
+        domain: 'football',
         title: 'Youth Academy Trials',
         era: 'Youth Era (2018-2020)',
         date: '2018-09-14',
@@ -41,6 +43,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 2,
         levelNumber: 2,
+        journeyType: 'sports',
+        domain: 'football',
         title: 'First Professional Contract',
         era: 'Youth Era (2018-2020)',
         date: '2020-03-22',
@@ -56,6 +60,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 3,
         levelNumber: 3,
+        journeyType: 'sports',
+        domain: 'football',
         title: 'ACL Injury & Mental Struggle',
         era: 'Pro Debut Era (2021-2023)',
         date: '2021-11-05',
@@ -71,6 +77,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 4,
         levelNumber: 4,
+        journeyType: 'sports',
+        domain: 'football',
         title: 'The Comeback Hattrick',
         era: 'Pro Debut Era (2021-2023)',
         date: '2022-09-18',
@@ -86,6 +94,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 5,
         levelNumber: 5,
+        journeyType: 'sports',
+        domain: 'football',
         title: 'Championship Winning Goal',
         era: 'Championship Era (2024+)',
         date: '2024-05-12',
@@ -122,12 +132,14 @@ export const ATHLETE_PROFILES = {
       badge: 'bg-lime-500/20 text-lime-300 border-lime-500/40',
       nodeUnlocked: 'bg-lime-500 text-slate-950 shadow-lime-500/50',
       line: 'stroke-lime-500',
-      icon: 'Trophy'
+      icon: 'Award'
     },
     levels: [
       {
         id: 1,
         levelNumber: 1,
+        journeyType: 'sports',
+        domain: 'cricket',
         title: 'Under-19 State Championship Five-Wicket Haul',
         era: 'Youth Era (2018-2020)',
         date: '2019-01-20',
@@ -143,6 +155,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 2,
         levelNumber: 2,
+        journeyType: 'sports',
+        domain: 'cricket',
         title: 'First-Class Debut & Maiden Century',
         era: 'Pro Debut Era (2021-2023)',
         date: '2021-12-08',
@@ -158,6 +172,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 3,
         levelNumber: 3,
+        journeyType: 'sports',
+        domain: 'cricket',
         title: 'T20 League Final Last-Ball Six Winner',
         era: 'Championship Era (2024+)',
         date: '2024-04-28',
@@ -200,6 +216,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 1,
         levelNumber: 1,
+        journeyType: 'sports',
+        domain: 'basketball',
         title: 'High School State Finals MVP',
         era: 'Rookie Days (2019-2021)',
         date: '2019-03-15',
@@ -215,6 +233,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 2,
         levelNumber: 2,
+        journeyType: 'sports',
+        domain: 'basketball',
         title: 'College Draft First Round Pick',
         era: 'Rookie Days (2019-2021)',
         date: '2021-06-25',
@@ -230,6 +250,8 @@ export const ATHLETE_PROFILES = {
       {
         id: 3,
         levelNumber: 3,
+        journeyType: 'sports',
+        domain: 'basketball',
         title: 'Rookie of the Year Award',
         era: 'Pro Prime Era (2022-2024)',
         date: '2022-05-10',
@@ -245,62 +267,168 @@ export const ATHLETE_PROFILES = {
     ]
   },
 
-  journaler: {
-    id: 'journaler',
+  athletics: {
+    id: 'athletics',
     name: 'Karan Sharma',
-    role: 'Primary User',
-    sport: 'Life Journal',
-    position: 'Story Creator',
-    team: 'Personal Timeline',
+    role: 'Athlete',
+    sport: 'Athletics',
+    position: '400m Sprinter & Track Captain',
+    team: 'National Track & Field Club',
     stats: {
-      memoriesLogged: 84,
-      erasRecorded: 4,
-      streakDays: 45,
-      wellnessIndex: '91/100'
+      races: 36,
+      golds: 18,
+      personalBest: '44.82s',
+      championships: 5,
+      careerRating: '9.4'
     },
     theme: {
-      accent: 'from-cyan-500 to-blue-600',
-      glow: 'rgba(6, 182, 212, 0.4)',
-      bg: 'from-slate-950 via-cyan-950/30 to-slate-950',
-      badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-      nodeUnlocked: 'bg-cyan-500 text-slate-950 shadow-cyan-500/50',
-      line: 'stroke-cyan-500',
-      icon: 'BookOpen'
+      accent: 'from-pink-500 to-rose-600',
+      glow: 'rgba(236, 72, 153, 0.4)',
+      bg: 'from-slate-950 via-rose-950/30 to-slate-950',
+      badge: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
+      nodeUnlocked: 'bg-pink-500 text-slate-950 shadow-pink-500/50',
+      line: 'stroke-pink-500',
+      icon: 'Flame'
     },
     levels: [
       {
         id: 1,
         levelNumber: 1,
-        title: 'First Coding Project Launch',
-        era: 'College Days (2018-2022)',
-        date: '2020-02-10',
+        journeyType: 'sports',
+        domain: 'athletics',
+        title: 'State Championship 400m Gold',
+        era: 'Youth Era (2018-2020)',
+        date: '2019-04-18',
         stars: 3,
         status: 'completed',
-        matchDetails: 'Launched full-stack web application with 1,000 active users.',
-        stats: { users: 1000, linesOfCode: 15000 },
-        tags: ['Coding', 'Launch', 'Milestone'],
-        sentiment: 0.89,
-        media: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
-        content: 'Pushed final commit to GitHub. First 1,000 users logged in within 48 hours.'
+        matchDetails: 'Clocked 46.12s to break the junior state record.',
+        stats: { time: '46.12s', lane: 4, rank: 1 },
+        tags: ['TrackAndField', 'GoldMedal', 'StateRecord'],
+        sentiment: 0.91,
+        media: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80',
+        content: 'Felt the surge in the final 100 meters. Hearing the stadium roar as I crossed the finish line in lane 4 was unforgettable.'
       },
       {
         id: 2,
         levelNumber: 2,
-        title: 'Graduation Day',
-        era: 'College Days (2018-2022)',
-        date: '2022-06-15',
+        journeyType: 'sports',
+        domain: 'athletics',
+        title: 'National Qualifiers & Personal Best',
+        era: 'Pro Debut Era (2021-2023)',
+        date: '2022-07-22',
         stars: 3,
         status: 'completed',
-        matchDetails: 'Graduated with First Class Honors in Software Engineering.',
-        stats: { gpa: '3.9', degree: 'B.Tech CS' },
-        tags: ['Graduation', 'Engineering', 'Family'],
-        sentiment: 0.94,
-        media: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-        content: 'Threw graduation cap in the air with all my classmates. Family was cheering in the front row.'
+        matchDetails: 'Ran 44.82s sub-45 second milestone to seal qualification for Worlds.',
+        stats: { time: '44.82s', lane: 5, rank: 1 },
+        tags: ['PersonalBest', 'Sub45', 'WorldChampionships'],
+        sentiment: 0.96,
+        media: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
+        content: 'Broke the 45-second barrier! Months of high-altitude interval training all came together today.'
       }
     ]
   }
 };
+
+export const LIFE_PROFILE = {
+  id: 'life',
+  name: 'Karan Sharma',
+  role: 'Primary User',
+  sport: 'Life Journal',
+  position: 'Story Creator',
+  team: 'Personal Timeline',
+  stats: {
+    memoriesLogged: 84,
+    erasRecorded: 4,
+    streakDays: 45,
+    wellnessIndex: '91/100'
+  },
+  theme: {
+    accent: 'from-cyan-500 to-blue-600',
+    glow: 'rgba(6, 182, 212, 0.4)',
+    bg: 'from-slate-950 via-cyan-950/30 to-slate-950',
+    badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    nodeUnlocked: 'bg-cyan-500 text-slate-950 shadow-cyan-500/50',
+    line: 'stroke-cyan-500',
+    icon: 'BookOpen'
+  },
+  levels: [
+    {
+      id: 1,
+      levelNumber: 1,
+      journeyType: 'life',
+      domain: null,
+      title: 'First Coding Project Launch',
+      era: 'College Days (2018-2022)',
+      date: '2020-02-10',
+      stars: 3,
+      status: 'completed',
+      matchDetails: 'Launched full-stack web application with 1,000 active users.',
+      stats: { users: 1000, linesOfCode: 15000 },
+      tags: ['Coding', 'Launch', 'Milestone', 'Grateful'],
+      sentiment: 0.89,
+      media: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
+      content: 'Pushed final commit to GitHub. First 1,000 users logged in within 48 hours. Realized software engineering was the creative outlet I had been searching for.'
+    },
+    {
+      id: 2,
+      levelNumber: 2,
+      journeyType: 'life',
+      domain: null,
+      title: 'Graduation Day Honors',
+      era: 'College Days (2018-2022)',
+      date: '2022-06-15',
+      stars: 3,
+      status: 'completed',
+      matchDetails: 'Graduated with First Class Honors in Computer Science.',
+      stats: { gpa: '3.9', degree: 'B.Tech CS' },
+      tags: ['Graduation', 'Engineering', 'Family', 'Proud'],
+      sentiment: 0.94,
+      media: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+      content: 'Threw graduation cap in the air with all my classmates. Family was cheering in the front row. Proud of the late nights and teamwork that got us here.'
+    },
+    {
+      id: 3,
+      levelNumber: 3,
+      journeyType: 'life',
+      domain: null,
+      title: 'First Tech Startup Job & Move to New City',
+      era: 'Career & Adulthood (2022+)',
+      date: '2022-09-01',
+      stars: 3,
+      status: 'completed',
+      matchDetails: 'Moved into first solo apartment; began engineering lead role.',
+      stats: { city: 'Bengaluru', teamSize: 12 },
+      tags: ['Career', 'Independence', 'Adulthood', 'Growth'],
+      sentiment: 0.91,
+      media: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+      content: 'Unpacked boxes in my first independent apartment overlooking the city skyline. Excitement mixed with nervous energy as tomorrow begins a major new chapter.'
+    },
+    {
+      id: 4,
+      levelNumber: 4,
+      journeyType: 'life',
+      domain: null,
+      title: 'Solo Himalayan Trek & Perspective Shift',
+      era: 'Present Day Reflections',
+      date: '2024-03-10',
+      stars: 3,
+      status: 'current',
+      matchDetails: 'Completed 6-day high altitude pass at 4,200 meters.',
+      stats: { altitudeMeters: 4200, daysHiked: 6 },
+      tags: ['Travel', 'Nature', 'MentalClarity', 'Reflective'],
+      sentiment: 0.97,
+      media: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+      content: 'Standing at the summit pass at sunrise. The silence of the peaks reminded me why presence and self-reflection matter more than chasing milestones.'
+    }
+  ]
+};
+
+export const INITIAL_PROFILES = {
+  sports: ATHLETE_PROFILES,
+  life: LIFE_PROFILE
+};
+
+export const MOCK_ATHLETE = ATHLETE_PROFILES.football;
 
 export const INITIAL_CONNECTIONS = [
   {
