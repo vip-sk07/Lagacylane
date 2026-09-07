@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { getActiveDomainDescriptor, getActiveTheme } from '../utils/journey';
+import { disposeObject3D, isLowEndDevice } from '../three/scenes/common.js';
 
 export default function ThreeCanvas({ journey, sport = 'football' }) {
   const mountRef = useRef(null);
@@ -11,7 +12,9 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
   const rendererRef = useRef(null);
   const groundGroupRef = useRef(null);
   const propGroupRef = useRef(null);
-  const mainSpotLightRef = useRef(null);
+  const ambientLightRef = useRef(null);
+  const overheadLightRef = useRef(null);
+  const cornerLightsRef = useRef([]);
   const particlesRef = useRef(null);
   const animFrameRef = useRef(null);
   const isIntersectingRef = useRef(true);
@@ -23,28 +26,37 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
   const domainId = activeDescriptor.id;
   const primaryColor = activeTheme?.threeColors?.primary ?? 0x10b981;
 
-  // Helper to dispose geometries and materials recursively
-  const disposeObject = (obj) => {
-    if (!obj) return;
-    if (obj.geometry) obj.geometry.dispose();
-    if (obj.material) {
-      if (Array.isArray(obj.material)) {
-        obj.material.forEach((m) => m.dispose());
-      } else {
-        obj.material.dispose();
-      }
+  // ----------------------------------------------------
+  // Helper to safely update persistent lights in place
+  // ----------------------------------------------------
+  const applyLightingConfig = (config) => {
+    if (!config) return;
+
+    if (ambientLightRef.current && config.ambient) {
+      if (config.ambient.color !== undefined) ambientLightRef.current.color.setHex(config.ambient.color);
+      if (config.ambient.intensity !== undefined) ambientLightRef.current.intensity = config.ambient.intensity;
     }
-    if (obj.children) {
-      while (obj.children.length > 0) {
-        const child = obj.children[0];
-        obj.remove(child);
-        disposeObject(child);
-      }
+
+    if (overheadLightRef.current && config.overhead) {
+      if (config.overhead.color !== undefined) overheadLightRef.current.color.setHex(config.overhead.color);
+      if (config.overhead.intensity !== undefined) overheadLightRef.current.intensity = config.overhead.intensity;
+      if (config.overhead.position) overheadLightRef.current.position.set(...config.overhead.position);
+    }
+
+    if (cornerLightsRef.current && config.corners) {
+      config.corners.forEach((c, idx) => {
+        const light = cornerLightsRef.current[idx];
+        if (light) {
+          if (c.position) light.position.set(...c.position);
+          if (c.color !== undefined) light.color.setHex(c.color);
+          if (c.intensity !== undefined) light.intensity = c.intensity;
+        }
+      });
     }
   };
 
   // ----------------------------------------------------
-  // 1. ONE-TIME SETUP: Scene, Camera, Renderer, Loop (Mount Once)
+  // 1. ONE-TIME SETUP: Scene, Camera, WebGLRenderer, Loop
   // ----------------------------------------------------
   useEffect(() => {
     const container = mountRef.current;
@@ -55,40 +67,54 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      58,
       container.clientWidth / container.clientHeight,
       0.1,
       1000
     );
-    camera.position.set(0, 22, 36);
+    camera.position.set(0, 24, 38);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // Persistent WebGLRenderer
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+    // Persistent WebGLRenderer (Created once)
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lighting (persistent lights)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+    // Persistent Lighting Rig
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.48);
     scene.add(ambientLight);
+    ambientLightRef.current = ambientLight;
 
-    const mainSpotLight = new THREE.SpotLight(primaryColor, 4, 120, Math.PI / 4, 0.5);
-    mainSpotLight.position.set(0, 35, 20);
-    scene.add(mainSpotLight);
-    mainSpotLightRef.current = mainSpotLight;
+    const overheadLight = new THREE.SpotLight(primaryColor, 2.5, 120, Math.PI / 4, 0.5);
+    overheadLight.position.set(0, 32, 0);
+    scene.add(overheadLight);
+    overheadLightRef.current = overheadLight;
 
-    const stadiumLight2 = new THREE.SpotLight(0x3b82f6, 2.5, 120, Math.PI / 4, 0.5);
-    stadiumLight2.position.set(-30, 30, -30);
-    scene.add(stadiumLight2);
+    // 4 Corner Floodlights (Positions match 4 physical corner light towers)
+    const defaultCornerPositions = [
+      [-36, 28, -50],
+      [36, 28, -50],
+      [-36, 28, 50],
+      [36, 28, 50]
+    ];
 
-    const stadiumLight3 = new THREE.SpotLight(0xffffff, 2, 120, Math.PI / 4, 0.5);
-    stadiumLight3.position.set(30, 30, -30);
-    scene.add(stadiumLight3);
+    cornerLightsRef.current = defaultCornerPositions.map(([x, y, z]) => {
+      const spot = new THREE.SpotLight(0xffffff, 2.5, 140, Math.PI / 3.8, 0.45);
+      spot.position.set(x, y, z);
+      spot.target.position.set(0, 0, 0);
+      scene.add(spot);
+      scene.add(spot.target);
+      return spot;
+    });
 
-    // Persistent Containers for Ground and Floating Prop
+    // Persistent Containers for Ground and Ball/Prop
     const groundGroup = new THREE.Group();
     scene.add(groundGroup);
     groundGroupRef.current = groundGroup;
@@ -97,31 +123,31 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
     scene.add(propGroup);
     propGroupRef.current = propGroup;
 
-    // Floating Particles System
-    const particleCount = 250;
+    // Floating Ambient Atmospheric Particle System
+    const particleCount = 200;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
     const tempColor = new THREE.Color(primaryColor);
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 80;
-      positions[i * 3 + 1] = Math.random() * 30 + 1;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+      positions[i * 3] = (Math.random() - 0.5) * 85;
+      positions[i * 3 + 1] = Math.random() * 26 + 1;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 85;
 
-      colors[i * 3] = tempColor.r + (Math.random() - 0.5) * 0.25;
-      colors[i * 3 + 1] = tempColor.g + (Math.random() - 0.5) * 0.25;
-      colors[i * 3 + 2] = tempColor.b + (Math.random() - 0.5) * 0.25;
+      colors[i * 3] = tempColor.r + (Math.random() - 0.5) * 0.2;
+      colors[i * 3 + 1] = tempColor.g + (Math.random() - 0.5) * 0.2;
+      colors[i * 3 + 2] = tempColor.b + (Math.random() - 0.5) * 0.2;
     }
 
     particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const particleMat = new THREE.PointsMaterial({
-      size: 0.4,
+      size: 0.38,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.75,
       blending: THREE.AdditiveBlending
     });
 
@@ -129,7 +155,7 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
     scene.add(particles);
     particlesRef.current = particles;
 
-    // Animation Loop with Visibility Safeguard
+    // Animation Loop
     let isRunning = false;
 
     const tick = () => {
@@ -137,25 +163,28 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
 
       const elapsedTime = clockRef.current.getElapsedTime();
 
-      // Animate floating prop group smoothly
+      // Animate floating prop group anchored to sport-accurate spot
       if (propGroupRef.current) {
-        propGroupRef.current.rotation.x = elapsedTime * 0.4;
-        propGroupRef.current.rotation.y = elapsedTime * 0.5;
-        propGroupRef.current.position.y = 9 + Math.sin(elapsedTime * 1.5) * 1.2;
+        const basePos = propGroupRef.current.userData?.basePosition || new THREE.Vector3(0, 1.4, 0);
+        propGroupRef.current.position.x = basePos.x;
+        propGroupRef.current.position.z = basePos.z;
+        propGroupRef.current.position.y = basePos.y + Math.sin(elapsedTime * 1.6) * 0.28;
+        propGroupRef.current.rotation.y = elapsedTime * 0.6;
+        propGroupRef.current.rotation.x = Math.sin(elapsedTime * 0.8) * 0.08;
       }
 
-      // Animate particle drift
+      // Animate atmospheric particle drift
       if (particlesRef.current) {
         const posArr = particlesRef.current.geometry.attributes.position.array;
         for (let i = 0; i < particleCount; i++) {
-          posArr[i * 3 + 1] += Math.sin(elapsedTime + i) * 0.012;
+          posArr[i * 3 + 1] += Math.sin(elapsedTime + i) * 0.01;
         }
         particlesRef.current.geometry.attributes.position.needsUpdate = true;
       }
 
-      // Subtle camera floating movement
+      // Gentle camera floating drift
       if (cameraRef.current) {
-        cameraRef.current.position.x = Math.sin(elapsedTime * 0.25) * 3;
+        cameraRef.current.position.x = Math.sin(elapsedTime * 0.22) * 2.2;
       }
 
       renderer.render(scene, camera);
@@ -195,7 +224,7 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
     );
     observer.observe(container);
 
-    // Page Visibility API to pause rendering when tab is inactive
+    // Page Visibility API
     const handleVisibilityChange = () => {
       isDocumentVisibleRef.current = !document.hidden;
       if (!document.hidden && isIntersectingRef.current) {
@@ -221,10 +250,10 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
 
-      // Clean up meshes, materials, and renderer
-      disposeObject(groundGroup);
-      disposeObject(propGroup);
-      disposeObject(particles);
+      // Clean up meshes, materials, textures, and renderer
+      disposeObject3D(groundGroup);
+      disposeObject3D(propGroup);
+      disposeObject3D(particles);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -233,14 +262,19 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
   }, []); // Mounts once
 
   // ----------------------------------------------------
-  // 2. DOMAIN SYNC EFFECT: Config-driven geometry swapping via refs
+  // 2. DOMAIN SYNC EFFECT: In-place geometry & light swap
   // ----------------------------------------------------
   useEffect(() => {
     if (!sceneRef.current) return;
 
-    // 1. Update Spotlight Color without scene re-creation
-    if (mainSpotLightRef.current) {
-      mainSpotLightRef.current.color.setHex(primaryColor);
+    const isLowEnd = isLowEndDevice();
+
+    // 1. Update Lighting Rig in place
+    if (typeof activeDescriptor.getLighting === 'function') {
+      const lightConfig = activeDescriptor.getLighting(THREE, activeTheme);
+      applyLightingConfig(lightConfig);
+    } else if (overheadLightRef.current) {
+      overheadLightRef.current.color.setHex(primaryColor);
     }
 
     // 2. Update Particle Colors
@@ -249,46 +283,33 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
       const count = colors.length / 3;
       const tempColor = new THREE.Color(primaryColor);
       for (let i = 0; i < count; i++) {
-        colors[i * 3] = tempColor.r + (Math.random() - 0.5) * 0.25;
-        colors[i * 3 + 1] = tempColor.g + (Math.random() - 0.5) * 0.25;
-        colors[i * 3 + 2] = tempColor.b + (Math.random() - 0.5) * 0.25;
+        colors[i * 3] = tempColor.r + (Math.random() - 0.5) * 0.2;
+        colors[i * 3 + 1] = tempColor.g + (Math.random() - 0.5) * 0.2;
+        colors[i * 3 + 2] = tempColor.b + (Math.random() - 0.5) * 0.2;
       }
       particlesRef.current.geometry.attributes.color.needsUpdate = true;
     }
 
-    // 3. Swap Ground Geometry driven by domain descriptor
+    // 3. Swap Ground Geometry driven by active domain descriptor
     if (groundGroupRef.current) {
-      disposeObject(groundGroupRef.current);
+      disposeObject3D(groundGroupRef.current);
       if (typeof activeDescriptor.buildGround === 'function') {
-        const newGround = activeDescriptor.buildGround(THREE, activeTheme);
+        const newGround = activeDescriptor.buildGround(THREE, activeTheme, { isLowEnd });
         groundGroupRef.current.add(newGround);
-      } else {
-        // Safe fallback generic grid
-        const fallbackGrid = new THREE.GridHelper(90, 30, primaryColor, 0x14532d);
-        fallbackGrid.position.y = 0.05;
-        groundGroupRef.current.add(fallbackGrid);
       }
     }
 
-    // 4. Swap Floating Ball / Prop Geometry driven by domain descriptor
+    // 4. Swap Ball / Prop Geometry driven by active domain descriptor
     if (propGroupRef.current) {
-      disposeObject(propGroupRef.current);
+      disposeObject3D(propGroupRef.current);
       if (typeof activeDescriptor.buildBall === 'function') {
-        const newProp = activeDescriptor.buildBall(THREE, activeTheme);
+        const newProp = activeDescriptor.buildBall(THREE, activeTheme, { isLowEnd });
         propGroupRef.current.add(newProp);
-      } else {
-        // Safe fallback wireframe icosahedron
-        const fallbackBall = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(2.8, 2),
-          new THREE.MeshStandardMaterial({
-            color: primaryColor,
-            wireframe: true,
-            emissive: primaryColor,
-            emissiveIntensity: 0.5
-          })
-        );
-        fallbackBall.position.set(0, 9, -15);
-        propGroupRef.current.add(fallbackBall);
+
+        // Anchor prop position to sport-accurate spot
+        const basePos = newProp.userData?.basePosition || new THREE.Vector3(0, 1.4, 0);
+        propGroupRef.current.userData.basePosition = basePos;
+        propGroupRef.current.position.set(basePos.x, basePos.y, basePos.z);
       }
     }
   }, [domainId, primaryColor]);
@@ -296,7 +317,7 @@ export default function ThreeCanvas({ journey, sport = 'football' }) {
   return (
     <div
       ref={mountRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-70 transition-opacity duration-1000"
+      className="fixed inset-0 pointer-events-none z-0 opacity-75 transition-opacity duration-1000"
     />
   );
 }

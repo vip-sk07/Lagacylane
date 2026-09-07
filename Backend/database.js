@@ -1,4 +1,3 @@
-import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -6,7 +5,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, 'legacylane.db');
-const db = new Database(dbPath);
+
+let db;
+try {
+  const { default: Database } = await import('better-sqlite3');
+  db = new Database(dbPath);
+} catch (err) {
+  const { DatabaseSync } = await import('node:sqlite');
+  db = new DatabaseSync(dbPath);
+  if (!db.pragma) {
+    db.pragma = (cmd) => db.exec(`PRAGMA ${cmd}`);
+  }
+}
 
 // Enable Foreign Keys
 db.pragma('foreign_keys = ON');

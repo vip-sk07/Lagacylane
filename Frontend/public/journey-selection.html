@@ -1182,6 +1182,10 @@
         </a>
 
         <div class="system-status-group">
+            <a href="LegacyLogin.html" class="status-pill" style="text-decoration:none; color:#f8fafc;" title="Sign In or Register">
+                <span>🔑</span>
+                <span>Account / Login</span>
+            </a>
             <div class="status-pill">
                 <span class="status-dot-emerald"></span>
                 <span id="user-display-name">Authenticated User</span>
@@ -1826,7 +1830,7 @@
                 document.getElementById('wipe-overlay').classList.add('active');
 
                 setTimeout(() => {
-                    window.location.href = 'timeline.html?mode=life';
+                    window.location.href = 'timeline.html?mode=life&sport=life';
                 }, 500);
             });
 
@@ -1894,8 +1898,10 @@
                     updatedAt: new Date().toISOString()
                 };
 
+                const chosenSport = (primarySport || 'football').toLowerCase();
                 localStorage.setItem('legacy_journey_mode', 'SPORTS');
                 localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
+                localStorage.setItem('legacy_selected_sport', chosenSport);
 
                 launchBtn.innerHTML = `Launching...`;
                 launchBtn.disabled = true;
@@ -1905,7 +1911,7 @@
                 document.getElementById('wipe-overlay').classList.add('active');
 
                 setTimeout(() => {
-                    window.location.href = 'timeline.html?mode=sports';
+                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}`;
                 }, 500);
             });
 

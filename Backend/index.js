@@ -28,9 +28,23 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 
-// CORS — restrict to configured frontend origin
+// CORS — allow local frontend origins
+const allowedOrigins = [
+  process.env.ALLOWED_ORIGIN,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));

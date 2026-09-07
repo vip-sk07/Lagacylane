@@ -48,10 +48,28 @@ export function getCollection(collectionName) {
         if (query.User_ID) {
           results = results.filter(item => item.User_ID === query.User_ID);
         }
-        return {
-          toArray: async () => results,
-          sort: () => ({ toArray: async () => results })
+        if (query.JourneyType) {
+          results = results.filter(item => item.JourneyType === query.JourneyType);
+        }
+        if (query.Domain) {
+          results = results.filter(item => item.Domain === query.Domain);
+        }
+        let list = [...results];
+        const cursor = {
+          skip(n = 0) {
+            list = list.slice(n);
+            return cursor;
+          },
+          limit(n = 50) {
+            list = list.slice(0, n);
+            return cursor;
+          },
+          sort() {
+            return cursor;
+          },
+          toArray: async () => list
         };
+        return cursor;
       },
       insertOne: async (doc) => {
         memoryFallback[collectionName].push(doc);

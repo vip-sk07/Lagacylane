@@ -170,12 +170,51 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 230, 118, 0.6);
         }
+
+        /* Ambient Breeze Drifting Leaves & Petals for Life Sanctuary */
+        #breeze-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            overflow: hidden;
+            display: none;
+        }
+        #breeze-overlay.active {
+            display: block;
+        }
+        .breeze-leaf {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: driftBreeze linear infinite;
+        }
+        @keyframes driftBreeze {
+            0% {
+                transform: translate3d(-8vw, -8vh, 0) rotate(0deg) scale(0.75);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.75;
+            }
+            85% {
+                opacity: 0.65;
+            }
+            100% {
+                transform: translate3d(115vw, 112vh, 0) rotate(720deg) scale(1.15);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- WebGL Canvas for 3D Field & Avatar Scene -->
     <canvas id="webgl-canvas"></canvas>
+
+    <!-- Slow-mo Breeze Drifting Leaves/Petals UI Overlay (Life Mode) -->
+    <div id="breeze-overlay"></div>
 
     <!-- UI Overlay Controls -->
     <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 overflow-hidden">
@@ -200,21 +239,16 @@
                 </div>
             </div>
 
-            <!-- Center: Multi-Sport Switcher Pills -->
-            <div class="tactical-glass p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
-                <button data-sport="football" class="sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition">Football ⚽</button>
-                <button data-sport="basketball" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Basketball 🏀</button>
-                <button data-sport="soccer" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Soccer 🥅</button>
-                <button data-sport="track" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Track & Field 🏃</button>
-                <button data-sport="cricket" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Cricket 🏏</button>
-                <button data-sport="tennis" class="sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition">Tennis 🎾</button>
+            <!-- Center: Journey Domain Switcher (Isolated per mode) -->
+            <div id="domain-switcher-container" class="tactical-glass p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
+                <!-- Dynamically populated via JS to strictly isolate Life vs Sports -->
             </div>
 
             <!-- Right: Action CTA Buttons -->
             <div class="flex items-center gap-2">
-                <!-- + LOG PLAY CTA -->
+                <!-- + LOG PLAY / ADD MEMORY CTA -->
                 <button id="btn-open-log-modal" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-emerald-500/30 border border-emerald-200 transition flex items-center gap-1.5 active:scale-95">
-                    <span class="text-sm">➕</span> LOG PLAY
+                    <span id="btn-open-log-icon" class="text-sm">➕</span> <span id="btn-open-log-label">LOG PLAY</span>
                 </button>
 
                 <!-- ⚡ YOUR YOUNGER SELF AI Button -->
@@ -224,11 +258,53 @@
 
                 <!-- 📇 PRO CARD Button -->
                 <button id="btn-open-pro-card" class="tactical-glass px-4 py-2.5 rounded-2xl hover:bg-white/15 text-white font-extrabold text-xs tracking-wider border border-white/20 transition flex items-center gap-1.5 active:scale-95">
-                    <span class="text-sm">📇</span> PRO CARD
+                    <span class="text-sm">📇</span> <span id="pro-card-btn-label">PRO CARD</span>
                 </button>
+
+                <!-- 🌌 JOURNEY HUB -->
+                <a href="journey-selection.html" class="tactical-glass px-3.5 py-2.5 rounded-2xl hover:bg-white/15 text-cyan-300 font-extrabold text-xs tracking-wider border border-cyan-400/30 transition flex items-center gap-1.5 active:scale-95" title="Switch Journey Archive Path">
+                    <span class="text-sm">🌌</span> <span class="hidden sm:inline">JOURNEY HUB</span>
+                </a>
+
+                <!-- 🔑 LOGIN / ACCOUNT -->
+                <a href="LegacyLogin.html" class="tactical-glass px-3 py-2.5 rounded-2xl hover:bg-white/15 text-gray-300 font-extrabold text-xs tracking-wider border border-white/20 transition flex items-center gap-1.5 active:scale-95" title="Sign In or Switch Account">
+                    <span class="text-sm">🔑</span> <span class="hidden sm:inline">LOGIN</span>
+                </a>
             </div>
 
         </header>
+
+        <!-- ==========================================================================
+             YOUNGER SELF — RIGHT-SIDE SUBSTITUTE BENCH WIDGET
+             ========================================================================== -->
+        <div id="sub-bench-widget" class="fixed right-4 md:right-8 top-24 z-30 pointer-events-auto w-72 tactical-glass-card p-3.5 rounded-2xl border-amber-500/40 shadow-2xl space-y-2.5 transition-all">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-600 flex items-center justify-center text-black text-sm font-black shadow-md">
+                        ⚡
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-white leading-tight">Younger Self</h4>
+                        <span id="sub-bench-status-badge" class="text-[10px] font-mono text-amber-300 font-bold">🪑 On Sub Bench (Ready)</span>
+                    </div>
+                </div>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" title="Active & Listening"></span>
+            </div>
+            
+            <div class="bg-black/60 rounded-xl p-2.5 border border-white/10 text-[11px] text-gray-300 space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] font-mono text-cyan-300 font-bold">
+                    <span>🧠 ACTIVE MEMORY VAULT:</span>
+                    <span id="sub-bench-learned-count">0 MEMORIES</span>
+                </div>
+                <p id="sub-bench-speech-bubble" class="text-xs text-amber-100 italic leading-snug">
+                    "Coach, I'm watching from the sideline bench! Record your memories so I can learn from your journey."
+                </p>
+            </div>
+            
+            <button id="btn-call-sub-bench" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:brightness-110 text-black font-extrabold text-[11px] tracking-wider uppercase transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 active:scale-95">
+                <span>⚡ CALL FROM BENCH (CHAT)</span>
+            </button>
+        </div>
 
         <!-- ==========================================================================
              2. CENTER FLOATING LIVE SEARCH BAR
@@ -566,13 +642,19 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             /* ------------------------------------------------------------------
-               1. STATE MANAGEMENT & ZERO HARDCODED DEFAULT NODES
+               1. URL ROUTING & STRICT DOMAIN ISOLATION
                ------------------------------------------------------------------ */
-            let currentSport = 'football';
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlMode = (urlParams.get('mode') || '').toLowerCase();
+            const urlSportParam = (urlParams.get('sport') || '').toLowerCase();
+            const storedMode = (localStorage.getItem('legacy_journey_mode') || '').toLowerCase();
+            const isLifeMode = urlMode === 'life' || urlSportParam === 'life' || (!urlMode && storedMode === 'life');
+            let currentSport = isLifeMode ? 'life' : (urlSportParam || localStorage.getItem('legacy_selected_sport') || 'football');
             let activeNodeIndex = -1;
 
-            // Load stored memories or start with empty object
+            // Load stored memories or start with empty category object
             let allMemoriesStore = JSON.parse(localStorage.getItem('legacylane_memories_v2')) || {
+                life: [],
                 football: [],
                 basketball: [],
                 soccer: [],
@@ -580,6 +662,7 @@
                 cricket: [],
                 tennis: []
             };
+            if (!allMemoriesStore.life) allMemoriesStore.life = [];
 
             function getActiveMemories() {
                 return allMemoriesStore[currentSport] || [];
@@ -590,7 +673,85 @@
             }
 
             /* ------------------------------------------------------------------
-               2. THREE.JS 3D SCENE & ENGINE
+               2. DOMAIN SWITCHER RENDERING (STRICT ISOLATION)
+               ------------------------------------------------------------------ */
+            const domainSwitcherContainer = document.getElementById('domain-switcher-container');
+
+            function renderDomainSwitcher() {
+                domainSwitcherContainer.innerHTML = '';
+
+                if (isLifeMode) {
+                    // Life Mode: STRICT ISOLATION — ZERO SPORTS BUTTONS
+                    domainSwitcherContainer.innerHTML = `
+                        <div class="px-5 py-2 rounded-2xl flex items-center gap-2.5 border border-cyan-500/50 bg-cyan-950/40 text-cyan-300 font-extrabold text-xs shadow-lg shadow-cyan-950/40">
+                            <span class="text-base">📖</span>
+                            <span class="tracking-wide">Life Journey Chronicle</span>
+                            <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-[9px] font-mono font-bold text-cyan-200 border border-cyan-400/30">SANCTUARY</span>
+                        </div>
+                    `;
+
+                    // Update UI labels to Life terms
+                    document.getElementById('player-name-display').textContent = 'Marcus Vance';
+                    document.getElementById('current-sport-badge').textContent = 'LIFE CHRONICLE';
+                    document.getElementById('current-sport-badge').className = 'px-2.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/40';
+                    document.getElementById('plays-count-display').textContent = '0 LOGGED MEMORIES • LIFE JOURNEY TIMELINE';
+                    document.getElementById('btn-open-log-label').textContent = 'ADD MEMORY';
+                    document.getElementById('modal-log-sport-tag').textContent = 'LIFE CHRONICLE ARCHIVE';
+                    document.getElementById('modal-log-title').textContent = 'Log Life Memory & Milestone';
+                    document.getElementById('pro-card-sport').textContent = 'LIFE CHRONICLER';
+                    document.getElementById('pro-card-btn-label').textContent = 'LIFE CARD';
+                    document.getElementById('sub-bench-status-badge').textContent = '🌱 Under Breeze Tree (Reflecting)';
+                } else {
+                    // Sports Mode: STRICT ISOLATION — ZERO LIFE BUTTON
+                    const sportsList = [
+                        { id: 'football', label: 'Football ⚽' },
+                        { id: 'basketball', label: 'Basketball 🏀' },
+                        { id: 'soccer', label: 'Soccer 🥅' },
+                        { id: 'track', label: 'Track & Field 🏃' },
+                        { id: 'cricket', label: 'Cricket 🏏' },
+                        { id: 'tennis', label: 'Tennis 🎾' }
+                    ];
+
+                    sportsList.forEach(s => {
+                        const btn = document.createElement('button');
+                        btn.dataset.sport = s.id;
+                        const isActive = s.id === currentSport;
+                        btn.className = isActive
+                            ? 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition'
+                            : 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
+                        btn.textContent = s.label;
+                        btn.addEventListener('click', () => switchSport(s.id));
+                        domainSwitcherContainer.appendChild(btn);
+                    });
+
+                    document.getElementById('btn-open-log-label').textContent = 'LOG PLAY';
+                    document.getElementById('pro-card-btn-label').textContent = 'PRO CARD';
+                    document.getElementById('sub-bench-status-badge').textContent = '🪑 On Sub Bench (Ready)';
+                }
+            }
+
+            function switchSport(sportId) {
+                currentSport = sportId;
+                document.querySelectorAll('.sport-btn').forEach(b => {
+                    if (b.dataset.sport === currentSport) {
+                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition';
+                    } else {
+                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
+                    }
+                });
+
+                document.getElementById('current-sport-badge').textContent = currentSport.toUpperCase();
+                document.getElementById('modal-log-sport-tag').textContent = `${currentSport.toUpperCase()} PLAYBOOK`;
+                document.getElementById('modal-log-title').textContent = `Log ${currentSport.toUpperCase()} Play & Milestone`;
+                document.getElementById('pro-card-sport').textContent = `PRO ${currentSport.toUpperCase()} ATHLETE`;
+
+                rebuildFieldMesh(currentSport);
+                rebuild3DSpline();
+                updateSubBenchWidget();
+            }
+
+            /* ------------------------------------------------------------------
+               3. THREE.JS 3D SCENE & ENGINE
                ------------------------------------------------------------------ */
             const canvas = document.getElementById('webgl-canvas');
             const scene = new THREE.Scene();
@@ -599,7 +760,9 @@
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             const defaultCamPos = new THREE.Vector3(0, 18, 24);
-            camera.position.copy(defaultCamPos);
+            
+            // Start elevated for cinematic intro animation
+            camera.position.set(0, 46, 52);
             camera.lookAt(0, 0, 0);
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
@@ -613,21 +776,25 @@
             controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2.1;
 
-            const ambientLight = new THREE.AmbientLight(0x102a20, 1.2);
+            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x1e3a8a : 0x102a20, isLifeMode ? 1.4 : 1.2);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0x00e676, 1.5);
+            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x38bdf8 : 0x00e676, 1.6);
             dirLight.position.set(10, 25, 15);
             scene.add(dirLight);
 
-            const spotlight = new THREE.SpotLight(0x00e5ff, 2, 40, Math.PI / 4, 0.5);
-            spotlight.position.set(0, 15, 0);
+            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0x00e5ff, 2.2, 45, Math.PI / 4, 0.5);
+            spotlight.position.set(0, 16, 0);
             scene.add(spotlight);
 
             /* ------------------------------------------------------------------
-               3. PROCEDURAL MULTI-SPORT FIELD MESH GENERATOR
+               4. PROCEDURAL ENVIRONMENT, TREES IN BREEZE, & FIELD
                ------------------------------------------------------------------ */
             let fieldMesh = null;
+            let treesGroup = null;
+            let leavesParticleSystem = null;
+            let leavesPositions = null;
+            const numLeaves = 140;
 
             function createFieldTexture(sport) {
                 const cv = document.createElement('canvas');
@@ -635,7 +802,45 @@
                 cv.height = 2048;
                 const ctx = cv.getContext('2d');
 
-                if (sport === 'basketball') {
+                if (sport === 'life') {
+                    // Serene Stone Garden Path with Floral & Grass Accents
+                    ctx.fillStyle = '#062016'; // Deep meadow green
+                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Central Stone Cobblestone Path
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(320, 0, 384, 2048);
+
+                    // Winding Stone Pavers
+                    for (let y = 0; y < 2048; y += 70) {
+                        for (let x = 340; x < 680; x += 85) {
+                            ctx.fillStyle = (x + y) % 3 === 0 ? '#334155' : ((x + y) % 2 === 0 ? '#475569' : '#1e293b');
+                            ctx.beginPath();
+                            ctx.roundRect(x + (Math.sin(y) * 10), y, 75, 55, 12);
+                            ctx.fill();
+                        }
+                    }
+
+                    // Glowing Floral Path Borders
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(320, 0);
+                    ctx.lineTo(320, 2048);
+                    ctx.moveTo(704, 0);
+                    ctx.lineTo(704, 2048);
+                    ctx.stroke();
+
+                    // Soft Starlight/Spore Dots
+                    for (let i = 0; i < 180; i++) {
+                        const px = Math.random() * 1024;
+                        const py = Math.random() * 2048;
+                        ctx.fillStyle = i % 2 === 0 ? 'rgba(56, 189, 248, 0.6)' : 'rgba(244, 114, 182, 0.5)';
+                        ctx.beginPath();
+                        ctx.arc(px, py, Math.random() * 4 + 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (sport === 'basketball') {
                     // Hardwood Court
                     ctx.fillStyle = '#8d6e63';
                     ctx.fillRect(0, 0, 1024, 2048);
@@ -679,7 +884,7 @@
                     // Green Oval + Central Pitch Crease
                     ctx.fillStyle = '#33691e';
                     ctx.fillRect(0, 0, 1024, 2048);
-                    ctx.fillStyle = '#d7ccc8'; // pitch rectangle
+                    ctx.fillStyle = '#d7ccc8';
                     ctx.fillRect(412, 600, 200, 848);
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 6;
@@ -719,34 +924,207 @@
                 return tex;
             }
 
+            function buildTreesAndBreeze() {
+                if (treesGroup) scene.remove(treesGroup);
+                if (leavesParticleSystem) scene.remove(leavesParticleSystem);
+
+                treesGroup = new THREE.Group();
+
+                // 16 Stylized 3D trees flanking the path in the breeze
+                const treeCoordinates = [
+                    [-16, -34], [-22, -26], [-17, -16], [-24, -6], [-18, 6], [-23, 18], [-17, 28], [-23, 38],
+                    [16, -34], [22, -26], [17, -16], [24, -6], [18, 6], [23, 18], [17, 28], [24, 38]
+                ];
+
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.9 });
+                const emeraldMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6 });
+                const limeMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.6 });
+                const blossomMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.5 }); // Cherry blossom accents
+
+                treeCoordinates.forEach(([tx, tz], i) => {
+                    const tree = new THREE.Group();
+                    tree.position.set(tx, 0, tz);
+
+                    const trunkHeight = 4.2 + (i % 3) * 0.5;
+                    const trunkGeo = new THREE.CylinderGeometry(0.32, 0.55, trunkHeight, 8);
+                    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                    trunk.position.y = trunkHeight / 2;
+                    tree.add(trunk);
+
+                    const canopy = new THREE.Group();
+                    canopy.position.y = trunkHeight - 0.2;
+
+                    const canopyColor = i % 4 === 0 ? blossomMat : (i % 2 === 0 ? emeraldMat : limeMat);
+
+                    for (let layer = 0; layer < 3; layer++) {
+                        const coneGeo = new THREE.ConeGeometry(2.4 - layer * 0.5, 2.5 - layer * 0.3, 8);
+                        const cone = new THREE.Mesh(coneGeo, canopyColor);
+                        cone.position.y = layer * 1.25;
+                        canopy.add(cone);
+                    }
+
+                    tree.add(canopy);
+                    tree.userData = { seed: i * 0.7, canopy };
+                    treesGroup.add(tree);
+                });
+
+                scene.add(treesGroup);
+
+                // Drifting Breeze Leaves / Petals Particle System
+                const leafGeo = new THREE.BufferGeometry();
+                leavesPositions = new Float32Array(numLeaves * 3);
+                for (let i = 0; i < numLeaves; i++) {
+                    leavesPositions[i * 3] = (Math.random() - 0.5) * 50;
+                    leavesPositions[i * 3 + 1] = Math.random() * 12 + 0.5;
+                    leavesPositions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+                }
+                leafGeo.setAttribute('position', new THREE.BufferAttribute(leavesPositions, 3));
+
+                const leafMat = new THREE.PointsMaterial({
+                    size: 0.45,
+                    color: 0xfbcfe8,
+                    transparent: true,
+                    opacity: 0.75,
+                    blending: THREE.AdditiveBlending
+                });
+                leavesParticleSystem = new THREE.Points(leafGeo, leafMat);
+                scene.add(leavesParticleSystem);
+            }
+
+            function clearTreesAndBreeze() {
+                if (treesGroup) {
+                    scene.remove(treesGroup);
+                    treesGroup = null;
+                }
+                if (leavesParticleSystem) {
+                    scene.remove(leavesParticleSystem);
+                    leavesParticleSystem = null;
+                    leavesPositions = null;
+                }
+            }
+
             function rebuildFieldMesh(sport) {
                 if (fieldMesh) scene.remove(fieldMesh);
 
                 const tex = createFieldTexture(sport);
                 const fieldGeo = new THREE.PlaneGeometry(36, 90);
-                const fieldMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, metalness: 0.1 });
+                const fieldMat = new THREE.MeshStandardMaterial({
+                    map: tex,
+                    roughness: sport === 'life' ? 0.8 : 0.7,
+                    metalness: 0.1
+                });
                 fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
                 fieldMesh.rotation.x = -Math.PI / 2;
                 scene.add(fieldMesh);
+
+                if (sport === 'life') {
+                    buildTreesAndBreeze();
+                } else {
+                    clearTreesAndBreeze();
+                }
             }
 
-            rebuildFieldMesh('football');
-
-            // Sideline Bench
-            const benchGeo = new THREE.BoxGeometry(2, 0.8, 6);
-            const benchMat = new THREE.MeshStandardMaterial({ color: 0x1a2e26, roughness: 0.5 });
-            const benchMesh = new THREE.Mesh(benchGeo, benchMat);
-            benchMesh.position.set(16, 0.4, 0);
-            scene.add(benchMesh);
+            rebuildFieldMesh(currentSport);
 
             /* ------------------------------------------------------------------
-               4. 3D VOXEL ATHLETE AVATAR & SPLINE ENGINE
+               5. RIGHT-SIDE BENCH & YOUNGER SELF SUBSTITUTE RIG
+               ------------------------------------------------------------------ */
+            const benchGroup = new THREE.Group();
+            benchGroup.position.set(15, 0, 0);
+
+            // Bench Frame & Seat Planks
+            const benchSeatGeo = new THREE.BoxGeometry(2.4, 0.7, 6.5);
+            const benchSeatMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x78350f : 0x1e293b,
+                roughness: 0.6
+            });
+            const benchSeat = new THREE.Mesh(benchSeatGeo, benchSeatMat);
+            benchSeat.position.y = 0.35;
+            benchGroup.add(benchSeat);
+
+            const benchBackGeo = new THREE.BoxGeometry(0.3, 1.4, 6.5);
+            const benchBack = new THREE.Mesh(benchBackGeo, benchSeatMat);
+            benchBack.position.set(1.1, 1.2, 0);
+            benchGroup.add(benchBack);
+
+            // Glowing Bench Aura Ring on the Grass
+            const benchRingGeo = new THREE.RingGeometry(3.6, 3.9, 32);
+            const benchRingMat = new THREE.MeshBasicMaterial({
+                color: 0xf59e0b,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.6
+            });
+            const benchRing = new THREE.Mesh(benchRingGeo, benchRingMat);
+            benchRing.rotation.x = Math.PI / 2;
+            benchRing.position.y = 0.04;
+            benchGroup.add(benchRing);
+
+            // 3D YOUNGER SELF AVATAR SEATED ON THE BENCH
+            const subAvatarGroup = new THREE.Group();
+            subAvatarGroup.position.set(0, 0.7, 0);
+
+            // Seated Torso
+            const subTorso = new THREE.Mesh(
+                new THREE.BoxGeometry(0.7, 0.9, 0.45),
+                new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 }) // Gold substitute jersey / warm vest
+            );
+            subTorso.position.y = 0.55;
+            subAvatarGroup.add(subTorso);
+
+            // Head
+            const subHead = new THREE.Mesh(
+                new THREE.BoxGeometry(0.55, 0.55, 0.55),
+                new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 })
+            );
+            subHead.position.y = 1.35;
+            subAvatarGroup.add(subHead);
+
+            // Hair
+            const subHair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.58, 0.25, 0.58),
+                new THREE.MeshStandardMaterial({ color: 0x1e1b18 })
+            );
+            subHair.position.y = 1.62;
+            subAvatarGroup.add(subHair);
+
+            // Arms resting forward on knees
+            const subArmGeo = new THREE.BoxGeometry(0.18, 0.65, 0.18);
+            const subArmMat = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
+            const subArmL = new THREE.Mesh(subArmGeo, subArmMat);
+            subArmL.position.set(-0.45, 0.55, 0.2);
+            subArmL.rotation.x = Math.PI / 4;
+            subAvatarGroup.add(subArmL);
+
+            const subArmR = new THREE.Mesh(subArmGeo, subArmMat);
+            subArmR.position.set(0.45, 0.55, 0.2);
+            subArmR.rotation.x = Math.PI / 4;
+            subAvatarGroup.add(subArmR);
+
+            // Seated bent legs over the bench edge
+            const subLegGeo = new THREE.BoxGeometry(0.24, 0.7, 0.24);
+            const subLegMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+            const subLegL = new THREE.Mesh(subLegGeo, subLegMat);
+            subLegL.position.set(-0.25, 0.0, 0.35);
+            subAvatarGroup.add(subLegL);
+
+            const subLegR = new THREE.Mesh(subLegGeo, subLegMat);
+            subLegR.position.set(0.25, 0.0, 0.35);
+            subAvatarGroup.add(subLegR);
+
+            benchGroup.add(subAvatarGroup);
+            scene.add(benchGroup);
+
+            /* ------------------------------------------------------------------
+               6. 3D VOXEL ATHLETE / CHRONICLER AVATAR & SPLINE ENGINE
                ------------------------------------------------------------------ */
             const avatarGroup = new THREE.Group();
 
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00e676, roughness: 0.4 });
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x06b6d4 : 0x00e676,
+                roughness: 0.4
+            });
             const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 });
-            const darkMat = new THREE.MeshStandardMaterial({ color: 0x08141f, roughness: 0.5 });
 
             const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
             const torsoMesh = new THREE.Mesh(torsoGeo, bodyMat);
@@ -759,25 +1137,34 @@
             avatarGroup.add(headMesh);
 
             const visorGeo = new THREE.BoxGeometry(0.62, 0.2, 0.3);
-            const visorMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, metalness: 0.9, roughness: 0.1 });
+            const visorMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x38bdf8 : 0x00e5ff,
+                metalness: 0.9,
+                roughness: 0.1
+            });
             const visorMesh = new THREE.Mesh(visorGeo, visorMat);
             visorMesh.position.set(0, 2.05, 0.2);
             avatarGroup.add(visorMesh);
 
             const selectionRingGeo = new THREE.RingGeometry(0.9, 1.2, 32);
-            const selectionRingMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+            const selectionRingMat = new THREE.MeshBasicMaterial({
+                color: isLifeMode ? 0x06b6d4 : 0x00e5ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
             const selectionRingMesh = new THREE.Mesh(selectionRingGeo, selectionRingMat);
             selectionRingMesh.rotation.x = Math.PI / 2;
             selectionRingMesh.position.y = 0.05;
             avatarGroup.add(selectionRingMesh);
 
-            // Default Kickoff Position
+            // Default Starting Position
             const homeKickoffPos = new THREE.Vector3(0, 0.4, 30);
             avatarGroup.position.copy(homeKickoffPos);
             scene.add(avatarGroup);
 
             /* ------------------------------------------------------------------
-               5. DYNAMIC CHRONOLOGICAL SPLINE & CHECKPOINT ENGINE
+               7. DYNAMIC CHRONOLOGICAL SPLINE & CHECKPOINT ENGINE
                ------------------------------------------------------------------ */
             let splineTubeMesh = null;
             let checkpointRings = [];
@@ -793,9 +1180,9 @@
                 const memories = getActiveMemories();
 
                 if (memories.length === 0) {
-                    // Empty State: Position avatar at Kickoff
                     gsap.to(avatarGroup.position, { x: 0, y: 0.4, z: 30, duration: 1 });
                     updateHUDEmptyState();
+                    updateSubBenchWidget();
                     return;
                 }
 
@@ -811,8 +1198,8 @@
                     splineCurve = new THREE.CatmullRomCurve3(points);
                     const tubeGeo = new THREE.TubeGeometry(splineCurve, 120, 0.18, 12, false);
                     const tubeMat = new THREE.MeshStandardMaterial({
-                        color: 0x00e676,
-                        emissive: 0x00b359,
+                        color: isLifeMode ? 0x06b6d4 : 0x00e676,
+                        emissive: isLifeMode ? 0x0891b2 : 0x00b359,
                         emissiveIntensity: 0.8,
                         roughness: 0.3
                     });
@@ -828,19 +1215,25 @@
                     ringGroup.position.copy(pt);
 
                     const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
+                    const themeColor = isLifeMode ? 0x06b6d4 : 0x00e676;
                     const ringMat = new THREE.MeshStandardMaterial({
-                        color: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
-                        emissive: idx === activeNodeIndex ? 0x00e5ff : 0x00e676,
+                        color: idx === activeNodeIndex ? 0x38bdf8 : themeColor,
+                        emissive: idx === activeNodeIndex ? 0x38bdf8 : themeColor,
                         emissiveIntensity: 1
                     });
                     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
                     ringMesh.rotation.x = Math.PI / 2;
                     ringGroup.add(ringMesh);
 
-                    const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3, 16, 1, true);
-                    const beamMat = new THREE.MeshBasicMaterial({ color: 0x00e676, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+                    const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.2, 16, 1, true);
+                    const beamMat = new THREE.MeshBasicMaterial({
+                        color: themeColor,
+                        transparent: true,
+                        opacity: 0.18,
+                        side: THREE.DoubleSide
+                    });
                     const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                    beamMesh.position.y = 1.5;
+                    beamMesh.position.y = 1.6;
                     ringGroup.add(beamMesh);
 
                     ringGroup.userData = { nodeIndex: idx };
@@ -852,18 +1245,24 @@
                     activeNodeIndex = memories.length - 1;
                 }
                 updateActiveNode(activeNodeIndex);
+                updateSubBenchWidget();
             }
 
             function updateHUDEmptyState() {
                 activeNodeIndex = -1;
-                document.getElementById('snippet-node-tag').textContent = 'KICKOFF SPOT';
+                const modeWord = isLifeMode ? 'MEMORIES' : 'PLAYS';
+                document.getElementById('snippet-node-tag').textContent = isLifeMode ? 'ORIGIN WAYPOINT' : 'KICKOFF SPOT';
                 document.getElementById('snippet-era-tag').textContent = 'Ready to Log';
-                document.getElementById('snippet-title').textContent = `No plays logged yet for ${currentSport.toUpperCase()}.`;
-                document.getElementById('snippet-sentiment').textContent = "CLICK '+ LOG PLAY'";
-                document.getElementById('snippet-journal-preview').textContent = `"Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"`;
+                document.getElementById('snippet-title').textContent = isLifeMode
+                    ? 'No memories logged yet for LIFE.'
+                    : `No plays logged yet for ${currentSport.toUpperCase()}.`;
+                document.getElementById('snippet-sentiment').textContent = isLifeMode ? "CLICK '+ ADD MEMORY'" : "CLICK '+ LOG PLAY'";
+                document.getElementById('snippet-journal-preview').textContent = isLifeMode
+                    ? `"Click '+ ADD MEMORY' in the top header to record your first milestone and watch your 3D memory trail come alive!"`
+                    : `"Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"`;
                 document.getElementById('snippet-progress-fill').style.width = '0%';
-                document.getElementById('snippet-progress-text').textContent = '0 / 0 PLAYS';
-                document.getElementById('plays-count-display').textContent = `0 LOGGED PLAYS • TACTICAL TIMELINE`;
+                document.getElementById('snippet-progress-text').textContent = `0 / 0 ${modeWord}`;
+                document.getElementById('plays-count-display').textContent = `0 LOGGED ${modeWord} • ${isLifeMode ? 'LIFE JOURNEY' : 'TACTICAL'} TIMELINE`;
             }
 
             function updateActiveNode(index) {
@@ -880,6 +1279,7 @@
                 targetU = memories.length > 1 ? (activeNodeIndex / (memories.length - 1)) : 0;
 
                 const play = memories[activeNodeIndex];
+                const modeWord = isLifeMode ? 'MEMORIES' : 'PLAYS';
                 document.getElementById('snippet-node-tag').textContent = `NODE #${play.id || (activeNodeIndex + 1)} OF ${memories.length}`;
                 document.getElementById('snippet-era-tag').textContent = play.era || 'Career Era';
                 document.getElementById('snippet-title').textContent = play.title;
@@ -888,49 +1288,59 @@
 
                 const pct = ((activeNodeIndex + 1) / memories.length) * 100;
                 document.getElementById('snippet-progress-fill').style.width = `${pct}%`;
-                document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${memories.length} PLAYS`;
-                document.getElementById('plays-count-display').textContent = `${memories.length} LOGGED PLAYS • TACTICAL TIMELINE`;
+                document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${memories.length} ${modeWord}`;
+                document.getElementById('plays-count-display').textContent = `${memories.length} LOGGED ${modeWord} • ${isLifeMode ? 'LIFE' : 'TACTICAL'} TIMELINE`;
+
+                const activeHighlightColor = isLifeMode ? 0x38bdf8 : 0x00e5ff;
+                const standardColor = isLifeMode ? 0x06b6d4 : 0x00e676;
 
                 checkpointRings.forEach((r, idx) => {
-                    r.mesh.material.color.setHex(idx === activeNodeIndex ? 0x00e5ff : 0x00e676);
-                    r.mesh.material.emissive.setHex(idx === activeNodeIndex ? 0x00e5ff : 0x00e676);
+                    r.mesh.material.color.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
+                    r.mesh.material.emissive.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
                 });
 
                 if (splineCurve && memories.length > 1) {
                     const pt = splineCurve.getPointAt(targetU);
                     spotlight.target.position.copy(pt);
-                    spotlight.position.set(pt.x, 15, pt.z + 5);
+                    spotlight.position.set(pt.x, 16, pt.z + 5);
                 } else if (memories.length === 1) {
                     const pt = new THREE.Vector3(0, 0.3, 32);
                     gsap.to(avatarGroup.position, { x: pt.x, y: 0.4, z: pt.z, duration: 1 });
                 }
             }
 
-            // Initial setup
-            rebuild3DSpline();
-
             /* ------------------------------------------------------------------
-               6. MULTI-SPORT SWITCHER LOGIC
+               8. SUB-BENCH KNOWLEDGE BASE & DYNAMIC RAG UPDATES
                ------------------------------------------------------------------ */
-            document.querySelectorAll('.sport-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.sport-btn').forEach(b => {
-                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
-                    });
-                    btn.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition';
+            function updateSubBenchWidget() {
+                const memories = getActiveMemories();
+                const photosCount = memories.filter(m => m.photo).length;
 
-                    currentSport = btn.dataset.sport;
-                    document.getElementById('current-sport-badge').textContent = currentSport.toUpperCase();
-                    document.getElementById('modal-log-sport-tag').textContent = `${currentSport.toUpperCase()} PLAYBOOK`;
-                    document.getElementById('modal-log-title').textContent = `Log ${currentSport.toUpperCase()} Play & Milestone`;
-                    document.getElementById('pro-card-sport').textContent = `PRO ${currentSport.toUpperCase()} ATHLETE`;
+                const countEl = document.getElementById('sub-bench-learned-count');
+                const speechEl = document.getElementById('sub-bench-speech-bubble');
 
-                    rebuildFieldMesh(currentSport);
-                    rebuild3DSpline();
-                });
+                if (countEl) {
+                    countEl.textContent = `${memories.length} MEMORIES • ${photosCount} PHOTOS`;
+                }
+
+                if (speechEl) {
+                    if (memories.length === 0) {
+                        speechEl.textContent = isLifeMode
+                            ? `"I'm sitting under the breeze tree! Add your first memory and I'll learn your life story."`
+                            : `"Coach, I'm watching from the sideline bench! Record your first play so I can learn from your journey."`;
+                    } else {
+                        const recent = memories[memories.length - 1];
+                        const photoSnippet = recent.caption ? ` Looking at '${recent.caption}',` : '';
+                        speechEl.textContent = `"I just learned '${recent.title}' (${recent.date})!${photoSnippet} You wrote: '${recent.journal.slice(0, 50)}...'."`;
+                    }
+                }
+            }
+
+            document.getElementById('btn-call-sub-bench').addEventListener('click', () => {
+                document.getElementById('btn-open-ai-companion').click();
             });
 
-            // Snippet Prev/Next Arrows
+            // Snippet Prev/Next Navigation
             document.getElementById('btn-prev-play').addEventListener('click', () => {
                 if (activeNodeIndex > 0) updateActiveNode(activeNodeIndex - 1);
             });
@@ -940,7 +1350,7 @@
             });
 
             /* ------------------------------------------------------------------
-               7. TACTICAL MEMORY LOGGING MODAL (+ LOG PLAY)
+               9. TACTICAL MEMORY LOGGING MODAL (+ ADD MEMORY)
                ------------------------------------------------------------------ */
             const modalLogPlay = document.getElementById('modal-log-play');
             const formLogPlay = document.getElementById('form-log-play');
@@ -962,8 +1372,8 @@
 
             logSentimentSlider.addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
-                let label = "Peak Victory 🌟";
-                if (val < 40) label = "Exhaustion / Burnout 🔴";
+                let label = "Peak Victory / Joy 🌟";
+                if (val < 40) label = "Exhaustion / Reflective 🔴";
                 else if (val < 70) label = "Determined Effort 💪";
                 logSentimentBadge.textContent = `${val} / 100 (${label})`;
             });
@@ -971,10 +1381,11 @@
             // Emotion Tag Chips Toggle
             document.querySelectorAll('#emotion-chips-box .tag-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
-                    if (chip.classList.contains('bg-emerald-500')) {
+                    if (chip.classList.contains('bg-emerald-500') || chip.classList.contains('bg-cyan-500')) {
                         chip.className = 'tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition';
                     } else {
-                        chip.className = 'tag-chip px-2.5 py-1 rounded-lg bg-emerald-500 text-black text-[11px] font-extrabold transition';
+                        const activeColor = isLifeMode ? 'bg-cyan-500' : 'bg-emerald-500';
+                        chip.className = `tag-chip px-2.5 py-1 rounded-lg ${activeColor} text-black text-[11px] font-extrabold transition`;
                     }
                 });
             });
@@ -995,6 +1406,11 @@
 
             function assignEraFromDate(dateStr) {
                 const year = new Date(dateStr).getFullYear();
+                if (isLifeMode) {
+                    if (year <= 2015) return "Early Childhood Era";
+                    if (year <= 2020) return "Youth & School Era";
+                    return "Present Life Journey";
+                }
                 if (year <= 2018) return "Rookie Era (Age 14-18)";
                 if (year <= 2022) return "College Era (Age 19-22)";
                 return "Pro Athlete Era (Present)";
@@ -1010,7 +1426,7 @@
                 const caption = document.getElementById('log-input-caption').value;
 
                 const selectedTags = [];
-                document.querySelectorAll('#emotion-chips-box .bg-emerald-500').forEach(c => {
+                document.querySelectorAll('#emotion-chips-box .bg-emerald-500, #emotion-chips-box .bg-cyan-500').forEach(c => {
                     selectedTags.push(c.dataset.tag);
                 });
 
@@ -1021,8 +1437,8 @@
                     era: assignEraFromDate(date),
                     journal: journal,
                     sentiment: sentiment,
-                    tags: selectedTags.length > 0 ? selectedTags : ["#Victorious"],
-                    photo: tempBase64Photo || "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600",
+                    tags: selectedTags.length > 0 ? selectedTags : [isLifeMode ? "#Grateful" : "#Victorious"],
+                    photo: tempBase64Photo || (isLifeMode ? "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600" : "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600"),
                     caption: caption
                 };
 
@@ -1033,7 +1449,12 @@
 
                 saveMemoriesStore();
 
-                confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+                confetti({
+                    particleCount: 120,
+                    spread: 85,
+                    origin: { y: 0.6 },
+                    colors: isLifeMode ? ['#06b6d4', '#38bdf8', '#f472b6'] : ['#00e676', '#ffb300', '#00e5ff']
+                });
 
                 // Reset form
                 formLogPlay.reset();
@@ -1046,7 +1467,7 @@
             });
 
             /* ------------------------------------------------------------------
-               8. MEMORY INSPECTION DRAWER
+               10. MEMORY INSPECTION DRAWER
                ------------------------------------------------------------------ */
             const modalInspect = document.getElementById('modal-inspect-play');
 
@@ -1092,7 +1513,7 @@
             });
 
             /* ------------------------------------------------------------------
-               9. "YOUR YOUNGER SELF" INSTANT-LEARNING RAG AI DRAWER
+               11. YOUNGER SELF RAG AI WITH FULL DESCRIPTIONS & PHOTO RECALL
                ------------------------------------------------------------------ */
             const drawerAI = document.getElementById('drawer-ai-companion');
             const btnAICompanion = document.getElementById('btn-open-ai-companion');
@@ -1103,8 +1524,8 @@
 
             btnAICompanion.addEventListener('click', () => {
                 drawerAI.classList.add('active');
-                gsap.to(camera.position, { x: 14, y: 3.5, z: 4, duration: 1.5, ease: 'power2.inOut' });
-                gsap.to(controls.target, { x: 16, y: 0.4, z: 0, duration: 1.5, ease: 'power2.inOut' });
+                gsap.to(camera.position, { x: 13, y: 3.5, z: 4.5, duration: 1.5, ease: 'power2.inOut' });
+                gsap.to(controls.target, { x: 15, y: 0.8, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
             btnCloseAIDrawer.addEventListener('click', () => {
@@ -1113,27 +1534,33 @@
                 gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            // RAG Semantic Engine & Persona Simulation
+            // Enhanced Contextual RAG Engine: Evaluates full descriptions & photos
             function performRAGQuery(userPrompt) {
                 const memories = getActiveMemories();
                 if (memories.length === 0) {
-                    return `Hey Marcus! I'm watching the field from the sideline. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
+                    return isLifeMode
+                        ? `Hey Marcus! I'm sitting by the garden bench under the breeze tree. You haven't recorded any life memories yet! Click '+ ADD MEMORY' so I can learn from your story!`
+                        : `Hey Marcus! I'm sitting on the substitute bench watching the field. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
                 }
 
-                // Search for matching memory keyword or grab active memory
                 const query = userPrompt.toLowerCase();
-                let matchedMemory = memories.find(m => 
-                    m.title.toLowerCase().includes(query) || 
+                let matched = memories.find(m =>
+                    m.title.toLowerCase().includes(query) ||
                     m.journal.toLowerCase().includes(query) ||
+                    (m.caption && m.caption.toLowerCase().includes(query)) ||
                     (m.tags && m.tags.some(t => t.toLowerCase().includes(query)))
-                ) || memories[activeNodeIndex >= 0 ? activeNodeIndex : 0];
+                ) || memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
 
-                const quotes = [
-                    `I remember when we played in '${matchedMemory.title}' on ${matchedMemory.date}! You wrote: "${matchedMemory.journal.slice(0, 50)}...". With a sentiment score of ${matchedMemory.sentiment}/100, we proved how hard we work!`,
-                    `Looking back at '${matchedMemory.title}', coach drew that play in the dirt and we executed perfectly! You tagged it as ${matchedMemory.tags.join(' ')}. Are we still giving 100% every single day?`,
-                    `Thinking about '${matchedMemory.title}'... We were so focused that day! Keep pushing forward Marcus!`
+                const photoMention = matched.caption ? ` Looking at that picture '${matched.caption}', ` : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
+
+                const responses = [
+                    `I remember when we recorded '${matched.title}' on ${matched.date}!${photoMention}You wrote: "${matched.journal.slice(0, 70)}...". With a sentiment score of ${matched.sentiment}/100, we proved our dedication!`,
+                    `Reflecting on '${matched.title}' from our ${matched.era}...${photoMention}You felt ${matched.tags.join(' ')}. That experience taught us so much! Are you carrying that wisdom forward today?`,
+                    `I'm sitting here on the bench thinking about '${matched.title}'! You described: "${matched.journal.slice(0, 60)}...". Every single milestone we record makes our younger self proud!`,
+                    `Looking back at our memory from ${matched.date} ('${matched.title}')... It feels like yesterday! Keep adding more moments so I can keep growing beside you.`
                 ];
-                return quotes[Math.floor(Math.random() * quotes.length)];
+
+                return responses[Math.floor(Math.random() * responses.length)];
             }
 
             function sendAIMessage(promptText) {
@@ -1157,24 +1584,26 @@
             }
 
             btnSendAI.addEventListener('click', () => sendAIMessage(aiInputText.value));
+            aiInputText.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendAIMessage(aiInputText.value);
+            });
             document.querySelectorAll('.ai-chip-btn').forEach(btn => {
                 btn.addEventListener('click', () => sendAIMessage(btn.textContent.replace(/"/g, '')));
             });
 
             /* ------------------------------------------------------------------
-               10. 📇 PRO CARD & 3D FLIP
+               12. PRO CARD & LIVE SEARCH
                ------------------------------------------------------------------ */
             const modalProCard = document.getElementById('modal-pro-card');
             const proCardInner = document.getElementById('pro-card-inner');
 
             document.getElementById('btn-open-pro-card').addEventListener('click', () => {
-                // Update graph bars
                 const memories = getActiveMemories();
                 const container = document.getElementById('sentiment-bars-container');
                 container.innerHTML = '';
 
                 if (memories.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-gray-400 italic">No plays logged yet to generate sentiment graph.</p>`;
+                    container.innerHTML = `<p class="text-xs text-gray-400 italic">No milestones logged yet to generate sentiment graph.</p>`;
                 } else {
                     memories.forEach(m => {
                         const bar = document.createElement('div');
@@ -1201,9 +1630,10 @@
                     document.getElementById('search-count-badge').textContent = 'ALL';
                     return;
                 }
-                const foundIdx = memories.findIndex(p => 
-                    p.title.toLowerCase().includes(query) || 
+                const foundIdx = memories.findIndex(p =>
+                    p.title.toLowerCase().includes(query) ||
                     p.journal.toLowerCase().includes(query) ||
+                    (p.caption && p.caption.toLowerCase().includes(query)) ||
                     (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
                 );
                 if (foundIdx !== -1) {
@@ -1215,7 +1645,81 @@
             });
 
             /* ------------------------------------------------------------------
-               11. ANIMATION LOOP (60FPS)
+               13. INITIALIZATION & CINEMATIC INTRO ANIMATION
+               ------------------------------------------------------------------ */
+            renderDomainSwitcher();
+            rebuild3DSpline();
+            updateSubBenchWidget();
+
+            // Cinematic Intro Camera Sweep
+            gsap.to(camera.position, {
+                x: defaultCamPos.x,
+                y: defaultCamPos.y,
+                z: defaultCamPos.z,
+                duration: 2.2,
+                ease: 'power3.out'
+            });
+
+            // UI Breeze slow-mo leaves overlay generator for Life Sanctuary
+            if (isLifeMode) {
+                const breezeOverlay = document.getElementById('breeze-overlay');
+                if (breezeOverlay) {
+                    breezeOverlay.classList.add('active');
+                    breezeOverlay.innerHTML = '';
+                    for (let i = 0; i < 18; i++) {
+                        const leaf = document.createElement('div');
+                        leaf.className = 'breeze-leaf';
+                        const size = 18 + Math.random() * 16;
+                        leaf.style.width = `${size}px`;
+                        leaf.style.height = `${size}px`;
+                        leaf.style.left = `${Math.random() * 95}%`;
+                        leaf.style.top = `${Math.random() * 85}%`;
+                        const dur = 9 + Math.random() * 9;
+                        const delay = Math.random() * 12;
+                        leaf.style.animationDuration = `${dur}s`;
+                        leaf.style.animationDelay = `-${delay}s`;
+                        const isPink = i % 2 === 0;
+                        leaf.innerHTML = isPink
+                            ? `<svg viewBox="0 0 24 24" fill="#f472b6" fill-opacity="0.65"><path d="M12 2C9 5 2 12 2 16a10 10 0 0 0 16 3c3-3 4-9 4-13S15 0 12 2z"/></svg>`
+                            : `<svg viewBox="0 0 24 24" fill="#4ade80" fill-opacity="0.55"><path d="M17 8C8 10 5 19 5 19s9-3 11-12c1-4-1-6-1-6z"/></svg>`;
+                        breezeOverlay.appendChild(leaf);
+                    }
+                }
+            }
+
+            // 3D Canvas Raycaster: click checkpoint rings to jump, or click bench to chat
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                // Click on Younger Self substitute bench
+                const benchHits = raycaster.intersectObjects(benchGroup.children, true);
+                if (benchHits.length > 0) {
+                    btnAICompanion.click();
+                    return;
+                }
+
+                // Click on checkpoint rings
+                const ringGroups = checkpointRings.map(r => r.group);
+                const ringHits = raycaster.intersectObjects(ringGroups, true);
+                if (ringHits.length > 0) {
+                    let hitObj = ringHits[0].object;
+                    while (hitObj && hitObj.userData.nodeIndex === undefined && hitObj.parent) {
+                        hitObj = hitObj.parent;
+                    }
+                    if (hitObj && hitObj.userData.nodeIndex !== undefined) {
+                        updateActiveNode(hitObj.userData.nodeIndex);
+                    }
+                }
+            });
+
+            /* ------------------------------------------------------------------
+               14. 60FPS ANIMATION LOOP (TREES SWAYING & DRIFTING BREEZE)
                ------------------------------------------------------------------ */
             const clock = new THREE.Clock();
 
@@ -1236,10 +1740,44 @@
                     avatarGroup.rotation.y = angle;
                 }
 
+                // Selection Ring Pulse
                 selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.rotation.z = time * 0.5 + idx;
                 });
+
+                // SLOW-MO TREES SWAYING IN THE BREEZE (Life Mode)
+                if (treesGroup) {
+                    treesGroup.children.forEach(tree => {
+                        const seed = tree.userData.seed || 0;
+                        tree.rotation.z = Math.sin(time * 0.75 + seed) * 0.038;
+                        tree.rotation.x = Math.cos(time * 0.55 + seed) * 0.022;
+                        if (tree.userData.canopy) {
+                            tree.userData.canopy.rotation.x = Math.sin(time * 1.1 + seed) * 0.03;
+                        }
+                    });
+                }
+
+                // DRIFTING BREEZE LEAVES & BLOSSOM PETALS
+                if (leavesParticleSystem && leavesPositions) {
+                    const pos = leavesParticleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < numLeaves; i++) {
+                        pos[i * 3] += Math.sin(time * 0.7 + i) * 0.022;
+                        pos[i * 3 + 1] -= 0.012;
+                        pos[i * 3 + 2] += 0.035;
+                        if (pos[i * 3 + 1] < 0.2) {
+                            pos[i * 3 + 1] = 12 + Math.random() * 4;
+                            pos[i * 3] = (Math.random() - 0.5) * 50;
+                            pos[i * 3 + 2] = -40;
+                        }
+                    }
+                    leavesParticleSystem.geometry.attributes.position.needsUpdate = true;
+                }
+
+                // IDLE SUBSTITUTE AVATAR BREATHING ON BENCH
+                if (subAvatarGroup) {
+                    subAvatarGroup.position.y = 0.7 + Math.sin(time * 2.2) * 0.025;
+                }
 
                 controls.update();
                 renderer.render(scene, camera);

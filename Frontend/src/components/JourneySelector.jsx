@@ -73,65 +73,61 @@ export default function JourneySelector({
           </span>
         </div>
 
-        {/* Life Chronicle Option */}
-        <div className="mb-2">
-          <button
-            type="button"
-            onClick={handleSelectLife}
-            className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-xs font-bold transition-all ${
-              !isCurrentSports
-                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/60 text-cyan-300 shadow-md shadow-cyan-950/30'
-                : 'bg-slate-900/60 border-slate-800/80 text-slate-300 hover:bg-slate-800/70 hover:text-white hover:border-slate-700'
-            }`}
-            role="menuitem"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="text-base">{LIFE_DOMAIN.icon}</span>
-              <div>
-                <p className="leading-none">{LIFE_DOMAIN.label}</p>
-                <p className="text-[10px] text-slate-400 font-normal mt-0.5">Personal Timeline & Memories</p>
+        {/* STRICT ISOLATION: When in Life Mode, NO sports domains are shown */}
+        {!isCurrentSports ? (
+          <div className="space-y-2.5">
+            <div className="p-2.5 rounded-xl border border-cyan-500/60 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 shadow-md shadow-cyan-950/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-lg">{LIFE_DOMAIN.icon}</span>
+                  <div>
+                    <p className="text-xs font-bold leading-none text-white">{LIFE_DOMAIN.label}</p>
+                    <p className="text-[10px] text-cyan-300 font-medium mt-0.5">Isolated Life Sanctuary</p>
+                  </div>
+                </div>
+                <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
               </div>
             </div>
-            {!isCurrentSports && (
-              <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
-            )}
-          </button>
-        </div>
-
-        {/* Sports Domains Section */}
-        <div className="space-y-1">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 py-1">
-            Sports Career Grounds
-          </p>
-          <div className="grid grid-cols-1 gap-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
-            {SPORT_DOMAINS.map((domain) => {
-              const isSelected = isCurrentSports && currentDomain === domain.id;
-              return (
-                <button
-                  key={domain.id}
-                  type="button"
-                  onClick={() => handleSelectSportDomain(domain.id)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl border text-xs font-bold transition-all ${
-                    isSelected
-                      ? `bg-slate-900 border-emerald-500/70 text-emerald-300 shadow-sm`
-                      : `bg-slate-900/40 border-slate-800/60 text-slate-300 hover:bg-slate-800/60 hover:text-white hover:border-slate-700`
-                  }`}
-                  role="menuitem"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{domain.icon}</span>
-                    <span className="truncate">{domain.label}</span>
-                  </div>
-                  {isSelected ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  ) : (
-                    <span className="text-[10px] font-mono text-slate-500 uppercase">{domain.id}</span>
-                  )}
-                </button>
-              );
-            })}
+            <p className="text-[10px] text-slate-400 px-1 italic">
+              Life mode active: all athletic sport domains are hidden for sanctuary focus.
+            </p>
           </div>
-        </div>
+        ) : (
+          /* STRICT ISOLATION: When in Sports Mode, NO life domain is shown */
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 py-1">
+              Active Sport Grounds (Isolated)
+            </p>
+            <div className="grid grid-cols-1 gap-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
+              {SPORT_DOMAINS.map((domain) => {
+                const isSelected = isCurrentSports && currentDomain === domain.id;
+                return (
+                  <button
+                    key={domain.id}
+                    type="button"
+                    onClick={() => handleSelectSportDomain(domain.id)}
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl border text-xs font-bold transition-all ${
+                      isSelected
+                        ? `bg-slate-900 border-emerald-500/70 text-emerald-300 shadow-sm`
+                        : `bg-slate-900/40 border-slate-800/60 text-slate-300 hover:bg-slate-800/60 hover:text-white hover:border-slate-700`
+                    }`}
+                    role="menuitem"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{domain.icon}</span>
+                      <span className="truncate">{domain.label}</span>
+                    </div>
+                    {isSelected ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    ) : (
+                      <span className="text-[10px] font-mono text-slate-500 uppercase">{domain.id}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
