@@ -438,21 +438,50 @@ app.post('/api/memories', async (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { userId, era, userMessage, history, retrievedContext } = req.body;
+    const { userId, era, userMessage, history, retrievedContext, journeyType, domain, clientMemories } = req.body;
 
-    const messageText = userMessage || (history && history.length > 0 ? history[history.length - 1].content : '');
+    const messageText = userMessage || req.body.message || (history && history.length > 0 ? history[history.length - 1].content : '');
 
     if (!messageText) {
-      return res.status(400).json({ error: 'userMessage or history content is required.' });
+      return res.status(400).json({ error: 'userMessage, message, or history content is required.' });
+    }
+
+    // Merge client-provided memories with database memories for maximal cognitive recall
+    let allRelevantMemories = Array.isArray(clientMemories) ? [...clientMemories] : [];
+    try {
+      const collection = getCollection('MemoryLogs');
+      const query = {};
+      if (userId && userId !== 'usr_default' && userId !== 'usr_anonymous') {
+        query.User_ID = userId;
+      }
+      if (era) query.Era = era;
+      if (journeyType) query.JourneyType = journeyType;
+      if (domain) query.Domain = domain;
+
+      const dbMemories = await collection.find(query).toArray();
+      if (dbMemories.length > 0) {
+        // Avoid duplicate memory IDs
+        const existingIds = new Set(allRelevantMemories.map(m => m.id || m.Memory_ID || m.title));
+        dbMemories.forEach(dm => {
+          if (!existingIds.has(dm.Memory_ID) && !existingIds.has(dm.Title)) {
+            allRelevantMemories.push(dm);
+          }
+        });
+      }
+    } catch (dbErr) {
+      console.warn('MemoryLogs fetch for RAG context notice:', dbErr.message);
     }
     
-    // Delegate to Phase 3 Persona Orchestration Engine
+    // Delegate to Enhanced Phase 3 Persona Orchestration Engine
     const orchestrationResult = await generateYoungerSelfResponse({
       history: history || [],
       newPrompt: messageText,
       retrievedContext: retrievedContext || null,
       selectedEra: era || 'Youth Era',
-      userId: userId || 'usr_default'
+      userId: userId || 'usr_default',
+      journeyType: journeyType || null,
+      domain: domain || null,
+      rawMemories: allRelevantMemories
     });
 
     // Save Chat Session History in MongoDB
@@ -461,6 +490,8 @@ app.post('/api/chat', async (req, res) => {
       await chatCollection.insertOne({
         User_ID: userId || 'usr_default',
         EraSelected: era || 'Youth Era',
+        JourneyType: journeyType || 'sports',
+        Domain: domain || 'football',
         StartTime: new Date(),
         Messages: [
           { sender: 'user', text: messageText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
@@ -477,11 +508,46 @@ app.post('/api/chat', async (req, res) => {
       isBurnout: orchestrationResult.isBurnout,
       era: orchestrationResult.selectedEra,
       eraAge: orchestrationResult.eraAge,
-      model: orchestrationResult.model
+      model: orchestrationResult.model,
+      learnedMemoriesCount: orchestrationResult.learnedMemoriesCount,
+      photosCount: orchestrationResult.photosCount
     });
   } catch (err) {
     console.error('AI Chat Error:', err);
     res.status(500).json({ error: 'Server error generating persona response.' });
+  }
+});
+
+// Proactive Younger Self Bench Insights Endpoint
+app.get('/api/ai/younger-self/insights', async (req, res) => {
+  try {
+    const { userId, era, journeyType, domain } = req.query;
+    const collection = getCollection('MemoryLogs');
+    const query = {};
+    if (userId && userId !== 'usr_default') query.User_ID = userId;
+    if (era) query.Era = era;
+    if (journeyType) query.JourneyType = journeyType;
+    if (domain) query.Domain = domain;
+
+    const memories = await collection.find(query).sort({ CreatedAt: -1 }).limit(10).toArray();
+    
+    let insight = journeyType === 'life'
+      ? "I'm sitting under the breeze tree reflecting on our path. Add your memories and let's keep growing."
+      : "Coach, I'm watching from the sideline bench! Record your plays so I can learn from your journey.";
+
+    if (memories.length > 0) {
+      const top = memories[0];
+      const photoSnippet = top.MediaAssets?.length > 0 ? ` Looking at our photo from '${top.Title}', ` : ` `;
+      insight = `I just reviewed '${top.Title}' from ${top.EntryDate}!${photoSnippet}Every single milestone makes our younger self proud.`;
+    }
+
+    res.json({
+      insight,
+      count: memories.length,
+      era: era || 'All Eras'
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error generating insights.' });
   }
 });
 

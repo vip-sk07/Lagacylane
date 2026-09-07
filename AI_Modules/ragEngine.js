@@ -140,7 +140,22 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, jour
     const maxExcerptChars = Math.floor((MAX_CHAR_BUDGET - 200) / topMemories.length);
     const compressedExcerpt = compressText(mem.decryptedContent, Math.min(maxExcerptChars, 400));
 
-    const block = `### Memory ${i + 1}: ${titleStr}\n- **Date**: ${dateStr}\n- **Era**: ${mem.era}\n- **Emotions**: ${emotionStr}\n- **Journal Excerpt**: "${compressedExcerpt}"\n`;
+    let block = `### Memory ${i + 1}: ${titleStr}\n- **Date**: ${dateStr}\n- **Era**: ${mem.era}\n- **Emotions**: ${emotionStr}\n- **Journal Excerpt**: "${compressedExcerpt}"\n`;
+
+    if (mem.sentimentScore !== undefined && mem.sentimentScore !== null) {
+      const scorePct = typeof mem.sentimentScore === 'number' && mem.sentimentScore <= 1.0 
+        ? Math.round((mem.sentimentScore + 1) * 50) 
+        : mem.sentimentScore;
+      block += `- **Sentiment Score**: ${scorePct}/100\n`;
+    }
+
+    if (mem.caption || mem.mediaUrl) {
+      block += `- **Photo Captured**: ${mem.caption ? `"${mem.caption}"` : 'Visual memory attached'}\n`;
+    }
+
+    if (mem.domain || mem.journeyType) {
+      block += `- **Domain**: ${mem.journeyType ? mem.journeyType.toUpperCase() : ''} ${mem.domain ? `(${mem.domain.toUpperCase()})` : ''}\n`;
+    }
     
     if (currentLength + block.length > MAX_CHAR_BUDGET) {
       // Truncate block to strictly fit within token budget
@@ -171,7 +186,12 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, jour
       title: m.title,
       entryDate: m.entryDate,
       era: m.era,
+      journeyType: m.journeyType,
+      domain: m.domain,
       sentimentScore: m.sentimentScore,
+      mediaUrl: m.mediaUrl,
+      caption: m.caption,
+      emotionTags: m.emotion_tags,
       similarity: parseFloat((m.similarity || 0).toFixed(4)),
       excerpt: m.decryptedContent
     })),

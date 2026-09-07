@@ -156,6 +156,11 @@ export async function searchVectorStore(queryVector, filters = {}, topK = 5) {
     entryDate: c.entry_date,
     sentimentScore: c.sentiment_score,
     encryptedText: c.encrypted_text,
+    mediaUrl: c.media_url,
+    caption: c.metadata?.caption || c.caption || null,
+    emotion_tags: c.emotion_tags || [],
+    context_tags: c.context_tags || [],
+    metadata: c.metadata || {},
     similarity: cosineSimilarity(queryVector, c.embedding)
   }));
 

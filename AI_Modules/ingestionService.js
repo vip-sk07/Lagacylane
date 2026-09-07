@@ -10,7 +10,7 @@ import { analyzeSentiment } from './index.js';
  * @param {object} params
  * @returns {string} Rich chunked payload
  */
-export function formatEmbeddingPayload({ era, entryDate, title, emotionTags, description }) {
+export function formatEmbeddingPayload({ era, entryDate, title, emotionTags, description, caption, mediaUrl }) {
   const formattedEra = era || 'Youth Era';
   const formattedDate = entryDate || new Date().toISOString().split('T')[0];
   const formattedTitle = title || 'Untitled Memory';
@@ -23,8 +23,9 @@ export function formatEmbeddingPayload({ era, entryDate, title, emotionTags, des
   }
 
   const formattedJournal = description || '';
+  const photoStr = caption ? ` | Photo Caption: "${caption}"` : (mediaUrl ? ` | Photo: Attached` : '');
 
-  return `Era: ${formattedEra} | Date: ${formattedDate} | Title: ${formattedTitle} | Emotion: ${emotionStr} | Journal: ${formattedJournal}`;
+  return `Era: ${formattedEra} | Date: ${formattedDate} | Title: ${formattedTitle} | Emotion: ${emotionStr} | Journal: ${formattedJournal}${photoStr}`;
 }
 
 /**
@@ -53,6 +54,7 @@ export async function ingestMemoryPayload(memoryPayload) {
     contextTags = [],
     sentimentScore,
     mediaUrl = null,
+    caption = null,
     journeyType = null,   // [Audit H-2] domain scoping
     domain = null         // [Audit H-2] domain scoping
   } = memoryPayload;
@@ -71,7 +73,9 @@ export async function ingestMemoryPayload(memoryPayload) {
     entryDate,
     title,
     emotionTags,
-    description
+    description,
+    caption,
+    mediaUrl
   });
 
   // 4. Generate 768-dim Vector Embedding
@@ -92,6 +96,7 @@ export async function ingestMemoryPayload(memoryPayload) {
     contextTags: Array.isArray(contextTags) ? contextTags : [contextTags],
     sentimentScore: computedSentiment,
     mediaUrl,
+    caption,
     richPayloadText
   };
 

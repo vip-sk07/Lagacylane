@@ -1534,7 +1534,7 @@
                 gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            // Enhanced Contextual RAG Engine: Evaluates full descriptions & photos
+            // Enhanced Cognitive RAG Engine: Evaluates full descriptions, dates, photos & sentiment
             function performRAGQuery(userPrompt) {
                 const memories = getActiveMemories();
                 if (memories.length === 0) {
@@ -1544,43 +1544,153 @@
                 }
 
                 const query = userPrompt.toLowerCase();
+
+                // 1. Burnout & Exhaustion Grounding
+                if (
+                    query.includes('burnout') || query.includes('exhausted') || query.includes('tired') || 
+                    query.includes('giving up') || query.includes('hard') || query.includes('lost') ||
+                    query.includes('quit') || query.includes('failure')
+                ) {
+                    const peak = memories.reduce((max, m) => ((m.sentiment || 0) > (max.sentiment || 0) ? m : max), memories[0]);
+                    return `Hey... take a deep breath. Look at how far we've come! Back when we were working toward our ${isLifeMode ? 'life dreams' : currentSport.toUpperCase()}, we put so much heart and sweat into this journey. Don't give up on us now—remember why we started! Remember when we achieved '${peak.title}' on ${peak.date}? You wrote: "${peak.journal.slice(0, 95)}...". We scored that sentiment ${peak.sentiment}/100! That unbreakable spirit is still right inside you today.`;
+                }
+
+                // 2. Future Probing
+                if (
+                    query.includes('future') || query.includes('promotion') || query.includes('what happens next') ||
+                    query.includes('2025') || query.includes('2026') || query.includes('2027') || query.includes('2030') ||
+                    query.includes('did we make it') || query.includes('are we successful')
+                ) {
+                    return `I don't remember that happening yet—did that happen after this season? Back here on the bench in our ${isLifeMode ? 'Life Journey' : currentSport.toUpperCase()} path, I can only see the challenges right in front of us! Did all those long hours and early mornings really pay off? Tell me what our future looks like!`;
+                }
+
+                // 3. Photo & Visual Memories
+                if (
+                    query.includes('photo') || query.includes('picture') || query.includes('pic') || 
+                    query.includes('image') || query.includes('camera') || query.includes('look at')
+                ) {
+                    const photoMem = memories.find(m => m.caption || m.photo);
+                    if (photoMem) {
+                        const capStr = photoMem.caption ? `"${photoMem.caption}"` : `'${photoMem.title}'`;
+                        return `I remember taking that picture so clearly! Looking at ${capStr} from ${photoMem.date}, it completely captures our feeling. You wrote in our journal: "${photoMem.journal.slice(0, 90)}...". When you look back at that photo, does it bring back that same energy?`;
+                    }
+                }
+
+                // 4. Specific Memory Matching
                 let matched = memories.find(m =>
                     m.title.toLowerCase().includes(query) ||
                     m.journal.toLowerCase().includes(query) ||
                     (m.caption && m.caption.toLowerCase().includes(query)) ||
-                    (m.tags && m.tags.some(t => t.toLowerCase().includes(query)))
-                ) || memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
+                    (m.tags && m.tags.some(t => t.toLowerCase().includes(query))) ||
+                    (m.date && query.includes(m.date))
+                );
 
-                const photoMention = matched.caption ? ` Looking at that picture '${matched.caption}', ` : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
+                if (matched) {
+                    const photoMention = matched.caption ? ` Looking at that picture '${matched.caption}', ` : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
+                    const sentimentRemark = matched.sentiment >= 80 
+                        ? `With a sentiment score of ${matched.sentiment}/100, we were on top of the world!`
+                        : `Even though that day felt like a ${matched.sentiment}/100 struggle, we grew stronger from it.`;
 
-                const responses = [
-                    `I remember when we recorded '${matched.title}' on ${matched.date}!${photoMention}You wrote: "${matched.journal.slice(0, 70)}...". With a sentiment score of ${matched.sentiment}/100, we proved our dedication!`,
-                    `Reflecting on '${matched.title}' from our ${matched.era}...${photoMention}You felt ${matched.tags.join(' ')}. That experience taught us so much! Are you carrying that wisdom forward today?`,
-                    `I'm sitting here on the bench thinking about '${matched.title}'! You described: "${matched.journal.slice(0, 60)}...". Every single milestone we record makes our younger self proud!`,
-                    `Looking back at our memory from ${matched.date} ('${matched.title}')... It feels like yesterday! Keep adding more moments so I can keep growing beside you.`
-                ];
+                    return `I remember '${matched.title}' like it happened yesterday! On ${matched.date},${photoMention}you wrote in our journal: "${matched.journal.slice(0, 110)}...". ${sentimentRemark} Are you still carrying those lessons with you today?`;
+                }
 
-                return responses[Math.floor(Math.random() * responses.length)];
+                // 5. Sentiment Inquiry
+                if (query.includes('feel') || query.includes('sentiment') || query.includes('happy') || query.includes('sad') || query.includes('lesson')) {
+                    const topMem = memories[0];
+                    return `Our emotions were so real! When we recorded '${topMem.title}', we scored it a ${topMem.sentiment}/100 sentiment. You described it: "${topMem.journal.slice(0, 90)}...". We never held back our feelings, and that honesty is what makes our story beautiful.`;
+                }
+
+                // Default contextual recall
+                const active = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
+                const photoMention = active.caption ? ` Looking at that picture '${active.caption}', ` : (active.photo ? ` Looking back at our uploaded photo, ` : ' ');
+                return `Reflecting on '${active.title}' from our ${active.era}...${photoMention}You wrote: "${active.journal.slice(0, 80)}...". With a sentiment score of ${active.sentiment}/100, every single milestone we record makes our younger self proud! What else would you like to reflect on?`;
             }
 
-            function sendAIMessage(promptText) {
+            async function sendAIMessage(promptText) {
                 if (!promptText.trim()) return;
 
                 const userEl = document.createElement('div');
-                userEl.className = 'bg-emerald-900/30 text-emerald-200 p-2.5 rounded-2xl border border-emerald-500/20 text-right font-medium';
+                userEl.className = 'bg-emerald-900/30 text-emerald-200 p-2.5 rounded-2xl border border-emerald-500/20 text-right font-medium animate-fadeIn';
                 userEl.textContent = promptText;
                 aiChatBox.appendChild(userEl);
-
                 aiInputText.value = '';
 
-                setTimeout(() => {
-                    const aiReply = performRAGQuery(promptText);
-                    const aiEl = document.createElement('div');
-                    aiEl.className = 'bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20 font-medium';
-                    aiEl.innerHTML = `⚡ <b>Your Younger Self:</b> ${aiReply}`;
-                    aiChatBox.appendChild(aiEl);
-                    aiChatBox.scrollTop = aiChatBox.scrollHeight;
-                }, 500);
+                // Typing indicator
+                const typingEl = document.createElement('div');
+                typingEl.id = 'ai-typing-indicator';
+                typingEl.className = 'text-xs text-amber-300 italic flex items-center gap-1.5 p-2';
+                typingEl.innerHTML = `<span>⚡ Younger Self is thinking back...</span>`;
+                aiChatBox.appendChild(typingEl);
+                aiChatBox.scrollTop = aiChatBox.scrollHeight;
+
+                const memories = getActiveMemories();
+                const activeMem = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
+
+                let aiReply = '';
+                let photoToEmbed = null;
+                let captionToEmbed = null;
+
+                // 1. Try Backend API
+                try {
+                    const res = await fetch('http://localhost:5000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: 'usr_marcus',
+                            era: activeMem?.era || (isLifeMode ? 'Life Journey' : 'Pro Athlete Era'),
+                            journeyType: isLifeMode ? 'life' : 'sports',
+                            domain: isLifeMode ? null : currentSport,
+                            userMessage: promptText,
+                            clientMemories: memories
+                        })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.response) {
+                            aiReply = data.response;
+                        }
+                    }
+                } catch (e) {
+                    // Backend unavailable - client cognitive engine handles seamlessly
+                }
+
+                // 2. Client Cognitive Fallback
+                if (!aiReply) {
+                    aiReply = performRAGQuery(promptText);
+                }
+
+                // 3. Photo Thumbnail Embedding
+                const qLower = promptText.toLowerCase();
+                const matchedWithPhoto = memories.find(m => 
+                    m.photo && (
+                        qLower.includes('photo') || qLower.includes('picture') || qLower.includes('pic') ||
+                        qLower.includes(m.title.toLowerCase()) || (m.caption && qLower.includes(m.caption.toLowerCase()))
+                    )
+                ) || (memories.find(m => m.photo) && (qLower.includes('look at') || qLower.includes('image')));
+
+                if (matchedWithPhoto && matchedWithPhoto.photo) {
+                    photoToEmbed = matchedWithPhoto.photo;
+                    captionToEmbed = matchedWithPhoto.caption;
+                }
+
+                typingEl.remove();
+
+                const aiEl = document.createElement('div');
+                aiEl.className = 'bg-amber-900/30 text-amber-200 p-3.5 rounded-2xl border border-amber-500/20 font-medium space-y-2.5 animate-fadeIn';
+                
+                let photoHtml = '';
+                if (photoToEmbed) {
+                    photoHtml = `
+                        <div class="mt-2 rounded-xl overflow-hidden border border-amber-500/30 max-w-[220px] bg-black/50 shadow-md">
+                            <img src="${photoToEmbed}" alt="Recalled Memory" class="w-full h-28 object-cover">
+                            ${captionToEmbed ? `<p class="p-1.5 text-[10px] bg-black/80 text-amber-100 italic">📸 "${captionToEmbed}"</p>` : ''}
+                        </div>
+                    `;
+                }
+
+                aiEl.innerHTML = `<div>⚡ <b>Your Younger Self:</b> ${aiReply}</div>${photoHtml}`;
+                aiChatBox.appendChild(aiEl);
+                aiChatBox.scrollTop = aiChatBox.scrollHeight;
             }
 
             btnSendAI.addEventListener('click', () => sendAIMessage(aiInputText.value));

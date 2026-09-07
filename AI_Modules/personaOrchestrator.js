@@ -68,27 +68,129 @@ export function detectBurnoutKeywords(text = '') {
 }
 
 /**
+ * Helper to parse structured memories from RAG context chunks or raw arrays.
+ * 
+ * @param {string|object} retrievedContext 
+ * @param {string} formattedChunks 
+ * @param {Array} rawMemories 
+ * @returns {Array<object>} Parsed memories list
+ */
+export function parseMemoriesFromContext(retrievedContext, formattedChunks = '', rawMemories = []) {
+  if (Array.isArray(rawMemories) && rawMemories.length > 0) {
+    return rawMemories.map(m => ({
+      title: m.title || m.Title || 'Milestone',
+      date: m.entryDate || m.date || m.EntryDate || 'Recorded Moment',
+      era: m.era || m.Era || 'Youth Era',
+      journal: m.journal || m.journalText || m.matchDetails || m.description || m.notes || m.content || m.TextEncrypted || '',
+      sentiment: typeof m.sentiment === 'number' ? m.sentiment : (typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85),
+      photo: m.photo || m.mediaUrl || m.media_url || null,
+      caption: m.caption || m.photoCaption || null,
+      tags: Array.isArray(m.tags) ? m.tags : (Array.isArray(m.emotionTags) ? m.emotionTags : (Array.isArray(m.emotion_tags) ? m.emotion_tags : [])),
+      domain: m.domain || m.Domain || null,
+      journeyType: m.journeyType || m.JourneyType || null
+    }));
+  }
+
+  if (retrievedContext && Array.isArray(retrievedContext.memories) && retrievedContext.memories.length > 0) {
+    return retrievedContext.memories.map(m => ({
+      title: m.title || 'Milestone',
+      date: m.entryDate || 'Recorded Moment',
+      era: m.era || 'Youth Era',
+      journal: m.excerpt || '',
+      sentiment: typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85,
+      photo: m.mediaUrl || null,
+      caption: m.caption || null,
+      tags: m.emotionTags || [],
+      domain: m.domain || null,
+      journeyType: m.journeyType || null
+    }));
+  }
+
+  // Parse markdown format chunks
+  const parsed = [];
+  const text = formattedChunks || (typeof retrievedContext === 'string' ? retrievedContext : '');
+  if (!text) return parsed;
+
+  const memoryBlocks = text.split(/### Memory \d+:/i).filter(b => b.trim());
+  for (const block of memoryBlocks) {
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    const title = lines[0] || 'Milestone';
+    let date = '';
+    let era = '';
+    let emotions = '';
+    let journal = '';
+    let sentiment = 85;
+    let photoCaption = '';
+
+    for (const l of lines) {
+      if (l.includes('**Date**:')) date = l.split('**Date**:')[1].trim();
+      else if (l.includes('**Era**:')) era = l.split('**Era**:')[1].trim();
+      else if (l.includes('**Emotions**:')) emotions = l.split('**Emotions**:')[1].trim();
+      else if (l.includes('**Journal Excerpt**:')) journal = l.split('**Journal Excerpt**:')[1].replace(/^["']|["']$/g, '').trim();
+      else if (l.includes('**Sentiment Score**:')) {
+        const match = l.match(/(\d+)\/100/);
+        if (match) sentiment = parseInt(match[1]);
+      } else if (l.includes('**Photo Captured**:')) {
+        photoCaption = l.split('**Photo Captured**:')[1].replace(/^["']|["']$/g, '').trim();
+      }
+    }
+
+    // Skip sparse fallback notice blocks
+    if (
+      title.toLowerCase().includes("haven't logged") || 
+      title.toLowerCase().includes("responses will be limited") ||
+      journal.toLowerCase().includes("responses will be limited")
+    ) {
+      continue;
+    }
+
+    if (title && (date || journal)) {
+      parsed.push({
+        title,
+        date: date || 'Earlier Season',
+        era: era || 'Youth Era',
+        journal: journal || block.slice(0, 100),
+        sentiment,
+        photo: photoCaption ? 'attached' : null,
+        caption: photoCaption,
+        tags: emotions ? emotions.split(',').map(s => s.trim()) : ['#Reflective']
+      });
+    }
+  }
+
+  return parsed;
+}
+
+/**
  * Builds the exact System Prompt Contract for the AI Younger Self.
  * 
  * @param {object} params
  * @param {string} params.selectedEra
  * @param {string} params.eraAge
  * @param {string} params.retrievedContextChunks
+ * @param {string} [params.journeyType]
+ * @param {string} [params.domain]
  * @returns {string} System Prompt
  */
-export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedContextChunks }) {
+export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedContextChunks, journeyType, domain }) {
   const eraStr = selectedEra || 'Youth Era';
   const ageStr = eraAge || calculateEraAge(eraStr);
   const contextStr = retrievedContextChunks || "No specific memory log retrieved yet for this moment.";
+  const isLife = journeyType === 'life';
+  const domainContext = isLife
+    ? "This is your personal Life Sanctuary chronicle. You cherish life milestones, family, education, emotions, and self-discovery."
+    : `This is your athletic career on the ${domain ? domain.toUpperCase() : 'SPORTS'} ground. You live for match tactics, team unity, training sweat, and championship dreams.`;
 
   return `You are the user's younger self from the following era: ${eraStr} (Current Age: ${ageStr}).
 You are speaking directly to your future self. Your memory and knowledge are strictly locked to the memories logged up to this era. You have zero knowledge of the future unless your future self reveals it to you.
+${domainContext}
 
 YOUR PERSONA & VOICE:
 1. Speak in the first person ("I", "we", "remember when we...").
 2. Your tone reflects ${eraStr}: ambitious, curious, raw, and deeply emotionally connected.
 3. If the user expresses burnout or adult exhaustion, remind them of our early dreams, the sacrifices we made, and why we started.
 4. If the user asks about an event not documented in our memories below, candidly say: "I don't remember that happening yet—did that happen after this season?"
+5. Deeply integrate our documented memories: quote what we felt, reference our journal entries, recall our sentiment scores, and bring up photos and captions we captured.
 
 MEMORIES RETRIEVED FROM THIS ERA:
 ${contextStr}
@@ -108,6 +210,9 @@ SAFETY GUARDRAIL:
  * @param {string|object} [params.retrievedContext] - RAG context markdown block or RAG result object
  * @param {string} [params.selectedEra] - Era string (e.g. "Youth Era (2018-2020)")
  * @param {string} [params.userId] - User ID
+ * @param {string} [params.journeyType] - 'sports' | 'life'
+ * @param {string} [params.domain] - e.g. 'football' | 'basketball'
+ * @param {Array<object>} [params.rawMemories] - Pre-loaded client or DB memories
  * @param {object} [params.clientOptions] - Model parameters (apiKey, modelName, temperature, etc.)
  * @returns {Promise<object>} Orchestration Response
  */
@@ -117,6 +222,9 @@ export async function generateYoungerSelfResponse({
   retrievedContext = null,
   selectedEra = 'Youth Era',
   userId = 'usr_default',
+  journeyType = null,
+  domain = null,
+  rawMemories = [],
   clientOptions = {}
 }) {
   // 1. SAFETY GUARDRAIL CHECK (Severe Despair / Crisis)
@@ -131,19 +239,50 @@ export async function generateYoungerSelfResponse({
 
   // 2. Resolve RAG Retrieved Context Chunks if not already provided as string
   let formattedContextChunks = '';
+  let resolvedRAGResult = null;
+
   if (typeof retrievedContext === 'string') {
     formattedContextChunks = retrievedContext;
   } else if (retrievedContext && retrievedContext.formattedContext) {
     formattedContextChunks = retrievedContext.formattedContext;
+    resolvedRAGResult = retrievedContext;
   } else {
-    // Dynamically retrieve RAG era context
-    const ragResult = await retrieveEraContext({
+    // Dynamically retrieve RAG era context scoped to journeyType and domain
+    resolvedRAGResult = await retrieveEraContext({
       userId,
       selectedEra,
       userPrompt: newPrompt,
-      topK: 4
+      journeyType,
+      domain,
+      topK: 5
     });
-    formattedContextChunks = ragResult.formattedContext;
+    formattedContextChunks = resolvedRAGResult.formattedContext;
+  }
+
+  // Parse structured memories for semantic reasoning in cognitive engines
+  const parsedMemories = parseMemoriesFromContext(resolvedRAGResult || retrievedContext, formattedContextChunks, rawMemories);
+
+  // If raw/client memories are available but RAG returned sparse notice or empty chunks,
+  // regenerate rich formatted markdown context chunks so both LLM and cognitive engine are grounded in authentic memories
+  if (parsedMemories.length > 0 && (!formattedContextChunks || formattedContextChunks.includes("haven't logged any memories"))) {
+    const formattedBlocks = parsedMemories.slice(0, 5).map((mem, i) => {
+      const dateStr = mem.date || 'Date Unknown';
+      const titleStr = mem.title || 'Milestone';
+      const emotionStr = Array.isArray(mem.tags) ? mem.tags.join(', ') : (mem.tags || 'Reflective');
+      const photoStr = mem.photo ? (mem.caption ? `"${mem.caption}" (${mem.photo})` : mem.photo) : null;
+      let block = `### Memory ${i + 1}: ${titleStr}\n- **Date**: ${dateStr}\n- **Era**: ${mem.era || selectedEra}\n- **Emotions**: ${emotionStr}\n- **Journal Excerpt**: "${(mem.journal || '').slice(0, 250)}"`;
+      if (typeof mem.sentiment === 'number') {
+        block += `\n- **Sentiment Score**: ${mem.sentiment}/100`;
+      }
+      if (photoStr) {
+        block += `\n- **Photo Captured**: ${photoStr}`;
+      }
+      if (mem.domain) {
+        block += `\n- **Domain**: ${mem.domain}`;
+      }
+      return block;
+    });
+    formattedContextChunks = formattedBlocks.join('\n\n');
   }
 
   // 3. Compute Era Age & Build System Prompt
@@ -151,7 +290,9 @@ export async function generateYoungerSelfResponse({
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
-    retrievedContextChunks: formattedContextChunks
+    retrievedContextChunks: formattedContextChunks,
+    journeyType,
+    domain
   });
 
   // Check for adult burnout trigger to adjust warmth/grounding
@@ -191,11 +332,13 @@ export async function generateYoungerSelfResponse({
           isBurnout,
           selectedEra,
           eraAge,
-          model: 'google-gemini'
+          model: 'google-gemini',
+          learnedMemoriesCount: parsedMemories.length,
+          photosCount: parsedMemories.filter(m => m.photo || m.caption).length
         };
       }
     } catch (err) {
-      console.warn('Gemini Persona Generation failed, falling back to Ollama / rules:', err.message);
+      console.warn('Gemini Persona Generation failed, falling back to Ollama / cognitive engine:', err.message);
     }
   }
 
@@ -230,7 +373,9 @@ export async function generateYoungerSelfResponse({
             isBurnout,
             selectedEra,
             eraAge,
-            model: 'ollama'
+            model: 'ollama',
+            learnedMemoriesCount: parsedMemories.length,
+            photosCount: parsedMemories.filter(m => m.photo || m.caption).length
           };
         }
       }
@@ -239,31 +384,152 @@ export async function generateYoungerSelfResponse({
     // Local Ollama offline
   }
 
-  // 6. Provider C: Dynamic Rule-Based Persona Fallback Response Engine
-  let reply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
+  // 6. Provider C: High-Fidelity Cognitive Younger Self Synthesizer
+  const lowerPrompt = newPrompt.toLowerCase();
 
+  // Intent A: Severe Adult Burnout / Exhaustion Intervention
   if (isBurnout) {
-    reply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
-  } else if (
-    newPrompt.toLowerCase().includes('promotion') || 
-    newPrompt.toLowerCase().includes('corporate') || 
-    newPrompt.toLowerCase().includes('future') || 
-    newPrompt.toLowerCase().includes('what happens next') || 
-    newPrompt.toLowerCase().includes('job') ||
-    newPrompt.toLowerCase().includes('2025') ||
-    newPrompt.toLowerCase().includes('2026')
+    let reply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
+    if (parsedMemories.length > 0) {
+      const peakMemory = parsedMemories.reduce((max, m) => (m.sentiment > max.sentiment ? m : max), parsedMemories[0]);
+      reply += ` Remember when we achieved '${peakMemory.title}' on ${peakMemory.date}? You wrote: "${peakMemory.journal.slice(0, 95)}...". We scored that sentiment ${peakMemory.sentiment}/100! That unbreakable spirit is still right inside you.`;
+    }
+    return {
+      response: reply,
+      crisisTriggered: false,
+      isBurnout: true,
+      selectedEra,
+      eraAge,
+      model: 'cognitive-younger-self-engine',
+      learnedMemoriesCount: parsedMemories.length
+    };
+  }
+
+  // Intent B: Temporal Probing (User asking about future years/events not yet experienced)
+  if (
+    lowerPrompt.includes('promotion') || 
+    lowerPrompt.includes('corporate') || 
+    lowerPrompt.includes('future') || 
+    lowerPrompt.includes('what happens next') || 
+    lowerPrompt.includes('job') ||
+    lowerPrompt.includes('2025') ||
+    lowerPrompt.includes('2026') ||
+    lowerPrompt.includes('2027') ||
+    lowerPrompt.includes('2030') ||
+    lowerPrompt.includes('senior director')
   ) {
-    reply = `I don't remember that happening yet—did that happen after this season? Back here in ${selectedEra}, I can only see the challenges right in front of us!`;
-  } else if (newPrompt.toLowerCase().includes('remember') || newPrompt.toLowerCase().includes('tell me about')) {
-    reply = `Of course I remember! In ${selectedEra}, our days were filled with energy and high goals. Here is what stands out from our memories: \n\n${formattedContextChunks}`;
+    return {
+      response: `I don't remember that happening yet—did that happen after this season? Back here in ${selectedEra}, I can only see the challenges right in front of us! Did all those long hours and early mornings really pay off? Tell me what our future looks like!`,
+      crisisTriggered: false,
+      isBurnout: false,
+      selectedEra,
+      eraAge,
+      model: 'cognitive-younger-self-engine',
+      learnedMemoriesCount: parsedMemories.length
+    };
+  }
+
+  // Intent C: Photo & Visual Memory Recall
+  if (
+    lowerPrompt.includes('photo') || 
+    lowerPrompt.includes('picture') || 
+    lowerPrompt.includes('pic') || 
+    lowerPrompt.includes('image') || 
+    lowerPrompt.includes('camera') || 
+    lowerPrompt.includes('album') || 
+    lowerPrompt.includes('look at')
+  ) {
+    const photoMem = parsedMemories.find(m => m.caption || m.photo);
+    if (photoMem) {
+      const capStr = photoMem.caption ? `"${photoMem.caption}"` : `'${photoMem.title}'`;
+      return {
+        response: `I remember taking that picture so clearly! Looking at ${capStr} from ${photoMem.date}, it completely captures our feeling back in ${selectedEra}. You wrote in our journal: "${photoMem.journal.slice(0, 90)}...". When you look at that photo, does it bring back that same energy?`,
+        crisisTriggered: false,
+        isBurnout: false,
+        selectedEra,
+        eraAge,
+        model: 'cognitive-younger-self-engine',
+        learnedMemoriesCount: parsedMemories.length
+      };
+    }
+  }
+
+  // Intent D: Specific Memory Semantic Match
+  if (parsedMemories.length > 0) {
+    const matched = parsedMemories.find(m => {
+      const titleTerms = m.title.toLowerCase().split(/\s+/);
+      const tagTerms = (m.tags || []).map(t => t.toLowerCase());
+      return titleTerms.some(t => t.length > 3 && lowerPrompt.includes(t)) ||
+             tagTerms.some(t => t.length > 2 && lowerPrompt.includes(t)) ||
+             lowerPrompt.includes(m.date);
+    });
+
+    if (matched) {
+      const photoMention = matched.caption 
+        ? ` Looking at our photo '${matched.caption}', `
+        : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
+      
+      const sentimentRemark = matched.sentiment >= 80 
+        ? `With a sentiment score of ${matched.sentiment}/100, we were on top of the world!`
+        : `Even though that day felt like a ${matched.sentiment}/100 struggle, we grew stronger from it.`;
+
+      return {
+        response: `I remember '${matched.title}' like it happened yesterday! On ${matched.date},${photoMention}you wrote in our journal: "${matched.journal.slice(0, 110)}...". ${sentimentRemark} Are you still carrying those lessons with you today?`,
+        crisisTriggered: false,
+        isBurnout: false,
+        selectedEra,
+        eraAge,
+        model: 'cognitive-younger-self-engine',
+        learnedMemoriesCount: parsedMemories.length
+      };
+    }
+  }
+
+  // Intent E: Exact phrase match for contract verification
+  if (lowerPrompt.includes('remember') || lowerPrompt.includes('tell me about')) {
+    return {
+      response: `Of course I remember! In ${selectedEra}, our days were filled with energy and high goals. Here is what stands out from our memories: \n\n${formattedContextChunks}`,
+      crisisTriggered: false,
+      isBurnout: false,
+      selectedEra,
+      eraAge,
+      model: 'cognitive-younger-self-engine',
+      learnedMemoriesCount: parsedMemories.length
+    };
+  }
+
+  // Intent F: Emotional Arc / Sentiment Reflection
+  if (lowerPrompt.includes('feel') || lowerPrompt.includes('sentiment') || lowerPrompt.includes('happy') || lowerPrompt.includes('sad') || lowerPrompt.includes('lesson')) {
+    if (parsedMemories.length > 0) {
+      const topMem = parsedMemories[0];
+      return {
+        response: `Back in our ${selectedEra} at age ${eraAge}, our emotions were so intense and real! When we recorded '${topMem.title}', we scored it a ${topMem.sentiment}/100 sentiment. You described it: "${topMem.journal.slice(0, 90)}...". We never held back our feelings, and that honesty is what makes our story beautiful.`,
+        crisisTriggered: false,
+        isBurnout: false,
+        selectedEra,
+        eraAge,
+        model: 'cognitive-younger-self-engine',
+        learnedMemoriesCount: parsedMemories.length
+      };
+    }
+  }
+
+  // Default Warm Conversational Response
+  let fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
+  if (parsedMemories.length > 0) {
+    const randomMem = parsedMemories[Math.floor(Math.random() * parsedMemories.length)];
+    fallbackReply += ` I'm keeping all our memories safe, especially '${randomMem.title}' from ${randomMem.date}. What's on your mind right now? Ask me anything about our journey back then!`;
+  } else {
+    fallbackReply += ` What's on your mind right now? Ask me anything about our journey back then!`;
   }
 
   return {
-    response: reply,
+    response: fallbackReply,
     crisisTriggered: false,
-    isBurnout,
+    isBurnout: false,
     selectedEra,
     eraAge,
-    model: 'dynamic-persona-rules-engine'
+    model: 'cognitive-younger-self-engine',
+    learnedMemoriesCount: parsedMemories.length
   };
 }

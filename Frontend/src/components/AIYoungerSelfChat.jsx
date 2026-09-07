@@ -110,13 +110,14 @@ export default function AIYoungerSelfChat({
     setInputText('');
     setIsLoading(true);
 
-    // Scoped payload for RAG retrieval on backend (Phase 6 ready)
     const ragPayload = {
-      userId: currentUser?.id || '',
+      userId: currentUser?.id || 'usr_default',
       journeyType: isLife ? JOURNEY_TYPES.LIFE : JOURNEY_TYPES.SPORTS,
       domain: isLife ? null : domainId,
       era: selectedEra,
-      userMessage: currentInput
+      userMessage: currentInput,
+      clientMemories: domainLevels,
+      history: messages.slice(-6).map((m) => ({ role: m.sender === 'user' ? 'user' : 'model', content: m.text }))
     };
 
     try {
@@ -129,26 +130,46 @@ export default function AIYoungerSelfChat({
       const data = await response.json();
       const aiText = data.response || 'I remember working hard every single day. We never gave up!';
 
+      const photoMem = domainLevels.find((l) => (l.mediaUrl || l.photo) && (
+        aiText.toLowerCase().includes((l.title || '').toLowerCase()) || 
+        currentInput.toLowerCase().includes('photo') || 
+        currentInput.toLowerCase().includes('picture') ||
+        currentInput.toLowerCase().includes('pic')
+      ));
+
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           sender: 'ai',
           text: aiText,
+          photo: photoMem ? (photoMem.mediaUrl || photoMem.photo) : null,
+          photoCaption: photoMem ? (photoMem.caption || photoMem.photoCaption || photoMem.title) : null,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
     } catch (err) {
-      // Domain-grounded fallback RAG response
       const matchingMemories = domainLevels.filter((l) => l.era === selectedEra);
       let fallbackText = `I'm right here with you! During ${selectedEra} in our ${domainLabel} journey, our commitment was 100%.`;
+      let photoUrl = null;
+      let photoCap = null;
 
       if (matchingMemories.length > 0) {
         const topMemory = matchingMemories[0];
-        if (isLife) {
-          fallbackText = `Thinking back to ${selectedEra}, especially "${topMemory.title}" (${topMemory.date}): "${topMemory.content}" That lesson shaped who we are today. Whatever challenges you are facing right now, trust the resilience we discovered back then!`;
+        if (topMemory.mediaUrl || topMemory.photo) {
+          photoUrl = topMemory.mediaUrl || topMemory.photo;
+          photoCap = topMemory.caption || topMemory.photoCaption || topMemory.title;
+        }
+
+        const lowerIn = currentInput.toLowerCase();
+        if (lowerIn.includes('burnout') || lowerIn.includes('tired') || lowerIn.includes('giving up')) {
+          fallbackText = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back then, we sacrificed so much sleep and sweat for this dream. Don't give up on us now—remember why we started! Remember "${topMemory.title}" (${topMemory.date}): "${topMemory.content || topMemory.matchDetails}". That fire is still inside you!`;
+        } else if (lowerIn.includes('future') || lowerIn.includes('2025') || lowerIn.includes('2026') || lowerIn.includes('what happens')) {
+          fallbackText = `I don't remember that happening yet—did that happen after this season? Back here in ${selectedEra}, I can only see the obstacles right in front of us! Tell me what our future looks like!`;
+        } else if (isLife) {
+          fallbackText = `Thinking back to ${selectedEra}, especially "${topMemory.title}" (${topMemory.date}): "${topMemory.content || topMemory.matchDetails}" That lesson shaped who we are today. Whatever challenges you are facing right now, trust the resilience we discovered back then!`;
         } else {
-          fallbackText = `Looking back at ${selectedEra}, especially our match milestone in "${topMemory.title}" (${topMemory.matchDetails}): We gave everything on the pitch. The discipline and composure we forged then are with you every step today!`;
+          fallbackText = `Looking back at ${selectedEra}, especially our match milestone in "${topMemory.title}" (${topMemory.matchDetails || topMemory.date}): We gave everything on the pitch. The discipline and composure we forged then are with you every step today!`;
         }
       }
 
@@ -158,6 +179,8 @@ export default function AIYoungerSelfChat({
           id: Date.now() + 1,
           sender: 'ai',
           text: fallbackText,
+          photo: photoUrl,
+          photoCaption: photoCap,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -166,10 +189,18 @@ export default function AIYoungerSelfChat({
     }
   };
 
+  const matchingEraMemories = domainLevels.filter((l) => l.era === selectedEra);
+  const firstMem = matchingEraMemories[0] || domainLevels[0];
+
+  const quickPrompts = [
+    firstMem ? `Tell me about "${firstMem.title}"` : `What was our biggest dream in ${selectedEra}?`,
+    "Remind me why we started",
+    firstMem?.mediaUrl ? "Look at our uploaded photo" : "How did we overcome our hardest day?"
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl h-[620px] glass-panel rounded-3xl border border-purple-500/40 shadow-2xl shadow-purple-950/50 flex flex-col overflow-hidden">
-        {/* Header */}
+      <div className="relative w-full max-w-2xl h-[640px] glass-panel rounded-3xl border border-purple-500/40 shadow-2xl shadow-purple-950/50 flex flex-col overflow-hidden">
         <div className="p-4 md:p-5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30">
@@ -178,45 +209,42 @@ export default function AIYoungerSelfChat({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-white">AI Younger Self — {domainLabel}</h3>
-                <span className="flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                  <Cpu className="w-3 h-3" />
-                  {ollamaStatus === 'connected' ? 'Ollama RAG (Live)' : 'Domain Persona'}
+                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30">
+                  {isLife ? '🌱 Life Sanctuary' : '⚡ Sideline Ready'}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Persona scoped to your {domainLabel} memories • Zero cross-domain leakage
+                Cognitively grounded in your {domainLevels.length} logged {domainLabel} milestones
               </p>
             </div>
           </div>
-
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            aria-label="Close Chat"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Domain-Scoped Era Selector Toolbar */}
-        <div className="px-5 py-2.5 bg-slate-900/60 border-b border-slate-800/80 flex items-center justify-between text-xs">
-          <span className="text-slate-400 font-semibold flex items-center gap-1.5">
-            <span>Active {domainLabel} Era:</span>
-          </span>
-          <select
-            value={selectedEra}
-            onChange={(e) => handleEraChange(e.target.value)}
-            className="px-3 py-1 rounded-xl bg-slate-950 border border-slate-700 text-purple-300 font-bold focus:outline-none focus:border-purple-400"
-          >
-            {availableEras.map((era) => (
-              <option key={era} value={era}>
-                {era}
-              </option>
-            ))}
-          </select>
+        <div className="px-4 py-2.5 bg-slate-950/80 border-b border-slate-800/60 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+          <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">Temporal Era:</span>
+          {availableEras.map((era) => (
+            <button
+              key={era}
+              onClick={() => handleEraChange(era)}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                selectedEra === era
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-950/40'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              {era}
+            </button>
+          ))}
         </div>
 
-        {/* Messages Body */}
-        <div className="flex-1 p-5 overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -235,14 +263,22 @@ export default function AIYoungerSelfChat({
               </div>
 
               <div
-                className={`max-w-[78%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                className={`max-w-[80%] p-3.5 rounded-2xl text-xs leading-relaxed space-y-2 ${
                   msg.sender === 'user'
                     ? 'bg-emerald-600 text-white rounded-tr-none'
                     : 'bg-slate-900/90 text-slate-200 border border-slate-800 rounded-tl-none shadow-md'
                 }`}
               >
                 <p className="font-normal whitespace-pre-wrap">{msg.text}</p>
-                <span className="text-[9px] text-slate-400 font-medium block mt-1.5 text-right">
+                {msg.photo && (
+                  <div className="rounded-xl overflow-hidden border border-purple-500/30 max-w-[220px] bg-black/60 shadow-lg mt-2">
+                    <img src={msg.photo} alt="Memory Visual" className="w-full h-28 object-cover" />
+                    {msg.photoCaption && (
+                      <p className="p-1.5 text-[10px] text-purple-200 italic bg-black/80">📸 "{msg.photoCaption}"</p>
+                    )}
+                  </div>
+                )}
+                <span className="text-[9px] text-slate-400 font-medium block text-right">
                   {msg.timestamp}
                 </span>
               </div>
@@ -263,7 +299,22 @@ export default function AIYoungerSelfChat({
           <div ref={chatEndRef} />
         </div>
 
-        {/* Input Bar */}
+        <div className="px-4 py-2 bg-slate-950/60 border-t border-slate-800/40 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+          <span className="text-[9px] uppercase font-bold text-slate-400 shrink-0">Ask Younger Self:</span>
+          {quickPrompts.map((prompt, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setInputText(prompt);
+              }}
+              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-purple-950/50 hover:border-purple-500/50 text-slate-300 text-[10px] font-medium border border-slate-800 shrink-0 transition-all text-left truncate max-w-[200px]"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSendMessage} className="p-4 bg-slate-900/90 border-t border-slate-800 flex items-center gap-2">
           <input
             type="text"
