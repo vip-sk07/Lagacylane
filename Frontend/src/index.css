@@ -4,64 +4,80 @@
 
 @layer base {
   body {
-    @apply bg-[#070a12] text-slate-100 min-h-screen overflow-x-hidden;
+    @apply bg-[#0E0D0B] text-[#F5F2EB] min-h-screen overflow-x-hidden font-sans;
   }
 }
 
-/* Custom 3D & Glassmorphism Utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-}
-
-.glass-panel-glow {
-  background: rgba(16, 185, 129, 0.07);
+/* Warm Archival Editorial Panels & Surfaces */
+.glass-panel,
+.archival-panel {
+  background: rgba(23, 21, 19, 0.88);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 245, 230, 0.05);
 }
 
-.glass-card {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.glass-panel-glow,
+.archival-glow {
+  background: rgba(212, 175, 55, 0.04);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.12);
+}
+
+.glass-card,
+.archival-card {
+  background: rgba(30, 27, 24, 0.8);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 245, 230, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-card:hover {
-  border-color: rgba(52, 211, 153, 0.4);
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+.glass-card:hover,
+.archival-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-3px) scale(1.008);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.12);
 }
 
-/* Score! Hero Level Node Map Styling */
+/* Gold Foil Hairline Border */
+.gold-foil-border {
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* Warm Milestone Node Styling */
 .hero-level-node {
   position: relative;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .hero-level-node:hover {
-  transform: scale(1.15) rotate(2deg);
+  transform: scale(1.12) rotate(1deg);
 }
 
-/* Custom Scrollbars */
+/* Editorial Drop-Cap / Quote styling */
+.editorial-quote {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  color: #E7E0D2;
+}
+
+/* Custom Archival Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #0E0D0B;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #2C2621;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #D4AF37;
 }

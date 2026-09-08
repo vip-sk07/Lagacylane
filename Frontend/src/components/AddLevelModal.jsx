@@ -155,33 +155,26 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
   const themePrimary = descriptor?.theme?.primary || (isLife ? '#06b6d4' : '#10b981');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-xl glass-panel rounded-3xl border border-slate-700/80 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0E0D0B]/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-xl archival-panel rounded-3xl border border-[#2C2621] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Modal Header */}
-        <div className="p-6 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="p-2.5 rounded-2xl text-slate-950 font-black shadow-lg"
-              style={{
-                background: `linear-gradient(to bottom right, ${themePrimary}, ${descriptor?.theme?.secondary || '#059669'})`
-              }}
-            >
-              {isLife ? <BookOpen className="w-6 h-6 text-white" /> : <Trophy className="w-6 h-6 text-slate-950" />}
+        <div className="p-6 bg-[#171513] border-b border-[#2C2621] flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#B45309] text-stone-950 font-bold shadow-lg shadow-amber-950/30">
+              {isLife ? <BookOpen className="w-5 h-5 text-stone-950" /> : <Trophy className="w-5 h-5 text-stone-950" />}
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">
-                {isLife ? 'Log Life Memory & Reflection' : `Log ${descriptor?.label || 'Sport'} Milestone`}
+              <h3 className="font-serif text-xl font-bold text-[#F5F2EB]">
+                {isLife ? 'Preserve a Life Memory' : `Record ${descriptor?.label || 'Sport'} Milestone`}
               </h3>
-              <p className="text-xs text-slate-400">
-                {isLife
-                  ? 'AI Younger Self ingests and reflects on your life lessons'
-                  : 'AI Younger Self automatically ingests and learns your victory note'}
+              <p className="text-xs text-[#8C8273] mt-0.5">
+                Capture defining moments, personal reflections, and milestones in your story.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            className="p-2 rounded-xl bg-[#1E1B18] hover:bg-[#2C2621] text-[#8C8273] hover:text-white transition-all border border-[#2C2621]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -191,8 +184,8 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
           {/* Title */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-              {isLife ? 'Memory / Milestone Title' : 'Milestone / Match Victory Title'}
+            <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
+              {isLife ? 'Memory Title' : 'Milestone / Match Title'}
             </label>
             <input
               type="text"
@@ -204,20 +197,20 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:border-cyan-500 focus:outline-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-sm focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
             />
           </div>
 
           {/* Era & Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                Conversation Era
+              <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
+                Life Chapter / Era
               </label>
               <select
                 value={era}
                 onChange={(e) => setEra(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:border-cyan-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-sm focus:border-[#D4AF37] focus:outline-none"
               >
                 {isLife ? (
                   <>
@@ -237,14 +230,14 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
                 Date
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:border-cyan-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-sm focus:border-[#D4AF37] focus:outline-none"
               />
             </div>
           </div>
@@ -253,22 +246,22 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
           {!isLife ? (
             <>
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Match Details / Score Summary
+                <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
+                  Match Details / Summary
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. 2 Goals, 1 Assist | Final Score 3-2"
                   value={matchDetails}
                   onChange={(e) => setMatchDetails(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-sm focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
                 />
               </div>
 
               {/* Domain Specific Numerical Stats */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                  <label className="block text-[11px] font-semibold text-[#8C8273] uppercase mb-1">
                     {sportDomain === 'football'
                       ? 'Goals'
                       : sportDomain === 'cricket'
@@ -282,12 +275,12 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
                     placeholder={sportDomain === 'athletics' ? '44.8s' : '2'}
                     value={stat1}
                     onChange={(e) => setStat1(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                  <label className="block text-[11px] font-semibold text-[#8C8273] uppercase mb-1">
                     {sportDomain === 'football'
                       ? 'Assists'
                       : sportDomain === 'cricket'
@@ -301,12 +294,12 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
                     placeholder={sportDomain === 'athletics' ? '4' : '1'}
                     value={stat2}
                     onChange={(e) => setStat2(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                  <label className="block text-[11px] font-semibold text-[#8C8273] uppercase mb-1">
                     {sportDomain === 'football'
                       ? 'Rating'
                       : sportDomain === 'cricket'
@@ -320,45 +313,45 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
                     placeholder={sportDomain === 'athletics' ? '1' : '9.5'}
                     value={stat3}
                     onChange={(e) => setStat3(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5 text-emerald-400">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Victory Message & Personal Note (AI Ingested)</span>
+                <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Victory Note / Personal Reflection</span>
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. Dedicated this victory to my family and coaches who believed in me!"
                   value={victoryMessage}
                   onChange={(e) => setVictoryMessage(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/40 text-slate-100 text-xs focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
                 />
               </div>
             </>
           ) : (
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5 text-cyan-400">
-                <Sparkles className="w-4 h-4" />
-                <span>Life Lesson & Wisdom Note (AI Ingested)</span>
+              <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                <span>Life Lesson / Words to Remember</span>
               </label>
               <input
                 type="text"
                 placeholder="e.g. Realized that genuine presence and patience matter more than rushing milestones."
                 value={wisdomNote}
                 onChange={(e) => setWisdomNote(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-slate-100 text-xs focus:border-cyan-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
               />
             </div>
           )}
 
           {/* Emotion & Context Tags */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-cyan-400" />
+            <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>{isLife ? 'Emotion & Mood Tags' : 'Milestone Tags'}</span>
             </label>
 
@@ -371,10 +364,10 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
                     key={tag}
                     type="button"
                     onClick={() => toggleTag(tag)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
                       isSelected
-                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
-                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                        ? 'bg-[#1E1B18] text-[#D4AF37] border-[#D4AF37]/50 shadow-sm'
+                        : 'bg-[#171513] text-[#8C8273] border-[#2C2621] hover:text-[#F5F2EB]'
                     }`}
                   >
                     #{tag}
@@ -389,38 +382,38 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
               value={customTagInput}
               onChange={(e) => setCustomTagInput(e.target.value)}
               onKeyDown={handleAddCustomTag}
-              className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
             />
           </div>
 
-          {/* Journal Entry Textarea */}
+          {/* Story & Journal Textarea */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-              {isLife ? 'Full Memory Journal Reflection' : 'Full Match & Event Reflections'}
+            <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
+              {isLife ? 'Your Story & Personal Reflection' : 'Match & Journey Reflections'}
             </label>
             <textarea
               required
               rows={3}
               placeholder={
                 isLife
-                  ? 'Reflect on this life moment, the emotions you felt, and why it became an enduring memory...'
-                  : 'Write what happened during the match, the stadium environment, and your personal reflections...'
+                  ? 'Reflect on this life moment, what you were feeling, and why it became an enduring memory...'
+                  : 'Write what happened, the atmosphere, and your personal reflections...'
               }
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:border-cyan-500 focus:outline-none resize-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none resize-none placeholder:text-[#8C8273]"
             />
           </div>
 
           {/* Media Image Upload Section */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-              {isLife ? 'Upload Life Milestone Image' : 'Upload Ground Photo / Match Image'}
+            <label className="block text-xs font-semibold text-[#C2B9A7] uppercase tracking-wider mb-1.5">
+              {isLife ? 'Milestone Photo' : 'Match / Ground Photo'}
             </label>
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer transition-all border border-slate-700">
-                <Upload className="w-4 h-4 text-cyan-400" />
-                <span>{isUploading ? 'Uploading...' : 'Upload Image File'}</span>
+              <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1E1B18] hover:bg-[#2C2621] text-[#F5F2EB] text-xs font-semibold cursor-pointer transition-all border border-[#2C2621]">
+                <Upload className="w-4 h-4 text-[#D4AF37]" />
+                <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -428,40 +421,37 @@ export default function AddLevelModal({ onClose, onAddLevel, activeJourney, curr
                   className="hidden"
                 />
               </label>
-              <span className="text-xs text-slate-500 font-bold">OR URL:</span>
+              <span className="text-xs text-[#8C8273] font-bold">OR URL:</span>
               <input
                 type="text"
                 placeholder="https://images.unsplash.com/..."
                 value={mediaUrl}
                 onChange={(e) => setMediaUrl(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:border-cyan-500 focus:outline-none"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#0E0D0B] border border-[#2C2621] text-[#F5F2EB] text-xs focus:border-[#D4AF37] focus:outline-none placeholder:text-[#8C8273]"
               />
             </div>
             {mediaUrl && (
-              <div className="mt-2.5 relative w-full h-24 rounded-2xl overflow-hidden border border-slate-800">
+              <div className="mt-2.5 relative w-full h-24 rounded-2xl overflow-hidden border border-[#2C2621]">
                 <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
               </div>
             )}
           </div>
 
           {/* Actions */}
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
+          <div className="pt-4 flex justify-end gap-3 border-t border-[#2C2621]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all"
+              className="px-4 py-2.5 rounded-xl bg-[#171513] hover:bg-[#1E1B18] text-[#C2B9A7] font-semibold text-xs transition-all border border-[#2C2621]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl text-slate-950 font-black text-xs shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-              style={{
-                background: `linear-gradient(to right, ${themePrimary}, ${descriptor?.theme?.secondary || '#059669'})`
-              }}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F59E0B] hover:from-[#E2C799] hover:to-[#D4AF37] text-stone-950 font-bold text-xs shadow-lg shadow-amber-950/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span>Save & Train AI</span>
+              <span>Save to My Archive</span>
             </button>
           </div>
         </form>

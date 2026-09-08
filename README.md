@@ -1,7 +1,7 @@
-# LegacyLane: The One Who Lives
+# LegacyLane: The Living Archive of Your Journey
 
-> **An interactive, RAG-powered digital memory sanctuary and 3D tactical time-capsule.**  
-> Transform athletic milestones and life achievements into an interactive tactical roadmap, converse directly with your **"Younger Self"** through era-locked AI persona orchestration, track emotional resilience across disciplines, and preserve your legacy with bank-grade encryption.
+> **A living archive for your sports and life milestones.**  
+> Relive the matches, the comebacks, and the quiet moments that shaped who you are—preserved in an interactive, beautifully rendered timeline for you and your family.
 
 ---
 
@@ -14,89 +14,79 @@
   <img src="https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
   <img src="https://img.shields.io/badge/MongoDB-7.x-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
   <img src="https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/AI-RAG_%2B_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
   <img src="https://img.shields.io/badge/Security-AES--256--GCM-E02424?style=for-the-badge&logo=letsencrypt&logoColor=white" alt="AES-256" />
-  <img src="https://img.shields.io/badge/Institution-Mepco_Schlenk_Engg_College-blue?style=for-the-badge" alt="MSEC" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT" />
 </p>
 
 ---
 
----
+## 💡 Why LegacyLane (The Vision)
 
-## 💡 Why LegacyLane (Problem → Solution)
+Athletes, artists, and driven individuals dedicate their lives to mastering their craft, yet their journey is often scattered across old phones, fading tickets, and fragmented social posts:
 
-Athletes and ambitious individuals dedicate their lives to mastering their craft, yet their journey is often lost to time:
+### The Challenge
+* **Scattered Footprints**: Match reports, medal photos, ticket stubs, and diary notes are scattered across camera rolls and messaging apps.
+* **Passive Feeds**: Traditional social feeds prioritize fleeting algorithms over authentic reflection and personal growth.
+* **Lost Connection**: During burnout or career transitions, it is easy to forget the hunger, courage, and small victories that laid the foundation.
 
-### The Problem
-* **Fragmented Footprints**: Highlights, match reports, awards, and emotional struggles are scattered across old camera rolls, messaging apps, and decaying physical scrapbooks.
-* **Passive Archiving**: Traditional social media feeds passively document outcomes for external validation, losing the internal psychological growth, tactics, and mindset.
-* **Disconnect from Past Drive**: In moments of adult burnout, slump, or career transition, athletes lose touch with the raw hunger, joy, and sacrifices of their younger self.
-
-### The Solution
-* **Tactical 3D Roadmap**: Every achievement, comeback, and formative moment is structured as a playable, milestone-based journey inspired by classic sports progression maps.
-* **Era-Locked "Younger Self" AI Persona**: Chat with the version of you that scored that 90th-minute winner or survived high-school trials—strictly filtered to historical era memories with zero context bleeding from future years.
-* **Mental Wellness & Sentiment Analytics**: Longitudinal NLP sentiment scoring maps your emotional trajectory, resilience levels, and coping mechanisms across both sports and life milestones.
-* **Privacy-First Memory Vault**: End-to-end AES-256-GCM encrypted journal logs with strict family/mentor access delegation.
+### The Sanctuary
+* **Interactive Career Roadmap**: Every achievement, comeback, and formative moment is structured as a milestone-based progression map inspired by classic tactical route maps.
+* **Reflective Journey Timeline**: A dedicated chronological chronicle for personal life chapters, college days, and career transitions.
+* **Emotional Growth Tracking**: Mood and reflection analytics that reveal how resilience and mindset evolve across seasons.
+* **Private Encrypted Archive**: AES-256-GCM encrypted journal logs ensuring your private memories remain safe for family and future generations.
 
 ---
 
 ## ✨ Key Features
 
-* **🗺️ Chronological Tactical Roadmap (`ScoreHeroLevelMap.jsx`)**: An isometric progression map rendering achievements as milestone nodes with star ratings, match stats, and media assets.
-* **🧭 Two-Level Domain Model (`journeyConfig.js`)**: Fluidly toggle between **Sports Journeys** (*Football, Cricket, Basketball, Athletics*) and **Life Journeys** (*Career, Personal, Education*) without cross-domain memory leakage.
-* **🌌 Chronological Life Timeline (`ChronologicalLifeTimeline.jsx`)**: A clean, reflective timeline view custom-designed for life memories, distinct from the gamified sports level-map.
-* **🤖 RAG-Driven "Younger Self" AI Companion (`AIYoungerSelfChat.jsx`)**: A conversational agent powered by Gemini embeddings and local vector indexing. It embodies your exact tone, knowledge boundary, and emotional state during a chosen historical era.
-* **🛡️ Psychological Safety Guardrails (`personaOrchestrator.js`)**: Built-in distress keyword detection immediately pauses roleplay to provide compassionate support and emergency crisis lines (988 Lifeline, Tele-MANAS).
-* **📈 Sentiment & Resilience Analytics (`SentimentAnalyticsModal.jsx`)**: Longitudinal sentiment curves, emotional volatility tracking, and multi-domain psychological synthesis across all logged milestones.
-* **🎨 Config-Driven 3D WebGL Environments (`ThreeCanvas.jsx`)**: Three.js WebGL scenes that dynamically adapt their turf, lighting, goalposts, or constellation grids according to the active domain.
-* **🔐 AES-256-GCM Encrypted Storage (`encryption.js`)**: Full encryption at rest for sensitive memory journals before storing them in MongoDB document collections.
-* **⚡ WebSocket Token Streaming (`sidelineSocket.js`)**: Real-time token-by-token streaming for conversational responses with instant RAG memory ingestion.
-* **👥 Family Vault & Mentorship Sharing 🚧 (in progress)**: Role-based access control (Viewer, Contributor, Admin) backed by SQLite relation tables for controlled family legacy sharing.
+* **🗺️ Chronological Milestone Roadmap (`ScoreHeroLevelMap.jsx`)**: An interactive progression map rendering athletic achievements as milestone chapters with star ratings, match stats, and media assets.
+* **🧭 Multi-Domain Support (`journeyConfig.js`)**: Fluidly toggle between **Sports Journeys** (*Football, Cricket, Basketball, Athletics*) and **Life Chronicle** (*Education, Career, Personal*) with dedicated visual aesthetics.
+* **📖 Reflective Life Timeline (`ChronologicalTimeline.jsx`)**: An elegant, editorial vertical timeline designed for personal reflections, wisdom notes, and life milestones.
+* **🕯️ Memory Inspector & Keepsake Cards (`MemoryInspectorModal.jsx`)**: Deep-dive into any logged moment with high-resolution photo view, match details, lesson highlights, and tags.
+* **📈 Emotional Journey & Growth (`SentimentAnalyticsModal.jsx`)**: Visual synthesis of emotional trajectories, mood distribution, and milestones across seasons.
+* **🎨 Editorial 3D Environments (`ThreeCanvas.jsx`)**: WebGL scenes featuring tactile grounds, pitch turf, hardwood courts, and constellation fields tailored to each discipline.
+* **🔐 Private & Encrypted Vault (`encryption.js`)**: Secure AES-256-GCM encryption at rest for sensitive reflections and personal logs.
+* **👥 Family & Teammate Circle**: Controlled sharing permissions allowing teammates and mentors to view milestones and celebrate legacy.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Why Chosen |
+| Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Frontend Framework** | **React 18 + Vite 5** | High-performance component architecture, rapid HMR development, and seamless state management. |
-| **3D Graphics & Styling** | **Three.js + Tailwind CSS** | Custom WebGL shader surfaces, procedural pitch/court rendering, and responsive glassmorphism UI. |
-| **API Server** | **Node.js + Express 4** | Lightweight asynchronous REST API handling memory ingestion, auth, media uploads, and proxying. |
-| **Relational Database** | **SQLite (`better-sqlite3`)** | Ultra-fast embedded relational store for user identities, athlete profiles, and family ACL permissions. |
-| **Document Store** | **MongoDB 7** | Flexible schema for rich, unstructured memory entries, media assets, victory logs, and chat sessions. |
-| **Vector Engine & RAG** | **Custom Vector Store + Cosine Similarity** | In-memory 768-dim vector index with hard metadata filtering, pre-configured for Supabase `pgvector` migration. |
-| **AI & Embeddings** | **Google Gemini (`text-embedding-004`) / Ollama** | Semantic embeddings with deterministic mathematical fallback ensuring zero downtime in offline environments. |
-| **Security** | **AES-256-GCM + Bcrypt** | Cryptographically secure cipher-block encryption for journal text; salted credential hashing. |
-| **Realtime Streaming** | **WebSockets (`ws`)** | Low-latency bi-directional token streaming for interactive sideline AI chats. |
+| **Frontend Framework** | **React 18 + Vite 5** | High-performance component architecture, rapid HMR development. |
+| **3D Graphics & Styling** | **Three.js + Tailwind CSS** | Warm archival design system, WebGL scenes, Fraunces serif typography. |
+| **API Server** | **Node.js + Express 4** | REST API handling memory preservation, authentication, and media uploads. |
+| **Databases** | **SQLite + MongoDB** | Relational user accounts and rich unstructured memory entries. |
+| **Security** | **AES-256-GCM + Bcrypt** | Secure encryption for private journals and salted credential hashing. |
 
 ---
 
 ## 📐 Architecture
 
-LegacyLane follows a modern tiered decoupled architecture ensuring clean separation of concerns between presentation, orchestration, and persistence:
+LegacyLane follows a clean decoupled architecture:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          PRESENTATION TIER                             │
 │       React 18 + Vite 5  │  Three.js WebGL  │  Tailwind CSS            │
-│  (ScoreHeroLevelMap, LifeTimeline, AIYoungerSelfChat, SentimentModal)  │
+│  (ScoreHeroLevelMap, LifeTimeline, MemoryInspector, SentimentModal)    │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP REST (VITE_API_URL) / WebSocket
+                                    │ HTTP REST (VITE_API_URL)
 ┌───────────────────────────────────▼────────────────────────────────────┐
 │                         APPLICATION API TIER                           │
 │                      Node.js Express Server (Port 5000)                │
 │    • Auth & Profile Management      • Memory Ingestion Pipeline        │
-│    • Semantic Search & Pagination   • File Upload Controller (Multer)  │
+│    • Search & Timeline Filters      • File Upload Controller (Multer)  │
 └───────────────┬───────────────────────────────────┬────────────────────┘
                 │                                   │
 ┌───────────────▼────────────────┐ ┌────────────────▼────────────────────┐
-│       PERSISTENCE TIER         │ │         AI & VECTOR TIER            │
-│  • SQLite (better-sqlite3)     │ │  • Gemini text-embedding-004        │
-│    - Users, Profiles, ACL      │ │  • AES-256-GCM Encryption Engine    │
-│  • MongoDB (MemoryLogs)        │ │  • Era-Constrained RAG Engine       │
-│    - Encrypted Journals        │ │  • Persona Orchestration & Safety   │
-│    - Media Assets & Chat Logs  │ │  • Sideline WebSocket Server (8080) │
+│       PERSISTENCE TIER         │ │          SECURITY TIER              │
+│  • SQLite (better-sqlite3)     │ │  • AES-256-GCM Encryption Engine    │
+│    - Users, Profiles, ACL      │ │  • Password Hashing & Salts         │
+│  • MongoDB (MemoryLogs)        │ │  • Secure Token Authorization       │
+│    - Encrypted Journals        │ │                                     │
+│    - Media Assets & Milestones │ │                                     │
 └────────────────────────────────┘ └─────────────────────────────────────┘
 ```
 

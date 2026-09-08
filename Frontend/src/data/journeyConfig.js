@@ -45,18 +45,18 @@ export const SPORT_DOMAINS = [
     icon: '⚽',
     threeSceneKey: 'football',
     theme: {
-      primary: '#10b981',
-      secondary: '#059669',
-      accentClass: 'from-emerald-500 to-green-600',
+      primary: '#2D6A4F',
+      secondary: '#1B4332',
+      accentClass: 'from-emerald-800 to-stone-900',
       threeColors: {
-        primary: 0x10b981,
-        secondary: 0x059669
+        primary: 0x2D6A4F,
+        secondary: 0x1B4332
       },
-      glow: 'rgba(16, 185, 129, 0.4)',
-      bg: 'from-slate-950 via-emerald-950/30 to-slate-950',
-      badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-      nodeUnlocked: 'bg-emerald-500 text-slate-950 shadow-emerald-500/50',
-      line: 'stroke-emerald-500',
+      glow: 'rgba(45, 106, 79, 0.3)',
+      bg: 'from-[#0E0D0B] via-[#122118]/40 to-[#0E0D0B]',
+      badge: 'bg-emerald-950/80 text-emerald-200 border-emerald-700/50',
+      nodeUnlocked: 'bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 shadow-amber-500/30 border border-amber-300/60',
+      line: 'stroke-emerald-700',
       icon: 'Trophy'
     },
     buildGround: buildFootballGround,
@@ -70,18 +70,18 @@ export const SPORT_DOMAINS = [
     icon: '🏏',
     threeSceneKey: 'cricket',
     theme: {
-      primary: '#22c55e',
-      secondary: '#d97706',
-      accentClass: 'from-green-500 to-lime-600',
+      primary: '#D4AF37',
+      secondary: '#8C2D19',
+      accentClass: 'from-amber-800 to-stone-900',
       threeColors: {
-        primary: 0x22c55e,
-        secondary: 0xd97706
+        primary: 0xD4AF37,
+        secondary: 0x8C2D19
       },
-      glow: 'rgba(132, 204, 22, 0.4)',
-      bg: 'from-slate-950 via-lime-950/30 to-slate-950',
-      badge: 'bg-lime-500/20 text-lime-300 border-lime-500/40',
-      nodeUnlocked: 'bg-lime-500 text-slate-950 shadow-lime-500/50',
-      line: 'stroke-lime-500',
+      glow: 'rgba(212, 175, 55, 0.25)',
+      bg: 'from-[#0E0D0B] via-[#241A10]/40 to-[#0E0D0B]',
+      badge: 'bg-amber-950/80 text-amber-200 border-amber-700/50',
+      nodeUnlocked: 'bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 shadow-amber-500/30 border border-amber-300/60',
+      line: 'stroke-amber-600',
       icon: 'Award'
     },
     buildGround: buildCricketGround,
@@ -95,18 +95,18 @@ export const SPORT_DOMAINS = [
     icon: '🏀',
     threeSceneKey: 'basketball',
     theme: {
-      primary: '#f97316',
-      secondary: '#ea580c',
-      accentClass: 'from-amber-500 to-orange-600',
+      primary: '#C05621',
+      secondary: '#9C4123',
+      accentClass: 'from-orange-900 to-stone-900',
       threeColors: {
-        primary: 0xf97316,
-        secondary: 0xea580c
+        primary: 0xC05621,
+        secondary: 0x9C4123
       },
-      glow: 'rgba(249, 115, 22, 0.4)',
-      bg: 'from-slate-950 via-amber-950/30 to-slate-950',
-      badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-      nodeUnlocked: 'bg-amber-500 text-slate-950 shadow-amber-500/50',
-      line: 'stroke-amber-500',
+      glow: 'rgba(192, 86, 33, 0.25)',
+      bg: 'from-[#0E0D0B] via-[#261710]/40 to-[#0E0D0B]',
+      badge: 'bg-orange-950/80 text-orange-200 border-orange-700/50',
+      nodeUnlocked: 'bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 shadow-amber-500/30 border border-amber-300/60',
+      line: 'stroke-orange-600',
       icon: 'Zap'
     },
     buildGround: buildBasketballGround,
@@ -120,18 +120,18 @@ export const SPORT_DOMAINS = [
     icon: '🏃',
     threeSceneKey: 'athletics',
     theme: {
-      primary: '#ec4899',
-      secondary: '#be185d',
-      accentClass: 'from-pink-500 to-rose-600',
+      primary: '#9C2A2A',
+      secondary: '#6B1D1D',
+      accentClass: 'from-red-950 to-stone-900',
       threeColors: {
-        primary: 0xec4899,
-        secondary: 0xbe185d
+        primary: 0x9C2A2A,
+        secondary: 0x6B1D1D
       },
-      glow: 'rgba(236, 72, 153, 0.4)',
-      bg: 'from-slate-950 via-rose-950/30 to-slate-950',
-      badge: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
-      nodeUnlocked: 'bg-pink-500 text-slate-950 shadow-pink-500/50',
-      line: 'stroke-pink-500',
+      glow: 'rgba(156, 42, 42, 0.25)',
+      bg: 'from-[#0E0D0B] via-[#261214]/40 to-[#0E0D0B]',
+      badge: 'bg-red-950/80 text-red-200 border-red-700/50',
+      nodeUnlocked: 'bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 shadow-amber-500/30 border border-amber-300/60',
+      line: 'stroke-red-700',
       icon: 'Flame'
     },
     buildGround: buildAthleticsGround,
@@ -147,18 +147,18 @@ export const LIFE_DOMAIN = {
   icon: '📖',
   threeSceneKey: 'life',
   theme: {
-    primary: '#06b6d4',
-    secondary: '#3b82f6',
-    accentClass: 'from-cyan-500 to-blue-600',
+    primary: '#D4AF37',
+    secondary: '#1B2E4B',
+    accentClass: 'from-indigo-950 to-stone-900',
     threeColors: {
-      primary: 0x06b6d4,
-      secondary: 0x3b82f6
+      primary: 0xD4AF37,
+      secondary: 0x1B2E4B
     },
-    glow: 'rgba(6, 182, 212, 0.4)',
-    bg: 'from-slate-950 via-cyan-950/30 to-slate-950',
-    badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-    nodeUnlocked: 'bg-cyan-500 text-slate-950 shadow-cyan-500/50',
-    line: 'stroke-cyan-500',
+    glow: 'rgba(212, 175, 55, 0.25)',
+    bg: 'from-[#0E0D0B] via-[#141B29]/40 to-[#0E0D0B]',
+    badge: 'bg-stone-900/90 text-amber-200 border-amber-600/40',
+    nodeUnlocked: 'bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 shadow-amber-500/30 border border-amber-300/60',
+    line: 'stroke-amber-600',
     icon: 'BookOpen'
   },
   buildGround: buildLifeGround,

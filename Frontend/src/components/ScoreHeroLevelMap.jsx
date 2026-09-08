@@ -64,14 +64,14 @@ export default function ScoreHeroLevelMap({
 
   const getSportRoadColor = () => {
     if (profile?.sport === 'Football' || activeDomainId === 'football')
-      return { border: '#10b981', center: '#34d399', fill: 'rgba(16, 185, 129, 0.15)' };
+      return { border: '#2D6A4F', center: '#52B788', fill: 'rgba(45, 106, 79, 0.18)' };
     if (profile?.sport === 'Cricket' || activeDomainId === 'cricket')
-      return { border: '#84cc16', center: '#a3e635', fill: 'rgba(132, 204, 22, 0.15)' };
+      return { border: '#D4AF37', center: '#F3D068', fill: 'rgba(212, 175, 55, 0.18)' };
     if (profile?.sport === 'Basketball' || activeDomainId === 'basketball')
-      return { border: '#f97316', center: '#fb923c', fill: 'rgba(249, 115, 22, 0.15)' };
+      return { border: '#C05621', center: '#EA580C', fill: 'rgba(192, 86, 33, 0.18)' };
     if (profile?.sport === 'Athletics' || activeDomainId === 'athletics')
-      return { border: '#ec4899', center: '#f472b6', fill: 'rgba(236, 72, 153, 0.15)' };
-    return { border: '#06b6d4', center: '#22d3ee', fill: 'rgba(6, 182, 212, 0.15)' };
+      return { border: '#9C2A2A', center: '#C53030', fill: 'rgba(156, 42, 42, 0.18)' };
+    return { border: '#D4AF37', center: '#F3D068', fill: 'rgba(212, 175, 55, 0.18)' };
   };
 
   const roadColors = getSportRoadColor();
@@ -79,20 +79,20 @@ export default function ScoreHeroLevelMap({
   return (
     <div className="relative w-full min-h-[calc(100vh-80px)] px-4 py-8 max-w-6xl mx-auto flex flex-col items-center">
       {/* Athlete Bio & Stats Banner */}
-      <div className="w-full mb-6 glass-panel rounded-3xl p-6 border border-slate-800 shadow-2xl relative overflow-hidden">
+      <div className="w-full mb-8 archival-panel rounded-3xl p-6 border border-[#2C2621] shadow-2xl relative overflow-hidden">
         <div
           className="absolute -right-20 -top-20 w-80 h-80 rounded-full blur-3xl pointer-events-none opacity-20"
-          style={{ backgroundColor: profile?.theme?.glow || 'rgba(16, 185, 129, 0.4)' }}
+          style={{ backgroundColor: profile?.theme?.glow || 'rgba(212, 175, 55, 0.25)' }}
         />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
             <div
               className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${
-                profile?.theme?.accent || 'from-emerald-500 to-green-600'
-              } p-1 shadow-xl flex items-center justify-center text-slate-950 font-black text-2xl`}
+                profile?.theme?.accentClass || 'from-amber-700 to-stone-900'
+              } p-1 shadow-xl flex items-center justify-center text-stone-950 font-black text-2xl border border-[#D4AF37]/30`}
             >
-              <div className="w-full h-full rounded-xl bg-slate-950/20 backdrop-blur-sm flex items-center justify-center text-white">
+              <div className="w-full h-full rounded-xl bg-[#0E0D0B]/40 backdrop-blur-sm flex items-center justify-center text-white">
                 {activeDomainId === 'football'
                   ? '⚽'
                   : activeDomainId === 'cricket'
@@ -106,17 +106,17 @@ export default function ScoreHeroLevelMap({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-black text-white tracking-tight">{profile?.name || 'Athlete'}</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#F5F2EB] tracking-tight">{profile?.name || 'Athlete'}</h2>
                 <span
-                  className={`text-xs px-2.5 py-1 rounded-full font-extrabold border ${
-                    profile?.theme?.badge || 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
+                    profile?.theme?.badge || 'bg-[#1E1B18] text-[#D4AF37] border-[#D4AF37]/30'
                   }`}
                 >
                   {profile?.position}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
-                {profile?.team} • Winding {profile?.sport} Ground Road
+              <p className="text-xs text-[#8C8273] font-medium mt-0.5">
+                {profile?.team} • {profile?.sport} Journey Timeline
               </p>
             </div>
           </div>
@@ -125,17 +125,17 @@ export default function ScoreHeroLevelMap({
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {activeDomainId === 'football' && profile?.stats && (
               <>
-                <div className="bg-slate-900/90 border border-slate-800 px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block">Goals</span>
-                  <span className="text-lg font-black text-emerald-400">{profile.stats.goals}</span>
+                <div className="bg-[#171513] border border-[#2C2621] px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
+                  <span className="text-[10px] text-[#8C8273] uppercase tracking-wider font-bold block">Goals</span>
+                  <span className="font-serif text-lg font-bold text-[#D4AF37]">{profile.stats.goals}</span>
                 </div>
-                <div className="bg-slate-900/90 border border-slate-800 px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block">Assists</span>
-                  <span className="text-lg font-black text-emerald-300">{profile.stats.assists}</span>
+                <div className="bg-[#171513] border border-[#2C2621] px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
+                  <span className="text-[10px] text-[#8C8273] uppercase tracking-wider font-bold block">Assists</span>
+                  <span className="font-serif text-lg font-bold text-[#C2B9A7]">{profile.stats.assists}</span>
                 </div>
-                <div className="bg-slate-900/90 border border-slate-800 px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block">Rating</span>
-                  <span className="text-lg font-black text-amber-400">{profile.stats.careerRating}</span>
+                <div className="bg-[#171513] border border-[#2C2621] px-4 py-2.5 rounded-2xl text-center flex-1 md:flex-none">
+                  <span className="text-[10px] text-[#8C8273] uppercase tracking-wider font-bold block">Rating</span>
+                  <span className="font-serif text-lg font-bold text-[#D4AF37]">{profile.stats.careerRating}</span>
                 </div>
               </>
             )}
@@ -249,13 +249,13 @@ export default function ScoreHeroLevelMap({
             }}
           >
             <MapPin className="w-3.5 h-3.5" />
-            {profile?.sport || 'Sports'} Career Ground Road
+            {profile?.sport || 'Sports'} Career Timeline
           </span>
-          <h3 className="text-3xl font-black text-white mt-2">
-            Career Level Progression
+          <h3 className="font-serif text-3xl font-bold text-[#F5F2EB] mt-2">
+            Milestones & Career Roadmap
           </h3>
-          <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
-            Follow the ground road connecting each level node from your youth origins to your championship glory.
+          <p className="text-xs text-[#8C8273] max-w-md mx-auto mt-1">
+            Trace your journey through every match, milestone, and hard-earned victory.
           </p>
         </div>
 
@@ -275,9 +275,9 @@ export default function ScoreHeroLevelMap({
 
               {/* Asphalt Road Pattern */}
               <pattern id="roadAsphaltPattern" width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="20" height="20" fill="#0f172a" />
-                <circle cx="5" cy="5" r="1" fill="#1e293b" />
-                <circle cx="15" cy="15" r="1" fill="#334155" />
+                <rect width="20" height="20" fill="#141210" />
+                <circle cx="5" cy="5" r="1" fill="#24201C" />
+                <circle cx="15" cy="15" r="1" fill="#312B24" />
               </pattern>
             </defs>
 
@@ -285,12 +285,12 @@ export default function ScoreHeroLevelMap({
             <path
               d="M 330 60 C 150 180, 550 320, 330 460 C 150 600, 550 740, 330 880 C 150 1020, 550 1160, 330 1300"
               fill="none"
-              stroke="#090d16"
+              stroke="#0E0D0B"
               strokeWidth="68"
               strokeLinecap="round"
             />
 
-            {/* Layer 2: Asphalt Surface */}
+            {/* Layer 2: Surface */}
             <path
               d="M 330 60 C 150 180, 550 320, 330 460 C 150 600, 550 740, 330 880 C 150 1020, 550 1160, 330 1300"
               fill="none"
@@ -299,7 +299,7 @@ export default function ScoreHeroLevelMap({
               strokeLinecap="round"
             />
 
-            {/* Layer 3: Glowing Road Curbs */}
+            {/* Layer 3: Road Curbs */}
             <path
               d="M 330 60 C 150 180, 550 320, 330 460 C 150 600, 550 740, 330 880 C 150 1020, 550 1160, 330 1300"
               fill="none"
@@ -313,7 +313,7 @@ export default function ScoreHeroLevelMap({
               d="M 330 60 C 150 180, 550 320, 330 460 C 150 600, 550 740, 330 880 C 150 1020, 550 1160, 330 1300"
               fill="none"
               stroke={roadColors.border}
-              strokeWidth="4"
+              strokeWidth="3"
               strokeLinecap="round"
             />
 
@@ -321,16 +321,16 @@ export default function ScoreHeroLevelMap({
             <path
               d="M 330 60 C 150 180, 550 320, 330 460 C 150 600, 550 740, 330 880 C 150 1020, 550 1160, 330 1300"
               fill="none"
-              stroke="#ffffff"
-              strokeWidth="3"
+              stroke="#D4AF37"
+              strokeWidth="2.5"
               strokeDasharray="14 14"
-              opacity="0.9"
+              opacity="0.75"
             />
           </svg>
 
           {/* Level Nodes Mapping along the Road */}
           {filteredLevels.length === 0 ? (
-            <div className="relative z-10 w-full max-w-md p-8 glass-panel rounded-3xl border border-slate-700/80 text-center my-12 flex flex-col items-center animate-fadeIn shadow-2xl">
+            <div className="relative z-10 w-full max-w-md p-8 archival-panel rounded-3xl border border-[#2C2621] text-center my-12 flex flex-col items-center animate-fadeIn shadow-2xl">
               <div
                 className="w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl mb-4 shadow-lg"
                 style={{
@@ -349,22 +349,19 @@ export default function ScoreHeroLevelMap({
                   ? '🏃'
                   : '🏆'}
               </div>
-              <h3 className="text-xl font-black text-white">
-                Start your {profile?.sport || 'Career'} Journey
+              <h3 className="font-serif text-xl font-bold text-[#F5F2EB]">
+                Start Your {profile?.sport || 'Career'} Journey
               </h3>
-              <p className="text-xs text-slate-400 mt-2 max-w-xs leading-relaxed font-normal">
-                No milestone nodes logged yet for this domain. Log your first match victory, personal record, or memory entry to begin your 3D roadmap!
+              <p className="text-xs text-[#8C8273] mt-2 max-w-xs leading-relaxed font-normal">
+                No milestones recorded yet. Preserve your first match victory, personal record, or career memory to begin your timeline!
               </p>
               <button
                 type="button"
                 onClick={onAddLevelClick}
-                className="mt-6 px-5 py-2.5 rounded-xl text-slate-950 font-black text-xs shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-                style={{
-                  background: `linear-gradient(to right, ${roadColors.border}, ${roadColors.center})`
-                }}
+                className="mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F59E0B] text-stone-950 font-bold text-xs shadow-lg shadow-amber-950/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Log First Level Node</span>
+                <span>Record First Memory</span>
               </button>
             </div>
           ) : (
@@ -381,61 +378,61 @@ export default function ScoreHeroLevelMap({
                   {/* Level Details Card */}
                   <div
                     onClick={() => handleNodeClick(level)}
-                    className={`w-80 p-5 rounded-3xl glass-card cursor-pointer group relative overflow-hidden transition-all duration-300 ${
+                    className={`w-80 p-5 rounded-3xl archival-card cursor-pointer group relative overflow-hidden transition-all duration-300 ${
                       level.status === 'locked'
-                        ? 'opacity-60 grayscale cursor-not-allowed border-slate-800'
+                        ? 'opacity-60 grayscale cursor-not-allowed border-[#2C2621]'
                         : level.status === 'current'
-                        ? 'border-2 border-amber-400/80 shadow-2xl shadow-amber-500/20 scale-[1.02]'
-                        : 'border-slate-700/80 hover:border-emerald-500/60'
+                        ? 'border-2 border-[#D4AF37] shadow-2xl shadow-amber-950/40 scale-[1.02]'
+                        : 'border-[#2C2621] hover:border-[#D4AF37]/50'
                     }`}
                   >
                     {/* Era Tag */}
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-700 flex items-center gap-1">
-                        <Flag className="w-3 h-3" style={{ color: roadColors.border }} />
+                      <span className="text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md bg-[#1E1B18] text-[#C2B9A7] border border-[#2C2621] flex items-center gap-1">
+                        <Flag className="w-3 h-3 text-[#D4AF37]" />
                         {level.era}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold">
+                      <span className="text-[10px] text-[#8C8273] font-medium">
                         {level.date}
                       </span>
                     </div>
 
-                    <h4 className="text-base font-extrabold text-white group-hover:text-emerald-300 transition-colors">
-                      Level {level.levelNumber || idx + 1}: {level.title}
+                    <h4 className="font-serif text-base font-bold text-[#F5F2EB] group-hover:text-[#D4AF37] transition-colors">
+                      {level.title}
                     </h4>
-                    <p className="text-xs text-slate-300 line-clamp-2 mt-1 font-medium">
+                    <p className="text-xs text-[#C2B9A7] line-clamp-2 mt-1 font-normal">
                       {level.matchDetails}
                     </p>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2C2621]">
                       <div className="flex items-center gap-1">
                         {[1, 2, 3].map((star) => (
                           <Star
                             key={star}
                             className={`w-3.5 h-3.5 ${
                               star <= level.stars
-                                ? 'text-amber-400 fill-amber-400'
-                                : 'text-slate-700'
+                                ? 'text-[#D4AF37] fill-[#D4AF37]'
+                                : 'text-stone-700'
                             }`}
                           />
                         ))}
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold">
                         {level.status === 'completed' && (
-                          <span className="flex items-center gap-1" style={{ color: roadColors.border }}>
+                          <span className="flex items-center gap-1 text-[#D4AF37]">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Passed</span>
+                            <span>Preserved</span>
                           </span>
                         )}
                         {level.status === 'current' && (
-                          <span className="flex items-center gap-1 text-amber-400 animate-pulse">
+                          <span className="flex items-center gap-1 text-[#F59E0B] animate-pulse">
                             <Zap className="w-3.5 h-3.5" />
                             <span>In Progress</span>
                           </span>
                         )}
                         {level.status === 'locked' && (
-                          <span className="flex items-center gap-1 text-slate-500">
+                          <span className="flex items-center gap-1 text-[#8C8273]">
                             <Lock className="w-3.5 h-3.5" />
                             <span>Locked</span>
                           </span>
@@ -448,27 +445,27 @@ export default function ScoreHeroLevelMap({
                   <div className="flex flex-col items-center justify-center my-4 group cursor-pointer">
                     <div
                       onClick={() => handleNodeClick(level)}
-                      className={`w-16 h-16 rounded-full border-4 flex flex-col items-center justify-center font-black transition-all duration-300 ${
+                      className={`w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center font-bold transition-all duration-300 ${
                         level.status === 'locked'
-                          ? 'bg-slate-900 border-slate-700 text-slate-500 shadow-md'
+                          ? 'bg-[#171513] border-[#2C2621] text-stone-600 shadow-md'
                           : level.status === 'current'
-                          ? 'bg-amber-400 text-slate-950 border-white shadow-xl shadow-amber-400/50 animate-bounce scale-110'
-                          : `${profile?.theme?.nodeUnlocked || 'bg-emerald-500 text-slate-950'} border-white shadow-xl hover:scale-105 active:scale-95`
+                          ? 'bg-gradient-to-br from-[#D4AF37] to-[#F59E0B] text-stone-950 border-white shadow-xl shadow-amber-950/40 animate-bounce scale-110'
+                          : 'bg-gradient-to-br from-[#D4AF37] to-[#B45309] text-stone-950 border-[#F3D068] shadow-lg shadow-amber-950/40 hover:scale-105 active:scale-95'
                       }`}
                     >
                       {level.status === 'locked' ? (
-                        <Lock className="w-7 h-7 text-slate-600" />
+                        <Lock className="w-6 h-6 text-stone-600" />
                       ) : (
                         <>
-                          <span className="text-2xl leading-none">{level.levelNumber || idx + 1}</span>
-                          <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-80">Level</span>
+                          <span className="font-serif text-xl leading-none font-bold">{level.levelNumber || idx + 1}</span>
+                          <span className="text-[8px] uppercase tracking-wider font-semibold opacity-90">Stage</span>
                         </>
                       )}
                     </div>
 
                     {/* Road Checkpoint Label */}
-                    <span className="mt-1 px-2.5 py-0.5 rounded-full bg-slate-950/90 text-slate-300 text-[10px] font-black border border-slate-800 shadow-md">
-                      STAGE {level.levelNumber || idx + 1}
+                    <span className="mt-1 px-2.5 py-0.5 rounded-full bg-[#171513] text-[#C2B9A7] text-[10px] font-semibold border border-[#2C2621] shadow-sm">
+                      CHAPTER {level.levelNumber || idx + 1}
                     </span>
                   </div>
 
@@ -480,17 +477,14 @@ export default function ScoreHeroLevelMap({
           )}
         </div>
 
-        {/* Add Level Floating Action Button */}
+        {/* Add Memory Action Button */}
         <div className="mt-16 text-center z-10">
           <button
             onClick={onAddLevelClick}
-            className="px-6 py-3.5 rounded-2xl text-slate-950 font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 mx-auto"
-            style={{
-              background: `linear-gradient(to right, ${roadColors.border}, ${roadColors.center})`
-            }}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#F59E0B] hover:from-[#E2C799] hover:to-[#D4AF37] text-stone-950 font-bold text-sm shadow-xl shadow-amber-950/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 mx-auto"
           >
-            <Sparkles className="w-5 h-5" />
-            <span>Unlock & Extend {profile?.sport} Road</span>
+            <PlusCircle className="w-5 h-5" />
+            <span>Preserve New Milestone in {profile?.sport} Journey</span>
           </button>
         </div>
       </div>
