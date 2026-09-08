@@ -8,6 +8,8 @@ import {
   detectCrisisKeywords, 
   detectBurnoutKeywords 
 } from './personaOrchestrator.js';
+import { perceiveImage, normalizeImageSource } from './multimodalPerception.js';
+import { synthesizeLearnedInsights } from './learningEngine.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const MAX_HISTORY_TURNS = 10; // Sliding window max turns
@@ -125,11 +127,12 @@ export function initSidelineWebSocketServer(options = {}) {
         // -------------------------------------------------------------
         const userPrompt = payload.prompt || payload.message || '';
         const selectedEra = payload.era || sessionState.era || 'Youth Era';
+        const imageSource = payload.imageSource || payload.mediaUrl || payload.photo || null;
         sessionState.era = selectedEra;
 
-        if (!userPrompt.trim()) return;
+        if (!userPrompt.trim() && !imageSource) return;
 
-        await processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra);
+        await processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource);
 
       } catch (err) {
         console.error('Sideline WebSocket Processing Error:', err);
@@ -157,11 +160,11 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
       ws.send(JSON.stringify({
         event: 'learning_status',
         status: 'vectorizing',
-        message: 'Vectorizing new play entry into 768-dim embeddings...'
+        message: 'Perceiving visual elements & vectorizing play into 768-dim embeddings...'
       }));
     }
 
-    // Phase 1 Pipeline: Ingest memory, AES-256 encrypt, vectorize, store
+    // Multimodal Memory Ingestion: Ingest memory, perceive image, AES-256 encrypt, vectorize, store
     const ingestResult = await ingestMemoryPayload({
       userId: sessionState.userId,
       title: memoryData.title || 'New Play Logged',
@@ -171,7 +174,10 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
       emotionTags: memoryData.emotionTags || memoryData.tags || ['Triumph'],
       contextTags: memoryData.contextTags || [],
       sentimentScore: memoryData.sentimentScore,
-      mediaUrl: memoryData.mediaUrl || null
+      mediaUrl: memoryData.mediaUrl || null,
+      imageSource: memoryData.imageSource || memoryData.photo || null,
+      journeyType: memoryData.journeyType,
+      domain: memoryData.domain
     });
 
     // Broadcast "memory_learned" event back to client socket
@@ -181,7 +187,10 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
       title: ingestResult.metadata.title,
       era: ingestResult.metadata.era,
       vectorDimension: ingestResult.vectorDimension,
-      message: '⚡ Memory instant-learned! Very next chat query will incorporate this play.'
+      multimodal: ingestResult.multimodal,
+      visualSummary: ingestResult.visualPerception?.visualSummary || null,
+      resilienceScore: ingestResult.cognitiveLearning?.resilienceScore || 85,
+      message: '⚡ Memory instant-learned with multimodal perception! Very next chat query will incorporate this play.'
     };
 
     if (ws.readyState === WebSocket.OPEN) {
@@ -198,9 +207,9 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
 }
 
 /**
- * Processes Chat Flow with Phase 2 RAG, Phase 3 Prompting, and Token-by-Token Streaming
+ * Processes Chat Flow with Phase 2 RAG, Phase 3 Prompting, Multimodal Vision, and Token Streaming
  */
-export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra) {
+export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource = null) {
   // 1. Check Safety Guardrails (Severe Crisis / Despair)
   if (detectCrisisKeywords(userPrompt)) {
     const crisisText = `I hear how much pain you are in right now, and I want you to know that you are not alone. I'm stepping out of our younger self character because your safety and life matter deeply.\n\nPlease reach out for immediate support:\n• **988 Suicide & Crisis Lifeline**: Call or text **988** (24/7 free & confidential)\n• **Tele-MANAS**: Call **14416** or **1800 891 4416**\n\nPlease take a deep breath. We built this journey together, and your future still needs you.`;
@@ -232,18 +241,43 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     topK: 4
   });
 
-  // 3. Trigger Phase 3: Construct System Prompt Contract
+  // 3. Multimodal Perception for Chat Image (if imageSource provided)
+  let normalizedChatImage = null;
+  let chatImagePerception = null;
+  if (imageSource) {
+    try {
+      normalizedChatImage = await normalizeImageSource(imageSource);
+      chatImagePerception = await perceiveImage({
+        imageSource,
+        domain: sessionState.domain || 'football',
+        era: selectedEra
+      });
+    } catch (visErr) {
+      console.warn('WebSocket chat image perception warning:', visErr.message);
+    }
+  }
+
+  // 4. Synthesize Continuous Learning Trajectory Insights
+  const cognitiveInsights = synthesizeLearnedInsights({
+    userId: sessionState.userId,
+    era: selectedEra,
+    domain: sessionState.domain || 'football',
+    memories: ragContext.memories || []
+  });
+
+  // 5. Construct System Prompt Contract with Cognitive Insights
   const eraAge = calculateEraAge(selectedEra);
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
-    retrievedContextChunks: ragContext.formattedContext
+    retrievedContextChunks: ragContext.formattedContext,
+    cognitiveInsights
   });
 
   const apiKey = process.env.GEMINI_API_KEY;
   let fullResponse = '';
 
-  // 4. Provider A: Google Gemini Real-Time Token Streaming API (@google/genai)
+  // 6. Provider A: Google Gemini Real-Time Token Streaming API (@google/genai)
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
@@ -257,7 +291,19 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
           });
         });
       }
-      contents.push({ role: 'user', parts: [{ text: userPrompt }] });
+
+      const userParts = [];
+      if (normalizedChatImage && normalizedChatImage.base64Data) {
+        userParts.push({
+          inlineData: {
+            data: normalizedChatImage.base64Data,
+            mimeType: normalizedChatImage.mimeType || 'image/jpeg'
+          }
+        });
+      }
+      const promptText = userPrompt || (chatImagePerception ? 'Look at this photo from our journey.' : '');
+      if (promptText) userParts.push({ text: promptText });
+      contents.push({ role: 'user', parts: userParts });
 
       const streamingResult = await ai.models.generateContentStream({
         model: 'gemini-1.5-flash',
@@ -357,11 +403,13 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     // Local Ollama offline
   }
 
-  // 6. Provider C: Dynamic Real-Time Typewriter Token Streaming Fallback
+  // 7. Provider C: Dynamic Real-Time Typewriter Token Streaming Fallback
   const isBurnout = detectBurnoutKeywords(userPrompt);
   let fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
 
-  if (isBurnout) {
+  if (chatImagePerception) {
+    fallbackReply = `I remember that day so clearly! Looking at this photograph, I can see ${chatImagePerception.visualSummary} Looking back at our ${chatImagePerception.perceivedEmotions.slice(0, 2).join(' and ')} expression, it brings me right back to our ${selectedEra} days. Back when we were ${eraAge}, every single minute on the pitch meant everything to us!`;
+  } else if (isBurnout) {
     fallbackReply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
   } else if (
     userPrompt.toLowerCase().includes('promotion') || 

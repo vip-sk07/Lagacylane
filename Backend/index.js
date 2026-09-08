@@ -16,7 +16,9 @@ import {
   retrieveEraContext,
   generateYoungerSelfResponse,
   initSidelineWebSocketServer,
-  removeUserVectors
+  removeUserVectors,
+  perceiveImage,
+  getUserCognitiveProfile
 } from '../AI_Modules/index.js';
 import { encryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
@@ -385,10 +387,38 @@ app.post('/api/memories', async (req, res) => {
     // Analyze sentiment dynamically using the AI module
     const sentimentScore = analyzeSentiment(title, (content || '') + ' ' + (victoryMessage || ''));
 
+    // Resolve local upload disk path if mediaUrl points to /uploads/
+    let resolvedImageSource = mediaUrl || null;
+    if (mediaUrl && typeof mediaUrl === 'string') {
+      const match = mediaUrl.match(/\/uploads\/([^/?#]+)/);
+      if (match) {
+        const candidatePath = path.join(uploadsDir, match[1]);
+        if (fs.existsSync(candidatePath)) {
+          resolvedImageSource = candidatePath;
+        }
+      }
+    }
+
+    // Run high-level multimodal perception on the image
+    let visualPerception = null;
+    if (resolvedImageSource) {
+      try {
+        visualPerception = await perceiveImage({
+          imageSource: resolvedImageSource,
+          title,
+          description: content,
+          domain,
+          era: era || 'Youth Era (2018-2020)'
+        });
+      } catch (visErr) {
+        console.warn('Perceive image in memories warning:', visErr.message);
+      }
+    }
+
     // AES-256-GCM encrypt the journal text before storage (SRS requirement)
     const encryptedPayload = encryptText(content || '');
 
-    // Ingest into Vector Store asynchronously
+    // Ingest into Vector Store & update continuous cognitive learning graph asynchronously
     ingestMemoryPayload({
       userId,
       title,
@@ -399,6 +429,7 @@ app.post('/api/memories', async (req, res) => {
       contextTags: tags,
       sentimentScore,
       mediaUrl,
+      imageSource: resolvedImageSource,
       journeyType,
       domain
     }).catch(err => console.error('Background Vector Ingest Warning:', err.message));
@@ -419,13 +450,19 @@ app.post('/api/memories', async (req, res) => {
       SentimentScore: sentimentScore,
       Tags: { era: era || 'Youth Era (2018-2020)', context: tags || [] },
       MediaAssets: mediaUrl ? [{ url: mediaUrl, type: 'image' }] : [],
+      VisualPerception: visualPerception,
       CreatedAt: new Date()
     };
 
     const collection = getCollection('MemoryLogs');
     await collection.insertOne(doc);
 
-    res.status(201).json({ message: 'Level node added to database & vector index updated', memoryId, sentimentScore });
+    res.status(201).json({ 
+      message: 'Level node added to database, vector index updated & multimodal perception captured.', 
+      memoryId, 
+      sentimentScore,
+      visualPerception 
+    });
   } catch (err) {
     console.error('Add Memory Error:', err);
     res.status(500).json({ error: 'Server error saving memory node.' });
@@ -433,17 +470,33 @@ app.post('/api/memories', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// 5. AI YOUNGER SELF CHAT ENDPOINT
+// 5. AI YOUNGER SELF CHAT & MULTIMODAL PERCEPTION ENDPOINTS
 // ----------------------------------------------------
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { userId, era, userMessage, history, retrievedContext, journeyType, domain, clientMemories } = req.body;
+    const { 
+      userId, era, userMessage, history, retrievedContext, 
+      journeyType, domain, clientMemories, 
+      imageSource, mediaUrl, photo 
+    } = req.body;
 
     const messageText = userMessage || req.body.message || (history && history.length > 0 ? history[history.length - 1].content : '');
 
-    if (!messageText) {
-      return res.status(400).json({ error: 'userMessage, message, or history content is required.' });
+    if (!messageText && !imageSource && !mediaUrl && !photo) {
+      return res.status(400).json({ error: 'userMessage, message, or imageSource is required.' });
+    }
+
+    // Resolve local upload disk path if imageSource points to /uploads/
+    let resolvedImageSource = imageSource || mediaUrl || photo || null;
+    if (resolvedImageSource && typeof resolvedImageSource === 'string') {
+      const match = resolvedImageSource.match(/\/uploads\/([^/?#]+)/);
+      if (match) {
+        const candidatePath = path.join(uploadsDir, match[1]);
+        if (fs.existsSync(candidatePath)) {
+          resolvedImageSource = candidatePath;
+        }
+      }
     }
 
     // Merge client-provided memories with database memories for maximal cognitive recall
@@ -460,7 +513,6 @@ app.post('/api/chat', async (req, res) => {
 
       const dbMemories = await collection.find(query).toArray();
       if (dbMemories.length > 0) {
-        // Avoid duplicate memory IDs
         const existingIds = new Set(allRelevantMemories.map(m => m.id || m.Memory_ID || m.title));
         dbMemories.forEach(dm => {
           if (!existingIds.has(dm.Memory_ID) && !existingIds.has(dm.Title)) {
@@ -476,6 +528,7 @@ app.post('/api/chat', async (req, res) => {
     const orchestrationResult = await generateYoungerSelfResponse({
       history: history || [],
       newPrompt: messageText,
+      imageSource: resolvedImageSource,
       retrievedContext: retrievedContext || null,
       selectedEra: era || 'Youth Era',
       userId: userId || 'usr_default',
@@ -494,7 +547,7 @@ app.post('/api/chat', async (req, res) => {
         Domain: domain || 'football',
         StartTime: new Date(),
         Messages: [
-          { sender: 'user', text: messageText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+          { sender: 'user', text: messageText || 'Visual memory shared', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
           { sender: 'ai', text: orchestrationResult.response, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
         ]
       });
@@ -509,12 +562,60 @@ app.post('/api/chat', async (req, res) => {
       era: orchestrationResult.selectedEra,
       eraAge: orchestrationResult.eraAge,
       model: orchestrationResult.model,
+      visualPerception: orchestrationResult.visualPerception,
       learnedMemoriesCount: orchestrationResult.learnedMemoriesCount,
       photosCount: orchestrationResult.photosCount
     });
   } catch (err) {
     console.error('AI Chat Error:', err);
     res.status(500).json({ error: 'Server error generating persona response.' });
+  }
+});
+
+// Dedicated Multimodal Image Perception Endpoint
+app.post('/api/ai/perceive', upload.single('media'), async (req, res) => {
+  try {
+    const file = req.file;
+    const { title, description, caption, domain = 'football', era = 'Youth Era', imageUrl } = req.body;
+
+    let imageSource = null;
+    if (file) {
+      imageSource = file.path;
+    } else if (imageUrl) {
+      imageSource = imageUrl;
+    } else {
+      return res.status(400).json({ error: 'Please upload an image file or provide imageUrl.' });
+    }
+
+    const perceptionResult = await perceiveImage({
+      imageSource,
+      title: title || '',
+      description: description || '',
+      caption: caption || '',
+      domain,
+      era
+    });
+
+    res.json({
+      status: 'success',
+      perception: perceptionResult,
+      imageUrl: file ? `${API_BASE_URL}/uploads/${file.filename}` : imageUrl
+    });
+  } catch (err) {
+    console.error('Multimodal Perception Endpoint Error:', err);
+    res.status(500).json({ error: 'Server error perceiving image.' });
+  }
+});
+
+// Continuous Cognitive Learning Trajectory Profile Endpoint
+app.get('/api/ai/cognitive-profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const profile = getUserCognitiveProfile(userId);
+    res.json({ status: 'success', profile });
+  } catch (err) {
+    console.error('Cognitive Profile API Error:', err);
+    res.status(500).json({ error: 'Server error retrieving cognitive profile.' });
   }
 });
 

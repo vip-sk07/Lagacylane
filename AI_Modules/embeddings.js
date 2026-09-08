@@ -47,11 +47,33 @@ function generateDeterministicFallbackVector(text) {
  *  2. Local Ollama Fallback (`nomic-embed-text` or `all-minilm`)
  *  3. Deterministic Local Vector Math Fallback (offline mode)
  *
- * @param {string} text - Rich payload string to vectorize
+ * @param {string|object} textOrPayload - Rich payload string or multimodal object to vectorize
  * @param {object} [options] - Configuration overrides
- * @returns {Promise<{ embedding: Array<number>, provider: string, dimension: number, zeroTrainingGuarantee: boolean }>}
+ * @returns {Promise<{ embedding: Array<number>, provider: string, dimension: number, zeroTrainingGuarantee: boolean, isMultimodal?: boolean }>}
  */
-export async function generateEmbedding(text, options = {}) {
+export async function generateEmbedding(textOrPayload, options = {}) {
+  // Normalize string from textOrPayload if an object or multimodal payload is provided
+  let text = '';
+  let isMultimodal = false;
+
+  if (typeof textOrPayload === 'string') {
+    text = textOrPayload;
+  } else if (textOrPayload && typeof textOrPayload === 'object') {
+    isMultimodal = Boolean(textOrPayload.visualPerception || textOrPayload.mediaUrl);
+    const parts = [];
+    if (textOrPayload.text) parts.push(textOrPayload.text);
+    if (textOrPayload.richPayloadText) parts.push(textOrPayload.richPayloadText);
+    if (textOrPayload.title) parts.push(`Title: ${textOrPayload.title}`);
+    if (textOrPayload.description) parts.push(`Journal: ${textOrPayload.description}`);
+    if (textOrPayload.visualPerception?.visualSummary) {
+      parts.push(`Visual Summary: ${textOrPayload.visualPerception.visualSummary}`);
+    }
+    if (textOrPayload.visualPerception?.perceivedEmotions) {
+      parts.push(`Emotions: ${textOrPayload.visualPerception.perceivedEmotions.join(', ')}`);
+    }
+    text = parts.join(' | ') || JSON.stringify(textOrPayload);
+  }
+
   const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
 
   // ---------------------------------------------------------

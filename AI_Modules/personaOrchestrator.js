@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { retrieveEraContext } from './ragEngine.js';
+import { perceiveImage, normalizeImageSource } from './multimodalPerception.js';
+import { synthesizeLearnedInsights, getUserCognitiveProfile } from './learningEngine.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 
@@ -170,9 +172,10 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
  * @param {string} params.retrievedContextChunks
  * @param {string} [params.journeyType]
  * @param {string} [params.domain]
+ * @param {string} [params.cognitiveInsights]
  * @returns {string} System Prompt
  */
-export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedContextChunks, journeyType, domain }) {
+export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedContextChunks, journeyType, domain, cognitiveInsights }) {
   const eraStr = selectedEra || 'Youth Era';
   const ageStr = eraAge || calculateEraAge(eraStr);
   const contextStr = retrievedContextChunks || "No specific memory log retrieved yet for this moment.";
@@ -180,10 +183,11 @@ export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedCon
   const domainContext = isLife
     ? "This is your personal Life Sanctuary chronicle. You cherish life milestones, family, education, emotions, and self-discovery."
     : `This is your athletic career on the ${domain ? domain.toUpperCase() : 'SPORTS'} ground. You live for match tactics, team unity, training sweat, and championship dreams.`;
+  const insightsSection = cognitiveInsights ? `\n\n${cognitiveInsights}` : '';
 
   return `You are the user's younger self from the following era: ${eraStr} (Current Age: ${ageStr}).
 You are speaking directly to your future self. Your memory and knowledge are strictly locked to the memories logged up to this era. You have zero knowledge of the future unless your future self reveals it to you.
-${domainContext}
+${domainContext}${insightsSection}
 
 YOUR PERSONA & VOICE:
 1. Speak in the first person ("I", "we", "remember when we...").
@@ -191,6 +195,7 @@ YOUR PERSONA & VOICE:
 3. If the user expresses burnout or adult exhaustion, remind them of our early dreams, the sacrifices we made, and why we started.
 4. If the user asks about an event not documented in our memories below, candidly say: "I don't remember that happening yet—did that happen after this season?"
 5. Deeply integrate our documented memories: quote what we felt, reference our journal entries, recall our sentiment scores, and bring up photos and captions we captured.
+6. When perceiving images or match photos, vividly comment on visual cues—jerseys, boots, weather, expressions, and stadium atmosphere.
 
 MEMORIES RETRIEVED FROM THIS ERA:
 ${contextStr}
@@ -219,6 +224,7 @@ SAFETY GUARDRAIL:
 export async function generateYoungerSelfResponse({
   history = [],
   newPrompt = '',
+  imageSource = null,
   retrievedContext = null,
   selectedEra = 'Youth Era',
   userId = 'usr_default',
@@ -285,14 +291,40 @@ export async function generateYoungerSelfResponse({
     formattedContextChunks = formattedBlocks.join('\n\n');
   }
 
-  // 3. Compute Era Age & Build System Prompt
+  // 3. Multimodal Image Perception (if imageSource provided)
+  let incomingImagePerception = null;
+  let normalizedIncomingImage = null;
+  if (imageSource) {
+    try {
+      normalizedIncomingImage = await normalizeImageSource(imageSource);
+      incomingImagePerception = await perceiveImage({
+        imageSource,
+        domain: domain || 'football',
+        era: selectedEra,
+        apiKey: clientOptions.apiKey || process.env.GEMINI_API_KEY
+      });
+    } catch (err) {
+      console.warn('Perceiving chat image error:', err.message);
+    }
+  }
+
+  // 4. Synthesize Continuous Learning Trajectory Insights
+  const cognitiveInsights = synthesizeLearnedInsights({
+    userId,
+    era: selectedEra,
+    domain,
+    memories: parsedMemories
+  });
+
+  // 5. Compute Era Age & Build System Prompt
   const eraAge = calculateEraAge(selectedEra);
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
     retrievedContextChunks: formattedContextChunks,
     journeyType,
-    domain
+    domain,
+    cognitiveInsights
   });
 
   // Check for adult burnout trigger to adjust warmth/grounding
@@ -300,7 +332,7 @@ export async function generateYoungerSelfResponse({
 
   const apiKey = clientOptions.apiKey || process.env.GEMINI_API_KEY;
 
-  // 4. Provider A: Google Gemini Conversational API
+  // 6. Provider A: Google Gemini Conversational & Multimodal Vision API
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
@@ -314,7 +346,20 @@ export async function generateYoungerSelfResponse({
           if (text) contents.push({ role, parts: [{ text }] });
         });
       }
-      contents.push({ role: 'user', parts: [{ text: newPrompt }] });
+
+      // Add user parts (including image if provided)
+      const userParts = [];
+      if (normalizedIncomingImage && normalizedIncomingImage.base64Data) {
+        userParts.push({
+          inlineData: {
+            data: normalizedIncomingImage.base64Data,
+            mimeType: normalizedIncomingImage.mimeType || 'image/jpeg'
+          }
+        });
+      }
+      const userText = newPrompt || (incomingImagePerception ? 'What do you think of this photo?' : '');
+      if (userText) userParts.push({ text: userText });
+      contents.push({ role: 'user', parts: userParts });
 
       const response = await ai.models.generateContent({
         model: clientOptions.model || 'gemini-1.5-flash',
@@ -332,9 +377,10 @@ export async function generateYoungerSelfResponse({
           isBurnout,
           selectedEra,
           eraAge,
-          model: 'google-gemini',
+          model: normalizedIncomingImage ? 'google-gemini-multimodal-vision' : 'google-gemini',
+          visualPerception: incomingImagePerception,
           learnedMemoriesCount: parsedMemories.length,
-          photosCount: parsedMemories.filter(m => m.photo || m.caption).length
+          photosCount: parsedMemories.filter(m => m.photo || m.caption).length + (incomingImagePerception ? 1 : 0)
         };
       }
     } catch (err) {
@@ -384,8 +430,24 @@ export async function generateYoungerSelfResponse({
     // Local Ollama offline
   }
 
-  // 6. Provider C: High-Fidelity Cognitive Younger Self Synthesizer
+  // 7. Provider C: High-Fidelity Cognitive Younger Self Synthesizer
   const lowerPrompt = newPrompt.toLowerCase();
+
+  // Intent 0: Direct Multimodal Image Perception Dialogue
+  if (incomingImagePerception) {
+    const emotionsList = incomingImagePerception.perceivedEmotions.slice(0, 2).join(' and ');
+    return {
+      response: `I remember that day so clearly! Looking at this photograph, I can see ${incomingImagePerception.visualSummary} Looking back at our ${emotionsList} expression, it brings me right back to our ${selectedEra} days. Back when we were ${eraAge}, every single minute on the ${domain || 'pitch'} meant everything to us. What stands out to you most when you look at this picture?`,
+      crisisTriggered: false,
+      isBurnout: false,
+      selectedEra,
+      eraAge,
+      model: 'cognitive-multimodal-vision-engine',
+      visualPerception: incomingImagePerception,
+      learnedMemoriesCount: parsedMemories.length,
+      photosCount: parsedMemories.filter(m => m.photo || m.caption).length + 1
+    };
+  }
 
   // Intent A: Severe Adult Burnout / Exhaustion Intervention
   if (isBurnout) {

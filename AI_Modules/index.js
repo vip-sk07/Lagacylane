@@ -16,6 +16,22 @@ export { storeVectorEmbedding, searchVectorStore, removeUserVectors, getSupabase
 export { formatEmbeddingPayload, ingestMemoryPayload, searchMemoriesByQuery } from './ingestionService.js';
 export { retrieveEraContext, estimateTokens } from './ragEngine.js';
 export { 
+  perceiveImage, 
+  normalizeImageSource, 
+  fuseMultimodalContext, 
+  extractVisualKeywords, 
+  cognitiveVisionHeuristic 
+} from './multimodalPerception.js';
+export { 
+  classifyMilestoneArchetype, 
+  computeEmotionalResilience, 
+  extractThematicValues, 
+  updateContinuousLearningGraph, 
+  getUserCognitiveProfile, 
+  synthesizeLearnedInsights,
+  MILESTONE_ARCHETYPES
+} from './learningEngine.js';
+export { 
   generateYoungerSelfResponse, 
   buildYoungerSelfSystemPrompt, 
   calculateEraAge, 

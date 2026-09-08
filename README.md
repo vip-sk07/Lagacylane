@@ -169,14 +169,16 @@ LegacyLane/
 │   ├── mongodb.js            # MongoDB document client with in-memory fallback
 │   ├── test.js               # End-to-end REST API integration test suite
 │   └── package.json
-├── AI_Modules/               # RAG, Vector Engine & Persona Orchestrator
+├── AI_Modules/               # Multimodal Perception, Continual Learning & RAG Engine
+│   ├── multimodalPerception.js# Vision feature extraction, scene cues, and emotional perception
+│   ├── learningEngine.js     # Milestone archetypes, emotional resilience curves, and knowledge synthesis
 │   ├── embeddings.js         # Gemini 768-dim embeddings & fallback engine
 │   ├── encryption.js         # AES-256-GCM journal text encryption at rest
 │   ├── vectorStore.js        # Cosine similarity index & Supabase pgvector schema exporter
 │   ├── ragEngine.js          # Era-filtered hybrid RAG retrieval pipeline
-│   ├── personaOrchestrator.js# System prompt generation, age logic & crisis safety rules
-│   ├── sidelineSocket.js     # WebSocket token streamer for real-time dialogue
-│   ├── test_*.js             # Automated verification test suites
+│   ├── personaOrchestrator.js# Younger Self multimodal persona, age logic & crisis safety rules
+│   ├── sidelineSocket.js     # WebSocket token streamer for real-time dialogue & instant learning
+│   ├── test_*.js             # Automated verification test suites (perception, learning, rag, persona)
 │   └── package.json
 └── README.md                 # Project documentation
 ```
