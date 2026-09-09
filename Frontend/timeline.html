@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LegacyLane — Score! Hero 3D Vertical Progression Path</title>
+    <title>LegacyLane: The One Who Lives — 3D Tactical Playbook & AI Companion</title>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js & Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <!-- Canvas Confetti CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -18,25 +23,21 @@
             theme: {
                 extend: {
                     colors: {
-                        pitch: {
-                            light: '#2e7d32',
-                            dark: '#1b5e20',
-                            line: 'rgba(255, 255, 255, 0.75)',
-                            wood: '#8d6e63',
-                            court: '#1565c0'
-                        },
-                        hero: {
-                            gold: '#ffb300',
-                            amber: '#ff8f00',
-                            red: '#d32f2f',
+                        tactical: {
+                            bg: '#04090d',
+                            panel: 'rgba(8, 16, 26, 0.88)',
+                            emerald: '#00e676',
                             cyan: '#00e5ff',
-                            green: '#00e676'
+                            amber: '#ffb300',
+                            red: '#ff1744',
+                            border: 'rgba(0, 230, 118, 0.25)'
                         }
                     },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                         teko: ['"Teko"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace']
+                        display: ['"Cinzel"', 'serif']
                     }
                 }
             }
@@ -56,288 +57,48 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0d1b2a;
+            background-color: #04090d;
             color: #ffffff;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* Container for 1.5s Cinematic Zoom Down Entry */
-        #main-viewport {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            perspective: 1200px;
-        }
-
-        /* Entry Zoom-Down Animation */
-        .cinematic-entry {
-            animation: zoomDownPitch 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes zoomDownPitch {
-            0% {
-                opacity: 0;
-                transform: scale(1.4) translateY(-100px) rotateX(15deg);
-                filter: blur(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0) rotateX(0deg);
-                filter: blur(0);
-            }
-        }
-
-        /* Dynamic Playing Field Background (Football Grass Stripes) */
-        .field-football {
-            background: repeating-linear-gradient(
-                0deg,
-                #2e7d32,
-                #2e7d32 80px,
-                #1b5e20 80px,
-                #1b5e20 160px
-            );
-        }
-
-        /* Basketball Hardwood Ground */
-        .field-basketball {
-            background: repeating-linear-gradient(
-                90deg,
-                #8d6e63,
-                #8d6e63 40px,
-                #795548 40px,
-                #795548 80px
-            );
-        }
-
-        /* Tennis Blue Ground */
-        .field-tennis {
-            background: #1565c0;
-        }
-
-        /* Side Cloud Fog Overlays (Exact Score! Hero Framing) */
-        .cloud-border-left {
-            position: fixed;
-            top: 0;
-            left: -30px;
-            width: 90px;
-            height: 100%;
-            background: radial-gradient(ellipse at left, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
-            filter: blur(12px);
-            pointer-events: none;
-            z-index: 15;
-        }
-
-        .cloud-border-right {
-            position: fixed;
-            top: 0;
-            right: -30px;
-            width: 90px;
-            height: 100%;
-            background: radial-gradient(ellipse at right, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
-            filter: blur(12px);
-            pointer-events: none;
-            z-index: 15;
-        }
-
-        /* Score! Hero Glassmorphic Header & HUD */
-        .score-hud-glass {
-            background: rgba(13, 27, 42, 0.88);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1.5px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        /* Top HUD Header Stagger Slide Animation */
-        .header-slide-down {
-            animation: slideDownHeader 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-        @keyframes slideDownHeader {
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Bottom HUD Nav Bar Stagger Slide Animation */
-        .footer-slide-up {
-            animation: slideUpFooter 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-            transform: translateY(100%);
-            opacity: 0;
-        }
-        @keyframes slideUpFooter {
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Side Quest Banner Stagger Slide */
-        .banner-slide-left {
-            animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
-            transform: translateX(-120%);
-            opacity: 0;
-        }
-        @keyframes slideInLeft {
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .banner-slide-right {
-            animation: slideInRight 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
-            transform: translateX(120%);
-            opacity: 0;
-        }
-        @keyframes slideInRight {
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Continuous SVG Path Overlay */
-        #svg-path-container {
+        #webgl-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: 5;
+            z-index: 1;
+            outline: none;
         }
 
-        /* Node Styling */
-        .node-circle {
-            position: absolute;
-            width: 68px;
-            height: 68px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Teko', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            z-index: 10;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        .tactical-glass {
+            background: rgba(8, 16, 26, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 230, 118, 0.25);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        .node-circle:hover {
-            transform: scale(1.18) translateY(-4px);
+        .tactical-glass-card {
+            background: linear-gradient(135deg, rgba(12, 24, 36, 0.94) 0%, rgba(6, 12, 18, 0.97) 100%);
+            backdrop-filter: blur(24px);
+            border: 1.5px solid rgba(0, 230, 118, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(0, 230, 118, 0.2);
         }
 
-        /* Node State 1: Completed Node (Solid Gold Gradient + Stars) */
-        .node-completed {
-            background: linear-gradient(135deg, #ffe082 0%, #ffb300 50%, #ff6f00 100%);
-            border: 3.5px solid #ffffff;
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-            box-shadow: 0 10px 25px rgba(255, 179, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.8);
-        }
-
-        /* Node State 2: Active Node (Pulsing Aura + Orange/Yellow Fill + Avatar Badge) */
-        .node-active {
-            background: linear-gradient(135deg, #fff176 0%, #fbc02d 50%, #f57f17 100%);
-            border: 4px solid #ffffff;
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-            animation: heroActivePulse 1.6s infinite alternate;
-        }
-
-        @keyframes heroActivePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8), 0 10px 25px rgba(255, 111, 0, 0.5);
-                transform: scale(1.04);
-            }
-            100% {
-                box-shadow: 0 0 0 22px rgba(255, 193, 7, 0), 0 15px 35px rgba(255, 111, 0, 0.8);
-                transform: scale(1.14);
-            }
-        }
-
-        /* Node State 3: Locked Node (Faded Grey / Dark Obsidian) */
-        .node-locked {
-            background: rgba(13, 27, 42, 0.75);
-            border: 2.5px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Stars on Top of Completed/Active Node */
-        .node-stars-row {
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 2px;
-            z-index: 12;
-        }
-
-        .star-icon {
-            font-size: 1.15rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-        }
-
-        /* Active Badge pinned to active node */
-        .active-avatar-badge {
-            position: absolute;
-            bottom: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #d32f2f;
-            color: #ffffff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 900;
-            padding: 2px 8px;
-            border-radius: 12px;
-            border: 2px solid #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            white-space: nowrap;
-        }
-
-        /* Polaroid Memory Photo Pin on Field */
-        .polaroid-card {
-            position: absolute;
-            background: #ffffff;
-            padding: 8px 8px 24px 8px;
-            border-radius: 6px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 2px 5px rgba(0,0,0,0.2);
-            transform: rotate(-4deg);
-            z-index: 8;
-            max-width: 140px;
-            transition: transform 0.3s ease;
-        }
-        .polaroid-card:hover {
-            transform: rotate(0deg) scale(1.1);
-            z-index: 14;
-        }
-        .polaroid-img {
-            width: 124px;
-            height: 95px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        .polaroid-caption {
-            font-size: 0.68rem;
-            font-weight: 800;
-            color: #1a202c;
-            text-align: center;
-            margin-top: 6px;
-            line-height: 1.2;
-        }
-
-        /* Drawer Overlay */
         .drawer-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(4, 10, 18, 0.82);
-            backdrop-filter: blur(12px);
+            background: rgba(4, 9, 13, 0.82);
+            backdrop-filter: blur(16px);
             z-index: 100;
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .drawer-overlay.active {
@@ -345,256 +106,342 @@
             pointer-events: auto;
         }
 
-        .bottom-sheet-card {
+        .ai-drawer-card {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
-            max-width: 540px;
-            background: rgba(13, 27, 42, 0.95);
-            border-top-left-radius: 28px;
-            border-top-right-radius: 28px;
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-            border-bottom: none;
-            padding: 24px 24px 32px 24px;
-            box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.8);
-            transform: translateY(100%);
+            max-width: 480px;
+            background: linear-gradient(180deg, rgba(8, 16, 26, 0.98) 0%, rgba(4, 9, 14, 0.99) 100%);
+            border-left: 1.5px solid rgba(255, 179, 0, 0.4);
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.9);
+            z-index: 110;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .drawer-overlay.active .bottom-sheet-card {
-            transform: translateY(0);
+        .ai-drawer-card.active {
+            transform: translateX(0);
+        }
+
+        .flip-card-perspective {
+            perspective: 1400px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            inset: 0;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 24px;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 230, 118, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 230, 118, 0.6);
+        }
+
+        /* Ambient Breeze Drifting Leaves & Petals for Life Sanctuary */
+        #breeze-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            overflow: hidden;
+            display: none;
+        }
+        #breeze-overlay.active {
+            display: block;
+        }
+        .breeze-leaf {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: driftBreeze linear infinite;
+        }
+        @keyframes driftBreeze {
+            0% {
+                transform: translate3d(-8vw, -8vh, 0) rotate(0deg) scale(0.75);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.75;
+            }
+            85% {
+                opacity: 0.65;
+            }
+            100% {
+                transform: translate3d(115vw, 112vh, 0) rotate(720deg) scale(1.15);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Cloud Borders (Score! Hero Screen Frame) -->
-    <div class="cloud-border-left"></div>
-    <div class="cloud-border-right"></div>
+    <!-- WebGL Canvas for 3D Field & Avatar Scene -->
+    <canvas id="webgl-canvas"></canvas>
 
-    <!-- Main Viewport Container (Vertical Scrollable Ground) -->
-    <div id="main-viewport" class="cinematic-entry field-football">
+    <!-- Slow-mo Breeze Drifting Leaves/Petals UI Overlay (Life Mode) -->
+    <div id="breeze-overlay"></div>
 
-        <!-- Continuous SVG Vector Path Lines -->
-        <svg id="svg-path-container">
-            <path id="svg-dotted-path" d="" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="10 10" stroke-linecap="round" />
-        </svg>
+    <!-- UI Overlay Controls -->
+    <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 overflow-hidden">
 
-        <!-- Pitch Markings Overlay (Soccer Pitch) -->
-        <div id="pitch-markings" class="absolute inset-0 pointer-events-none opacity-40">
-            <!-- Goal & Penalty Area (Top) -->
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 border-2 border-white rounded-b-xl"></div>
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-14 border-2 border-white rounded-b-lg"></div>
+        <!-- ==========================================================================
+             1. TOP NAVIGATION BAR & MULTI-SPORT SWITCHER
+             ========================================================================== -->
+        <header class="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
+            
+            <!-- Left: Player OVR Badge -->
+            <div class="tactical-glass px-4 py-2 rounded-2xl flex items-center gap-3.5 shadow-xl border-emerald-500/30">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-green-700 flex flex-col items-center justify-center border border-emerald-300 shadow-md">
+                    <span id="player-ovr-display" class="font-teko text-2xl font-bold leading-none text-black">92</span>
+                    <span class="text-[8px] font-mono font-bold tracking-tighter text-black uppercase">OVR</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="player-name-display" class="text-sm font-extrabold text-white tracking-wide">Marcus Vance #7</span>
+                        <span id="current-sport-badge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold border border-emerald-500/30">FOOTBALL</span>
+                    </div>
+                    <p id="plays-count-display" class="text-[10px] font-mono text-cyan-300 font-bold tracking-wider uppercase mt-0.5">0 LOGGED PLAYS • TACTICAL TIMELINE</p>
+                </div>
+            </div>
 
-            <!-- Center Circle -->
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-white rounded-full"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full"></div>
+            <!-- Center: Journey Domain Switcher (Isolated per mode) -->
+            <div id="domain-switcher-container" class="tactical-glass p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
+                <!-- Dynamically populated via JS to strictly isolate Life vs Sports -->
+            </div>
 
-            <!-- Goal & Penalty Area (Bottom) -->
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-32 border-2 border-white rounded-t-xl"></div>
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-14 border-2 border-white rounded-t-lg"></div>
-        </div>
+            <!-- Right: Action CTA Buttons -->
+            <div class="flex items-center gap-2">
+                <!-- + LOG PLAY / ADD MEMORY CTA -->
+                <button id="btn-open-log-modal" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-emerald-500/30 border border-emerald-200 transition flex items-center gap-1.5 active:scale-95">
+                    <span id="btn-open-log-icon" class="text-sm">➕</span> <span id="btn-open-log-label">LOG PLAY</span>
+                </button>
 
-        <!-- Node Progression Container (Populated via JS) -->
-        <div id="nodes-layer" class="relative w-full h-[1800px] py-32 pointer-events-auto"></div>
+                <!-- ⚡ YOUR YOUNGER SELF AI Button -->
+                <button id="btn-open-ai-companion" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-amber-500/30 border border-amber-200 transition flex items-center gap-1.5 active:scale-95">
+                    <span class="text-sm">⚡</span> YOUR YOUNGER SELF
+                </button>
 
-    </div>
+                <!-- 📇 PRO CARD Button -->
+                <button id="btn-open-pro-card" class="tactical-glass px-4 py-2.5 rounded-2xl hover:bg-white/15 text-white font-extrabold text-xs tracking-wider border border-white/20 transition flex items-center gap-1.5 active:scale-95">
+                    <span class="text-sm">📇</span> <span id="pro-card-btn-label">PRO CARD</span>
+                </button>
 
-    <!-- ==========================================================================
-         1. FIXED TOP STATUS HUD (SCORE! HERO EXACT METRICS)
-         ========================================================================== -->
-    <div class="fixed top-3 left-0 right-0 z-50 px-3 md:px-6 pointer-events-none header-slide-down">
-        <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
-
-            <!-- Left: Energy Bar + Currency + Stars HUD Group -->
-            <div class="flex items-center gap-2 pointer-events-auto">
-
-                <!-- Return Button -->
-                <a href="journey-selection.html" title="Return to Role Selection" class="score-hud-glass w-11 h-11 rounded-2xl flex items-center justify-center text-white hover:bg-white/20 transition shadow-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                <!-- 🌌 JOURNEY HUB -->
+                <a href="journey-selection.html" class="tactical-glass px-3.5 py-2.5 rounded-2xl hover:bg-white/15 text-cyan-300 font-extrabold text-xs tracking-wider border border-cyan-400/30 transition flex items-center gap-1.5 active:scale-95" title="Switch Journey Archive Path">
+                    <span class="text-sm">🌌</span> <span class="hidden sm:inline">JOURNEY HUB</span>
                 </a>
 
-                <!-- Energy / Stamina Bar -->
-                <div class="score-hud-glass px-3.5 py-1.5 rounded-2xl flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-base shadow-md font-bold">
-                        👟
+                <!-- 🔑 LOGIN / ACCOUNT -->
+                <a href="LegacyLogin.html" class="tactical-glass px-3 py-2.5 rounded-2xl hover:bg-white/15 text-gray-300 font-extrabold text-xs tracking-wider border border-white/20 transition flex items-center gap-1.5 active:scale-95" title="Sign In or Switch Account">
+                    <span class="text-sm">🔑</span> <span class="hidden sm:inline">LOGIN</span>
+                </a>
+            </div>
+
+        </header>
+
+        <!-- ==========================================================================
+             YOUNGER SELF — RIGHT-SIDE SUBSTITUTE BENCH WIDGET
+             ========================================================================== -->
+        <div id="sub-bench-widget" class="fixed right-4 md:right-8 top-24 z-30 pointer-events-auto w-72 tactical-glass-card p-3.5 rounded-2xl border-amber-500/40 shadow-2xl space-y-2.5 transition-all">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-600 flex items-center justify-center text-black text-sm font-black shadow-md">
+                        ⚡
                     </div>
                     <div>
-                        <div class="flex items-center gap-1">
-                            <span class="font-teko text-xl font-bold text-amber-400 leading-none">49/80</span>
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        </div>
-                        <p class="text-[9px] font-mono text-gray-300 font-bold tracking-tight">+6 ready in 7m 44s</p>
+                        <h4 class="text-xs font-black text-white leading-tight">Younger Self</h4>
+                        <span id="sub-bench-status-badge" class="text-[10px] font-mono text-amber-300 font-bold">🪑 On Sub Bench (Ready)</span>
                     </div>
                 </div>
-
-                <!-- Currency / Bucks -->
-                <div class="score-hud-glass px-3 py-1.5 rounded-2xl flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-sm">
-                        💵
-                    </div>
-                    <span class="font-teko text-xl font-bold text-cyan-300 leading-none">2,963</span>
-                </div>
-
-                <!-- Total Stars Badge -->
-                <div class="score-hud-glass px-3 py-1.5 rounded-2xl flex items-center gap-1.5">
-                    <div class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-sm">
-                        ⭐
-                    </div>
-                    <span id="top-stars-count" class="font-teko text-xl font-bold text-emerald-400 leading-none">242</span>
-                </div>
-
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" title="Active & Listening"></span>
             </div>
-
-            <!-- Right: User Avatar Badge + Sport Switcher -->
-            <div class="flex items-center gap-2 pointer-events-auto">
-
-                <!-- Sport Texture Switcher -->
-                <div class="score-hud-glass p-1 rounded-2xl flex items-center gap-1">
-                    <button id="btn-sport-football" title="Football Pitch" class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shadow-md transition">⚽</button>
-                    <button id="btn-sport-basketball" title="Basketball Court" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm transition">🏀</button>
-                    <button id="btn-sport-tennis" title="Tennis Court" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm transition">🎾</button>
-                </div>
-
-                <!-- User Avatar Badge -->
-                <div class="score-hud-glass px-3 py-1.5 rounded-2xl flex items-center gap-2">
-                    <div id="user-avatar-circle" class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 border-2 border-white flex items-center justify-center font-extrabold text-black text-xs shadow-md">
-                        EE
-                    </div>
-                    <div class="hidden sm:block text-left">
-                        <p id="user-display-name" class="text-xs font-extrabold text-white leading-tight">Marcus Vance</p>
-                        <p id="user-mode-label" class="text-[9px] font-mono text-cyan-300 font-bold">SPORTS PRO</p>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         2. SIDE QUEST BANNERS (FLOATING SIDEWIDGETS)
-         ========================================================================== -->
-    <div class="fixed top-24 left-3 z-40 space-y-2 pointer-events-auto banner-slide-left hidden sm:block">
-        <!-- Daily Match Banner -->
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-amber-500/40">
-            <div class="flex items-center gap-1.5 text-[10px] font-extrabold text-amber-400 uppercase tracking-wider">
-                <span>🔥 STREAK</span>
-                <span class="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[9px]">36</span>
-            </div>
-            <p class="text-xs font-bold text-white mt-0.5">DAILY MATCH</p>
-            <p class="text-[9px] font-mono text-gray-300">18h 09m left</p>
-        </div>
-
-        <!-- Division Banner -->
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-cyan-500/40">
-            <div class="flex items-center gap-1 text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider">
-                <span>🏆 DIV 3</span>
-            </div>
-            <p class="text-xs font-bold text-white mt-0.5">RANK #89</p>
-            <p class="text-[9px] font-mono text-gray-300">5d 18h left</p>
-        </div>
-    </div>
-
-    <!-- Right Side Quest Banner -->
-    <div class="fixed top-24 right-3 z-40 space-y-2 pointer-events-auto banner-slide-right hidden sm:block">
-        <div class="score-hud-glass p-2.5 rounded-2xl max-w-[130px] border-emerald-500/40 text-right">
-            <span class="px-2 py-0.5 rounded bg-emerald-500 text-black text-[9px] font-extrabold">NEW</span>
-            <p class="text-xs font-bold text-white mt-1">OFFERS HUB</p>
-            <p class="text-[9px] font-mono text-gray-300">5h 47m left</p>
-        </div>
-    </div>
-
-    <!-- Floating Action Action Buttons -->
-    <div class="fixed bottom-24 right-4 z-40 flex flex-col gap-2 pointer-events-auto">
-        <button id="btn-open-ai-companion" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 text-black font-bold flex items-center justify-center text-xl shadow-xl shadow-amber-500/40 border-2 border-white hover:scale-110 transition">
-            ⚡
-        </button>
-    </div>
-
-    <!-- ==========================================================================
-         3. FIXED BOTTOM NAVIGATION BAR (SCORE! HERO 5-TAB SYSTEM)
-         ========================================================================== -->
-    <div class="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-3 pointer-events-none footer-slide-up">
-        <div class="max-w-md mx-auto score-hud-glass rounded-3xl p-1.5 flex items-center justify-around pointer-events-auto shadow-2xl">
-
-            <!-- Tab 1: SHOP -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">🛒</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">SHOP</span>
-            </button>
-
-            <!-- Tab 2: HERO -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">👤</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">HERO</span>
-            </button>
-
-            <!-- Tab 3: SEASON (ACTIVE GLOWING TAB) -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-4 rounded-2xl bg-gradient-to-b from-emerald-500 to-green-700 text-white shadow-lg shadow-emerald-500/40 border border-emerald-300 scale-105">
-                <span class="text-xl">⚽</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">SEASON</span>
-            </button>
-
-            <!-- Tab 4: EVENTS -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">📅</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">EVENTS</span>
-            </button>
-
-            <!-- Tab 5: PRIZES -->
-            <button class="flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl text-gray-400 hover:text-white transition">
-                <span class="text-xl">🎁</span>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider">PRIZES</span>
-            </button>
-
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         4. INTERACTIVE LEVEL INPUT BOTTOM-SHEET OVERLAY
-         ========================================================================== -->
-    <div id="level-modal-overlay" class="drawer-overlay">
-        <div class="bottom-sheet-card">
             
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <span id="modal-level-tag" class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-400 font-teko text-lg font-bold border border-amber-400/40">LEVEL 1095</span>
-                    <h3 id="modal-level-title" class="text-xl font-extrabold text-white mt-1">Championship Goal Milestone</h3>
+            <div class="bg-black/60 rounded-xl p-2.5 border border-white/10 text-[11px] text-gray-300 space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] font-mono text-cyan-300 font-bold">
+                    <span>🧠 ACTIVE MEMORY VAULT:</span>
+                    <span id="sub-bench-learned-count">0 MEMORIES</span>
                 </div>
-                <button id="btn-close-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+                <p id="sub-bench-speech-bubble" class="text-xs text-amber-100 italic leading-snug">
+                    "Coach, I'm watching from the sideline bench! Record your memories so I can learn from your journey."
+                </p>
+            </div>
+            
+            <button id="btn-call-sub-bench" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:brightness-110 text-black font-extrabold text-[11px] tracking-wider uppercase transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 active:scale-95">
+                <span>⚡ CALL FROM BENCH (CHAT)</span>
+            </button>
+        </div>
+
+        <!-- ==========================================================================
+             2. CENTER FLOATING LIVE SEARCH BAR
+             ========================================================================== -->
+        <div class="w-full max-w-xl mx-auto my-2 pointer-events-auto">
+            <div class="tactical-glass px-4 py-2.5 rounded-2xl flex items-center gap-3 border-emerald-500/30 shadow-2xl">
+                <span class="text-emerald-400 text-sm font-bold">🔍</span>
+                <input type="text" id="live-search-input" placeholder="Search career plays by title, tag (#Victorious, #Burnout), or story..." class="w-full bg-transparent text-white text-xs placeholder-gray-400 focus:outline-none font-medium">
+                <span id="search-count-badge" class="px-2 py-0.5 rounded bg-black/40 text-gray-400 font-mono text-[9px] font-bold">ALL</span>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             3. BOTTOM ACTIVE PLAY SNIPPET CARD / EMPTY STATE
+             ========================================================================== -->
+        <footer class="w-full max-w-4xl mx-auto pointer-events-auto">
+            <div class="tactical-glass-card p-4 md:p-5 rounded-3xl space-y-3 relative overflow-hidden">
+
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400"></div>
+
+                <!-- Active Node Info Header -->
+                <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <span id="snippet-node-tag" class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-400/40">KICKOFF SPOT</span>
+                        <span id="snippet-era-tag" class="px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-mono font-bold text-[11px] border border-cyan-400/40">Ready to Log</span>
+                    </div>
+
+                    <!-- Previous/Next Arrows -->
+                    <div class="flex items-center gap-2">
+                        <button id="btn-prev-play" title="Previous Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❮</button>
+                        <button id="btn-next-play" title="Next Play" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg border border-white/10 transition">❯</button>
+                    </div>
+                </div>
+
+                <!-- Play Title & Story Preview -->
+                <div id="snippet-clickable-area" class="cursor-pointer group">
+                    <div class="flex items-center justify-between">
+                        <h3 id="snippet-title" class="text-xl md:text-2xl font-extrabold text-white group-hover:text-emerald-300 transition">No plays logged yet.</h3>
+                        <span id="snippet-sentiment" class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-400/30">CLICK '+ LOG PLAY'</span>
+                    </div>
+                    <p id="snippet-journal-preview" class="text-xs text-gray-300 mt-1 line-clamp-2 italic leading-relaxed">
+                        "Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"
+                    </p>
+                    <p id="snippet-cta-text" class="text-[10px] text-emerald-400 font-bold tracking-wider mt-1 uppercase flex items-center gap-1 group-hover:underline">
+                        <span>Record your first milestone play now</span> →
+                    </p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="pt-2 border-t border-white/10 flex items-center gap-3">
+                    <span class="text-[10px] font-mono text-gray-400 font-bold">TIMELINE PROGRESS</span>
+                    <div class="flex-1 h-2 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5">
+                        <div id="snippet-progress-fill" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                    <span id="snippet-progress-text" class="text-[10px] font-mono text-cyan-300 font-bold">0 / 0 PLAYS</span>
+                </div>
+
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 1: "+ LOG PLAY" (TACTICAL PLAYBOOK LOGGER)
+         ========================================================================== -->
+    <div id="modal-log-play" class="drawer-overlay">
+        <div class="w-full max-w-xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                    <span id="modal-log-sport-tag" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-400/40 uppercase">FOOTBALL PLAYBOOK</span>
+                    <h2 id="modal-log-title" class="text-2xl font-extrabold text-white mt-1">Log Career Play & Milestone</h2>
+                </div>
+                <button id="btn-close-log-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
             </div>
 
-            <!-- Goal Star Objectives -->
-            <div class="bg-black/40 rounded-2xl p-3 border border-white/10 mb-4 space-y-1.5">
-                <p class="text-[10px] font-mono text-gray-400 uppercase font-bold tracking-wider">CHALLENGE OBJECTIVES:</p>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 1 Star: Log Play Description & Journal</div>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 2 Stars: Add Performance Stats & Date</div>
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-300">⭐ 3 Stars: Sentiment > 80% or Upload Highlight Photo</div>
-            </div>
-
-            <form id="level-input-form" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Play Title / Match Event</label>
-                    <input type="text" id="input-title" required placeholder="E.g., High School District Cup Final" class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
+            <form id="form-log-play" class="space-y-4">
+                
+                <!-- Play Title & Date -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Event Date</label>
-                        <input type="date" id="input-date" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
+                        <label class="block text-xs font-bold text-gray-300 mb-1">Play Title / Milestone Name *</label>
+                        <input type="text" id="log-input-title" required placeholder="E.g. State Championship Game Winner" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-300 mb-1">Sentiment Rating</label>
-                        <input type="range" id="input-sentiment" min="1" max="100" value="85" class="w-full mt-2">
+                        <label class="block text-xs font-bold text-gray-300 mb-1">Date & Assigned Era *</label>
+                        <input type="date" id="log-input-date" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
                     </div>
                 </div>
 
+                <!-- Emotional Sentiment Slider -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">Memory Story / Journal Notes</label>
-                    <textarea id="input-journal" rows="3" required placeholder="Write down the details of this play..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none resize-none"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-bold text-gray-300">Emotional Sentiment Score (0 - 100)</label>
+                        <span id="log-sentiment-badge" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-400/40">90 / 100 (Peak Victory 🌟)</span>
+                    </div>
+                    <input type="range" id="log-input-sentiment" min="0" max="100" value="90" class="w-full">
                 </div>
 
-                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-extrabold text-sm tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-500/40">
-                    🏆 SUBMIT PLAY & UNLOCK NEXT LEVEL!
+                <!-- Emotion Tag Chips -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1.5">Emotion Tags (Click to toggle)</label>
+                    <div class="flex flex-wrap gap-1.5" id="emotion-chips-box">
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-emerald-500 text-black text-[11px] font-extrabold transition" data-tag="#Victorious">#Victorious</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Determined">#Determined</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Clutch">#Clutch</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Grateful">#Grateful</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Burnout">#Burnout</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Exhausted">#Exhausted</button>
+                        <button type="button" class="tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition" data-tag="#Focused">#Focused</button>
+                    </div>
+                </div>
+
+                <!-- Journal Entry -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Tactical Journal Entry *</label>
+                    <textarea id="log-input-journal" rows="3" required placeholder="Detail what happened, physical & mental state, and what this moment meant..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Photo Upload Box -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Photo Upload & Caption (Optional)</label>
+                    <div class="border-2 border-dashed border-white/20 hover:border-emerald-400 rounded-2xl p-4 text-center cursor-pointer bg-black/40 transition relative">
+                        <input type="file" id="log-input-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="flex flex-col items-center gap-1 pointer-events-none">
+                            <span class="text-xl">📸</span>
+                            <p class="text-xs font-bold text-emerald-300">Click or Drag Photo Here</p>
+                        </div>
+                    </div>
+                    <div id="log-preview-box" class="mt-2 hidden flex items-center gap-3">
+                        <img id="log-preview-img" src="" class="w-16 h-16 rounded-xl object-cover border border-emerald-400/40">
+                        <input type="text" id="log-input-caption" placeholder="Enter photo caption..." class="flex-1 px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white text-xs focus:border-emerald-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-green-500 to-cyan-500 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-emerald-500/30 hover:brightness-110 transition uppercase">
+                    🏆 SAVE PLAY & CELEBRATE MILESTONE
                 </button>
             </form>
 
@@ -602,211 +449,1456 @@
     </div>
 
     <!-- ==========================================================================
-         5. JAVASCRIPT CORE ENGINE (SCORE! HERO NODE PATH & CHRONOLOGICAL SORTING)
+         MODAL 2: MEMORY INSPECTION DRAWER
+         ========================================================================== -->
+    <div id="modal-inspect-play" class="drawer-overlay">
+        <div class="w-full max-w-2xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-2">
+                    <span id="inspect-node-badge" class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-400/40">NODE #1</span>
+                    <span id="inspect-date-badge" class="px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-mono text-xs font-bold border border-cyan-400/40">2023-06-30</span>
+                </div>
+                <button id="btn-close-inspect-modal" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+            </div>
+
+            <h2 id="inspect-title" class="text-2xl md:text-3xl font-extrabold text-white">Championship Victory</h2>
+            
+            <div class="flex items-center gap-2">
+                <span id="inspect-sentiment-badge" class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold border border-emerald-400/30">SENTIMENT: 96/100</span>
+                <span id="inspect-tags-badge" class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 font-mono text-xs font-bold border border-purple-400/30">#Victorious #Clutch</span>
+            </div>
+
+            <!-- Uploaded Photo & Caption -->
+            <div id="inspect-photo-box" class="hidden space-y-1">
+                <img id="inspect-img" src="" class="w-full h-56 rounded-2xl object-cover border border-emerald-500/30">
+                <p id="inspect-photo-caption" class="text-[11px] font-mono text-gray-300 text-center italic"></p>
+            </div>
+
+            <!-- Journal Story -->
+            <div class="bg-black/60 rounded-2xl p-4 border border-white/10">
+                <p class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1">TACTICAL JOURNAL ENTRY:</p>
+                <p id="inspect-journal" class="text-xs text-gray-200 leading-relaxed italic">"Detailed story text..."</p>
+            </div>
+
+            <!-- Wisdom from Your Younger Self -->
+            <div class="bg-gradient-to-r from-amber-900/30 to-purple-900/30 rounded-2xl p-4 border border-amber-500/30 space-y-2">
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] font-mono text-amber-400 font-bold uppercase">⚡ WISDOM FROM YOUR YOUNGER SELF:</p>
+                    <button id="btn-pin-wisdom" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">📌 Pin Insight</button>
+                </div>
+                <p id="inspect-ai-quote" class="text-xs text-amber-100 leading-relaxed italic">"Younger self commentary..."</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <button id="btn-delete-play" class="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold text-xs border border-red-500/30 transition">
+                    🗑️ Delete Play
+                </button>
+                <button id="btn-close-inspect" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs transition">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 3: "YOUR YOUNGER SELF" RAG AI DRAWER
+         ========================================================================== -->
+    <div id="drawer-ai-companion" class="ai-drawer-card">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-600 flex items-center justify-center text-black text-xl font-bold">
+                    ⚡
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">YOUR YOUNGER SELF</h3>
+                    <p class="text-[10px] font-mono text-amber-400 font-bold">INSTANT-LEARNING RAG AI • ACTIVE</p>
+                </div>
+            </div>
+            <button id="btn-close-ai-drawer" class="w-9 h-9 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-lg">✕</button>
+        </div>
+
+        <p class="text-xs text-gray-300 mb-3">Reflecting with your younger self in real-time based on your logged memories & photos.</p>
+
+        <!-- Quick Reply Chips -->
+        <div class="space-y-1.5 mb-4">
+            <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">RECOMMENDED DIALOGUE PROMPTS:</p>
+            <div class="flex flex-wrap gap-1.5">
+                <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"I'm feeling burnt out and tired"</button>
+                <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"We just won the big game!"</button>
+                <button class="ai-chip-btn px-2.5 py-1 rounded-lg bg-white/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/20 transition">"What was our proudest play?"</button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="ai-chat-box" class="flex-1 overflow-y-auto bg-black/60 rounded-2xl p-4 space-y-3 border border-white/10 mb-4 text-xs">
+            <div class="bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20">
+                ⚡ <b>Your Younger Self:</b> Hey Marcus! I'm watching every play from the sideline. Log your milestones and photos so I can learn and reflect with you!
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="flex gap-2">
+            <input type="text" id="ai-input-text" placeholder="Talk to Your Younger Self..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/70 border border-white/20 text-white text-xs focus:border-amber-400 focus:outline-none">
+            <button id="btn-send-ai" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 4: "📇 PRO CARD" 3D FLIP CARD
+         ========================================================================== -->
+    <div id="modal-pro-card" class="drawer-overlay">
+        <div class="w-full max-w-md h-[560px] flip-card-perspective pointer-events-auto">
+            <div id="pro-card-inner" class="flip-card-inner">
+                
+                <!-- FRONT: ATHLETIC STATS -->
+                <div class="flip-card-front tactical-glass-card p-6 flex flex-col justify-between border-emerald-500/40 shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-700 flex items-center justify-center font-teko text-3xl font-bold text-black shadow-lg">
+                                92
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-white">Marcus Vance #7</h3>
+                                <p id="pro-card-sport" class="text-[10px] font-mono text-emerald-400 font-bold uppercase">PRO FOOTBALL ATHLETE</p>
+                            </div>
+                        </div>
+                        <button id="btn-close-pro-card" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm">✕</button>
+                    </div>
+
+                    <div class="space-y-3 py-2">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
+                                <span>GRIT & DETERMINATION</span>
+                                <span class="text-emerald-400 font-mono">94 / 100</span>
+                            </div>
+                            <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-emerald-400 rounded-full" style="width: 94%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
+                                <span>CLUTCH PERFORMANCE</span>
+                                <span class="text-emerald-400 font-mono">96 / 100</span>
+                            </div>
+                            <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-emerald-400 rounded-full" style="width: 96%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
+                                <span>LEADERSHIP & IQ</span>
+                                <span class="text-cyan-400 font-mono">91 / 100</span>
+                            </div>
+                            <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-cyan-400 rounded-full" style="width: 91%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-300 mb-1">
+                                <span>MENTAL RESILIENCE</span>
+                                <span class="text-amber-400 font-mono">88 / 100</span>
+                            </div>
+                            <div class="h-2 bg-black/60 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width: 88%;"></div></div>
+                        </div>
+                    </div>
+
+                    <button id="btn-flip-to-back" class="w-full py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-extrabold text-xs border border-emerald-400/40 transition uppercase flex items-center justify-center gap-1.5">
+                        <span>🔄 FLIP TO MENTAL WELLNESS GRAPH</span>
+                    </button>
+                </div>
+
+                <!-- BACK: MENTAL WELLNESS GRAPH -->
+                <div class="flip-card-back tactical-glass-card p-6 flex flex-col justify-between border-cyan-500/40 shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white">Mental Wellness Trajectory</h3>
+                            <p class="text-[10px] font-mono text-cyan-400 font-bold">CAREER SENTIMENT SPECTRUM</p>
+                        </div>
+                        <button id="btn-flip-to-front" class="w-8 h-8 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-sm">🔄</button>
+                    </div>
+
+                    <div class="bg-black/60 rounded-2xl p-4 border border-white/10 space-y-3 flex-1 flex flex-col justify-center">
+                        <p class="text-[10px] font-mono text-gray-400 font-bold uppercase">LOGGED SENTIMENT TREND:</p>
+                        <div id="sentiment-bars-container" class="h-32 flex items-end justify-between gap-2 px-2 pt-4 border-b border-white/20">
+                            <!-- Bars populated via JS -->
+                        </div>
+                        <div class="flex justify-between text-[9px] font-mono text-gray-400">
+                            <span>EARLIEST</span>
+                            <span>RECENT</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-close-pro-card-back" class="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs transition">
+                        CLOSE PRO CARD
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT CORE ENGINE: THREE.JS MULTI-SPORT & RAG AI
          ========================================================================== -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // 1. Context & Mode Detection (URL Query Mode & localStorage)
+
+            /* ------------------------------------------------------------------
+               1. URL ROUTING & STRICT DOMAIN ISOLATION
+               ------------------------------------------------------------------ */
             const urlParams = new URLSearchParams(window.location.search);
-            const journeyMode = urlParams.get('mode') || localStorage.getItem('legacy_journey_mode') || 'SPORTS';
-            const storageKey = journeyMode === 'LIFE' ? 'legacy_life_memories' : 'legacy_sports_memories';
-            
-            // Update Top Header Info
-            const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
-            const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
-            const username = athleteProfile.position || lifeProfile.focus || 'Marcus Vance';
-            const selectedSport = athleteProfile.sport || 'Football';
+            const urlMode = (urlParams.get('mode') || '').toLowerCase();
+            const urlSportParam = (urlParams.get('sport') || '').toLowerCase();
+            const storedMode = (localStorage.getItem('legacy_journey_mode') || '').toLowerCase();
+            const isLifeMode = urlMode === 'life' || urlSportParam === 'life' || (!urlMode && storedMode === 'life');
+            let currentSport = isLifeMode ? 'life' : (urlSportParam || localStorage.getItem('legacy_selected_sport') || 'football');
+            let activeNodeIndex = -1;
 
-            document.getElementById('user-display-name').textContent = username;
-            document.getElementById('user-mode-label').textContent = `${journeyMode} MODE (${selectedSport})`;
+            // Load stored memories or start with empty category object
+            let allMemoriesStore = JSON.parse(localStorage.getItem('legacylane_memories_v2')) || {
+                life: [],
+                football: [],
+                basketball: [],
+                soccer: [],
+                track: [],
+                cricket: [],
+                tennis: []
+            };
+            if (!allMemoriesStore.life) allMemoriesStore.life = [];
 
-            // 2. Default Score! Hero Level Nodes Specification (Level 1087 to 1100)
-            const defaultNodesData = [
-                { id: 1087, title: "Early Academy Trials", date: "2015-06-12", stars: 3, journal: "Scored hattrick in trial match." },
-                { id: 1088, title: "First District Goal", date: "2016-03-20", stars: 3, journal: "Header off a corner kick." },
-                { id: 1089, title: "High School Cup Victory", date: "2017-05-18", stars: 3, journal: "Lifted the championship trophy!" },
-                { id: 1090, title: "State Team Selection", date: "2018-09-04", stars: 3, journal: "Selected for state U-18 squad." },
-                { id: 1091, title: "Regional Semi-Final", date: "2019-11-15", stars: 2, journal: "Assisted winning goal in 89th minute." },
-                { id: 1092, title: "National Youth Tournament", date: "2020-08-22", stars: 3, journal: "Voted MVP of the tournament." },
-                { id: 1093, title: "College Varsity Debut", date: "2021-10-10", stars: 3, journal: "Started first collegiate game." },
-                { id: 1094, title: "Inter-State Derby Win", date: "2022-04-05", stars: 3, journal: "Scored double against arch rivals." },
-                { id: 1095, title: "Championship Winner", date: "2023-06-30", stars: 3, journal: "Unbelievable bicycle kick goal!" },
-                { id: 1096, title: "Professional Contract", date: "2024-01-15", stars: 0, journal: "", isActive: true },
-                { id: 1097, title: "National League Start", date: "Locked", stars: 0, isLocked: true },
-                { id: 1098, title: "First International Cap", date: "Locked", stars: 0, isLocked: true },
-                { id: 1099, title: "World Cup Qualifier", date: "Locked", stars: 0, isLocked: true },
-                { id: 1100, title: "Global Hero Trophy", date: "Locked", stars: 0, isLocked: true }
-            ];
+            function getActiveMemories() {
+                return allMemoriesStore[currentSport] || [];
+            }
 
-            let memoryNodes = JSON.parse(localStorage.getItem(storageKey)) || defaultNodesData;
+            function saveMemoriesStore() {
+                localStorage.setItem('legacylane_memories_v2', JSON.stringify(allMemoriesStore));
+            }
 
-            // 3. Render Winding Path of Nodes on Ground Field
-            const nodesContainer = document.getElementById('nodes-layer');
-            const svgPath = document.getElementById('svg-dotted-path');
+            /* ------------------------------------------------------------------
+               2. DOMAIN SWITCHER RENDERING (STRICT ISOLATION)
+               ------------------------------------------------------------------ */
+            const domainSwitcherContainer = document.getElementById('domain-switcher-container');
 
-            function renderNodesPath() {
-                nodesContainer.innerHTML = '';
-                const coords = [];
-                const containerWidth = nodesContainer.clientWidth || window.innerWidth;
-                
-                // Calculate snaking S-curve positions
-                memoryNodes.forEach((node, idx) => {
-                    const total = memoryNodes.length;
-                    const topPos = 120 + idx * 110; // Vertical spacing
-                    
-                    // Sine-wave X position for realistic snaking pitch path
-                    const xFactor = Math.sin(idx * 0.75);
-                    const leftPos = (containerWidth / 2) + (xFactor * (containerWidth > 640 ? 160 : 100)) - 34;
+            function renderDomainSwitcher() {
+                domainSwitcherContainer.innerHTML = '';
 
-                    coords.push({ x: leftPos + 34, y: topPos + 34 });
-
-                    // Determine Node State
-                    let stateClass = 'node-locked';
-                    let starIcons = '';
-                    let badgeHtml = '';
-
-                    if (node.stars > 0) {
-                        stateClass = 'node-completed';
-                        starIcons = `<div class="node-stars-row">
-                            ${'⭐'.repeat(node.stars)}
-                        </div>`;
-                    } else if (node.isActive || idx === memoryNodes.findIndex(n => !n.stars)) {
-                        stateClass = 'node-active';
-                        starIcons = `<div class="node-stars-row">
-                            <span class="star-icon text-gray-400">☆</span>
-                            <span class="star-icon text-gray-400">☆</span>
-                            <span class="star-icon text-gray-400">☆</span>
-                        </div>`;
-                        badgeHtml = `<div class="active-avatar-badge">YOU HERE!</div>`;
-                    }
-
-                    // Build Node Element
-                    const nodeEl = document.createElement('div');
-                    nodeEl.className = `node-circle ${stateClass}`;
-                    nodeEl.style.left = `${leftPos}px`;
-                    nodeEl.style.top = `${topPos}px`;
-                    nodeEl.innerHTML = `
-                        ${starIcons}
-                        <span>${node.id}</span>
-                        ${badgeHtml}
+                if (isLifeMode) {
+                    // Life Mode: STRICT ISOLATION — ZERO SPORTS BUTTONS
+                    domainSwitcherContainer.innerHTML = `
+                        <div class="px-5 py-2 rounded-2xl flex items-center gap-2.5 border border-cyan-500/50 bg-cyan-950/40 text-cyan-300 font-extrabold text-xs shadow-lg shadow-cyan-950/40">
+                            <span class="text-base">📖</span>
+                            <span class="tracking-wide">Life Journey Chronicle</span>
+                            <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-[9px] font-mono font-bold text-cyan-200 border border-cyan-400/30">SANCTUARY</span>
+                        </div>
                     `;
 
-                    nodeEl.addEventListener('click', () => openLevelModal(node, idx));
-                    nodesContainer.appendChild(nodeEl);
+                    // Update UI labels to Life terms
+                    document.getElementById('player-name-display').textContent = 'Marcus Vance';
+                    document.getElementById('current-sport-badge').textContent = 'LIFE CHRONICLE';
+                    document.getElementById('current-sport-badge').className = 'px-2.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/40';
+                    document.getElementById('plays-count-display').textContent = '0 LOGGED MEMORIES • LIFE JOURNEY TIMELINE';
+                    document.getElementById('btn-open-log-label').textContent = 'ADD MEMORY';
+                    document.getElementById('modal-log-sport-tag').textContent = 'LIFE CHRONICLE ARCHIVE';
+                    document.getElementById('modal-log-title').textContent = 'Log Life Memory & Milestone';
+                    document.getElementById('pro-card-sport').textContent = 'LIFE CHRONICLER';
+                    document.getElementById('pro-card-btn-label').textContent = 'LIFE CARD';
+                    document.getElementById('sub-bench-status-badge').textContent = '🌱 Under Breeze Tree (Reflecting)';
+                } else {
+                    // Sports Mode: STRICT ISOLATION — ZERO LIFE BUTTON
+                    const sportsList = [
+                        { id: 'football', label: 'Football ⚽' },
+                        { id: 'basketball', label: 'Basketball 🏀' },
+                        { id: 'soccer', label: 'Soccer 🥅' },
+                        { id: 'track', label: 'Track & Field 🏃' },
+                        { id: 'cricket', label: 'Cricket 🏏' },
+                        { id: 'tennis', label: 'Tennis 🎾' }
+                    ];
 
-                    // Render Polaroid Photo Pin for Milestone Node 1095
-                    if (node.id === 1095) {
-                        const polaroid = document.createElement('div');
-                        polaroid.className = 'polaroid-card';
-                        polaroid.style.left = `${leftPos - 130}px`;
-                        polaroid.style.top = `${topPos - 20}px`;
-                        polaroid.innerHTML = `
-                            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300" class="polaroid-img" alt="Play Highlight">
-                            <div class="polaroid-caption">Finishing in Style</div>
-                        `;
-                        nodesContainer.appendChild(polaroid);
+                    sportsList.forEach(s => {
+                        const btn = document.createElement('button');
+                        btn.dataset.sport = s.id;
+                        const isActive = s.id === currentSport;
+                        btn.className = isActive
+                            ? 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition'
+                            : 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
+                        btn.textContent = s.label;
+                        btn.addEventListener('click', () => switchSport(s.id));
+                        domainSwitcherContainer.appendChild(btn);
+                    });
+
+                    document.getElementById('btn-open-log-label').textContent = 'LOG PLAY';
+                    document.getElementById('pro-card-btn-label').textContent = 'PRO CARD';
+                    document.getElementById('sub-bench-status-badge').textContent = '🪑 On Sub Bench (Ready)';
+                }
+            }
+
+            function switchSport(sportId) {
+                currentSport = sportId;
+                document.querySelectorAll('.sport-btn').forEach(b => {
+                    if (b.dataset.sport === currentSport) {
+                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-md transition';
+                    } else {
+                        b.className = 'sport-btn px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 font-bold text-xs transition';
                     }
                 });
 
-                // Update SVG Dashed Path string
-                if (coords.length > 0) {
-                    let d = `M ${coords[0].x} ${coords[0].y}`;
-                    for (let i = 1; i < coords.length; i++) {
-                        const prev = coords[i - 1];
-                        const curr = coords[i];
-                        const cpY = (prev.y + curr.y) / 2;
-                        d += ` C ${prev.x} ${cpY}, ${curr.x} ${cpY}, ${curr.x} ${curr.y}`;
+                document.getElementById('current-sport-badge').textContent = currentSport.toUpperCase();
+                document.getElementById('modal-log-sport-tag').textContent = `${currentSport.toUpperCase()} PLAYBOOK`;
+                document.getElementById('modal-log-title').textContent = `Log ${currentSport.toUpperCase()} Play & Milestone`;
+                document.getElementById('pro-card-sport').textContent = `PRO ${currentSport.toUpperCase()} ATHLETE`;
+
+                rebuildFieldMesh(currentSport);
+                rebuild3DSpline();
+                updateSubBenchWidget();
+            }
+
+            /* ------------------------------------------------------------------
+               3. THREE.JS 3D SCENE & ENGINE
+               ------------------------------------------------------------------ */
+            const canvas = document.getElementById('webgl-canvas');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x04090d);
+            scene.fog = new THREE.FogExp2(0x04090d, 0.032);
+
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const defaultCamPos = new THREE.Vector3(0, 18, 24);
+            
+            // Start elevated for cinematic intro animation
+            camera.position.set(0, 46, 52);
+            camera.lookAt(0, 0, 0);
+
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2.1;
+
+            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x1e3a8a : 0x102a20, isLifeMode ? 1.4 : 1.2);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x38bdf8 : 0x00e676, 1.6);
+            dirLight.position.set(10, 25, 15);
+            scene.add(dirLight);
+
+            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0x00e5ff, 2.2, 45, Math.PI / 4, 0.5);
+            spotlight.position.set(0, 16, 0);
+            scene.add(spotlight);
+
+            /* ------------------------------------------------------------------
+               4. PROCEDURAL ENVIRONMENT, TREES IN BREEZE, & FIELD
+               ------------------------------------------------------------------ */
+            let fieldMesh = null;
+            let treesGroup = null;
+            let leavesParticleSystem = null;
+            let leavesPositions = null;
+            const numLeaves = 140;
+
+            function createFieldTexture(sport) {
+                const cv = document.createElement('canvas');
+                cv.width = 1024;
+                cv.height = 2048;
+                const ctx = cv.getContext('2d');
+
+                if (sport === 'life') {
+                    // Serene Stone Garden Path with Floral & Grass Accents
+                    ctx.fillStyle = '#062016'; // Deep meadow green
+                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Central Stone Cobblestone Path
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(320, 0, 384, 2048);
+
+                    // Winding Stone Pavers
+                    for (let y = 0; y < 2048; y += 70) {
+                        for (let x = 340; x < 680; x += 85) {
+                            ctx.fillStyle = (x + y) % 3 === 0 ? '#334155' : ((x + y) % 2 === 0 ? '#475569' : '#1e293b');
+                            ctx.beginPath();
+                            ctx.roundRect(x + (Math.sin(y) * 10), y, 75, 55, 12);
+                            ctx.fill();
+                        }
                     }
-                    svgPath.setAttribute('d', d);
+
+                    // Glowing Floral Path Borders
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(320, 0);
+                    ctx.lineTo(320, 2048);
+                    ctx.moveTo(704, 0);
+                    ctx.lineTo(704, 2048);
+                    ctx.stroke();
+
+                    // Soft Starlight/Spore Dots
+                    for (let i = 0; i < 180; i++) {
+                        const px = Math.random() * 1024;
+                        const py = Math.random() * 2048;
+                        ctx.fillStyle = i % 2 === 0 ? 'rgba(56, 189, 248, 0.6)' : 'rgba(244, 114, 182, 0.5)';
+                        ctx.beginPath();
+                        ctx.arc(px, py, Math.random() * 4 + 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (sport === 'basketball') {
+                    // Hardwood Court
+                    ctx.fillStyle = '#8d6e63';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let x = 0; x < 1024; x += 64) {
+                        ctx.fillStyle = (x / 64) % 2 === 0 ? '#795548' : '#8d6e63';
+                        ctx.fillRect(x, 0, 64, 2048);
+                    }
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(60, 60, 904, 1928);
+                    ctx.beginPath();
+                    ctx.arc(512, 1024, 200, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (sport === 'soccer') {
+                    // Emerald Grass Pitch
+                    ctx.fillStyle = '#1b5e20';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let y = 0; y < 2048; y += 128) {
+                        ctx.fillStyle = (y / 128) % 2 === 0 ? '#2e7d32' : '#1b5e20';
+                        ctx.fillRect(0, y, 1024, 128);
+                    }
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(60, 60, 904, 1928);
+                    ctx.beginPath();
+                    ctx.arc(512, 1024, 220, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (sport === 'track') {
+                    // Tartan Red Track Lanes
+                    ctx.fillStyle = '#b71c1c';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.lineWidth = 6;
+                    for (let x = 100; x < 950; x += 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, 2048);
+                        ctx.stroke();
+                    }
+                } else if (sport === 'cricket') {
+                    // Green Oval + Central Pitch Crease
+                    ctx.fillStyle = '#33691e';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.fillStyle = '#d7ccc8';
+                    ctx.fillRect(412, 600, 200, 848);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 6;
+                    ctx.strokeRect(412, 600, 200, 848);
+                } else if (sport === 'tennis') {
+                    // Blue Tennis Court
+                    ctx.fillStyle = '#1565c0';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 10;
+                    ctx.strokeRect(120, 120, 784, 1808);
+                    ctx.beginPath();
+                    ctx.moveTo(120, 1024);
+                    ctx.lineTo(904, 1024);
+                    ctx.stroke();
+                } else {
+                    // Football Gridiron (Default)
+                    ctx.fillStyle = '#040a0e';
+                    ctx.fillRect(0, 0, 1024, 2048);
+                    for (let y = 0; y < 2048; y += 128) {
+                        ctx.fillStyle = (y / 128) % 2 === 0 ? '#0a2419' : '#071b12';
+                        ctx.fillRect(0, y, 1024, 128);
+                    }
+                    ctx.strokeStyle = 'rgba(0, 230, 118, 0.35)';
+                    ctx.lineWidth = 6;
+                    for (let y = 100; y < 2000; y += 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(60, y);
+                        ctx.lineTo(964, y);
+                        ctx.stroke();
+                    }
                 }
 
-                // Scroll to active node automatically
-                const activeEl = document.querySelector('.node-active');
-                if (activeEl) {
-                    setTimeout(() => {
-                        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 600);
+                const tex = new THREE.CanvasTexture(cv);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                return tex;
+            }
+
+            function buildTreesAndBreeze() {
+                if (treesGroup) scene.remove(treesGroup);
+                if (leavesParticleSystem) scene.remove(leavesParticleSystem);
+
+                treesGroup = new THREE.Group();
+
+                // 16 Stylized 3D trees flanking the path in the breeze
+                const treeCoordinates = [
+                    [-16, -34], [-22, -26], [-17, -16], [-24, -6], [-18, 6], [-23, 18], [-17, 28], [-23, 38],
+                    [16, -34], [22, -26], [17, -16], [24, -6], [18, 6], [23, 18], [17, 28], [24, 38]
+                ];
+
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.9 });
+                const emeraldMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6 });
+                const limeMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.6 });
+                const blossomMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.5 }); // Cherry blossom accents
+
+                treeCoordinates.forEach(([tx, tz], i) => {
+                    const tree = new THREE.Group();
+                    tree.position.set(tx, 0, tz);
+
+                    const trunkHeight = 4.2 + (i % 3) * 0.5;
+                    const trunkGeo = new THREE.CylinderGeometry(0.32, 0.55, trunkHeight, 8);
+                    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                    trunk.position.y = trunkHeight / 2;
+                    tree.add(trunk);
+
+                    const canopy = new THREE.Group();
+                    canopy.position.y = trunkHeight - 0.2;
+
+                    const canopyColor = i % 4 === 0 ? blossomMat : (i % 2 === 0 ? emeraldMat : limeMat);
+
+                    for (let layer = 0; layer < 3; layer++) {
+                        const coneGeo = new THREE.ConeGeometry(2.4 - layer * 0.5, 2.5 - layer * 0.3, 8);
+                        const cone = new THREE.Mesh(coneGeo, canopyColor);
+                        cone.position.y = layer * 1.25;
+                        canopy.add(cone);
+                    }
+
+                    tree.add(canopy);
+                    tree.userData = { seed: i * 0.7, canopy };
+                    treesGroup.add(tree);
+                });
+
+                scene.add(treesGroup);
+
+                // Drifting Breeze Leaves / Petals Particle System
+                const leafGeo = new THREE.BufferGeometry();
+                leavesPositions = new Float32Array(numLeaves * 3);
+                for (let i = 0; i < numLeaves; i++) {
+                    leavesPositions[i * 3] = (Math.random() - 0.5) * 50;
+                    leavesPositions[i * 3 + 1] = Math.random() * 12 + 0.5;
+                    leavesPositions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+                }
+                leafGeo.setAttribute('position', new THREE.BufferAttribute(leavesPositions, 3));
+
+                const leafMat = new THREE.PointsMaterial({
+                    size: 0.45,
+                    color: 0xfbcfe8,
+                    transparent: true,
+                    opacity: 0.75,
+                    blending: THREE.AdditiveBlending
+                });
+                leavesParticleSystem = new THREE.Points(leafGeo, leafMat);
+                scene.add(leavesParticleSystem);
+            }
+
+            function clearTreesAndBreeze() {
+                if (treesGroup) {
+                    scene.remove(treesGroup);
+                    treesGroup = null;
+                }
+                if (leavesParticleSystem) {
+                    scene.remove(leavesParticleSystem);
+                    leavesParticleSystem = null;
+                    leavesPositions = null;
                 }
             }
 
-            // Initial Render
-            renderNodesPath();
+            function rebuildFieldMesh(sport) {
+                if (fieldMesh) scene.remove(fieldMesh);
 
-            // 4. Modal Bottom Sheet Handlers
-            const modalOverlay = document.getElementById('level-modal-overlay');
-            const closeModalBtn = document.getElementById('btn-close-modal');
-            const inputForm = document.getElementById('level-input-form');
-            let currentActiveIdx = -1;
+                const tex = createFieldTexture(sport);
+                const fieldGeo = new THREE.PlaneGeometry(36, 90);
+                const fieldMat = new THREE.MeshStandardMaterial({
+                    map: tex,
+                    roughness: sport === 'life' ? 0.8 : 0.7,
+                    metalness: 0.1
+                });
+                fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
+                fieldMesh.rotation.x = -Math.PI / 2;
+                scene.add(fieldMesh);
 
-            function openLevelModal(node, idx) {
-                currentActiveIdx = idx;
-                document.getElementById('modal-level-tag').textContent = `LEVEL ${node.id}`;
-                document.getElementById('modal-level-title').textContent = node.title;
-                document.getElementById('input-title').value = node.title;
-                document.getElementById('input-date').value = node.date !== 'Locked' ? node.date : new Date().toISOString().split('T')[0];
-                modalOverlay.classList.add('active');
+                if (sport === 'life') {
+                    buildTreesAndBreeze();
+                } else {
+                    clearTreesAndBreeze();
+                }
             }
 
-            closeModalBtn.addEventListener('click', () => {
-                modalOverlay.classList.remove('active');
+            rebuildFieldMesh(currentSport);
+
+            /* ------------------------------------------------------------------
+               5. RIGHT-SIDE BENCH & YOUNGER SELF SUBSTITUTE RIG
+               ------------------------------------------------------------------ */
+            const benchGroup = new THREE.Group();
+            benchGroup.position.set(15, 0, 0);
+
+            // Bench Frame & Seat Planks
+            const benchSeatGeo = new THREE.BoxGeometry(2.4, 0.7, 6.5);
+            const benchSeatMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x78350f : 0x1e293b,
+                roughness: 0.6
+            });
+            const benchSeat = new THREE.Mesh(benchSeatGeo, benchSeatMat);
+            benchSeat.position.y = 0.35;
+            benchGroup.add(benchSeat);
+
+            const benchBackGeo = new THREE.BoxGeometry(0.3, 1.4, 6.5);
+            const benchBack = new THREE.Mesh(benchBackGeo, benchSeatMat);
+            benchBack.position.set(1.1, 1.2, 0);
+            benchGroup.add(benchBack);
+
+            // Glowing Bench Aura Ring on the Grass
+            const benchRingGeo = new THREE.RingGeometry(3.6, 3.9, 32);
+            const benchRingMat = new THREE.MeshBasicMaterial({
+                color: 0xf59e0b,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.6
+            });
+            const benchRing = new THREE.Mesh(benchRingGeo, benchRingMat);
+            benchRing.rotation.x = Math.PI / 2;
+            benchRing.position.y = 0.04;
+            benchGroup.add(benchRing);
+
+            // 3D YOUNGER SELF AVATAR SEATED ON THE BENCH
+            const subAvatarGroup = new THREE.Group();
+            subAvatarGroup.position.set(0, 0.7, 0);
+
+            // Seated Torso
+            const subTorso = new THREE.Mesh(
+                new THREE.BoxGeometry(0.7, 0.9, 0.45),
+                new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 }) // Gold substitute jersey / warm vest
+            );
+            subTorso.position.y = 0.55;
+            subAvatarGroup.add(subTorso);
+
+            // Head
+            const subHead = new THREE.Mesh(
+                new THREE.BoxGeometry(0.55, 0.55, 0.55),
+                new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 })
+            );
+            subHead.position.y = 1.35;
+            subAvatarGroup.add(subHead);
+
+            // Hair
+            const subHair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.58, 0.25, 0.58),
+                new THREE.MeshStandardMaterial({ color: 0x1e1b18 })
+            );
+            subHair.position.y = 1.62;
+            subAvatarGroup.add(subHair);
+
+            // Arms resting forward on knees
+            const subArmGeo = new THREE.BoxGeometry(0.18, 0.65, 0.18);
+            const subArmMat = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
+            const subArmL = new THREE.Mesh(subArmGeo, subArmMat);
+            subArmL.position.set(-0.45, 0.55, 0.2);
+            subArmL.rotation.x = Math.PI / 4;
+            subAvatarGroup.add(subArmL);
+
+            const subArmR = new THREE.Mesh(subArmGeo, subArmMat);
+            subArmR.position.set(0.45, 0.55, 0.2);
+            subArmR.rotation.x = Math.PI / 4;
+            subAvatarGroup.add(subArmR);
+
+            // Seated bent legs over the bench edge
+            const subLegGeo = new THREE.BoxGeometry(0.24, 0.7, 0.24);
+            const subLegMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+            const subLegL = new THREE.Mesh(subLegGeo, subLegMat);
+            subLegL.position.set(-0.25, 0.0, 0.35);
+            subAvatarGroup.add(subLegL);
+
+            const subLegR = new THREE.Mesh(subLegGeo, subLegMat);
+            subLegR.position.set(0.25, 0.0, 0.35);
+            subAvatarGroup.add(subLegR);
+
+            benchGroup.add(subAvatarGroup);
+            scene.add(benchGroup);
+
+            /* ------------------------------------------------------------------
+               6. 3D VOXEL ATHLETE / CHRONICLER AVATAR & SPLINE ENGINE
+               ------------------------------------------------------------------ */
+            const avatarGroup = new THREE.Group();
+
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x06b6d4 : 0x00e676,
+                roughness: 0.4
+            });
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 });
+
+            const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
+            const torsoMesh = new THREE.Mesh(torsoGeo, bodyMat);
+            torsoMesh.position.y = 1.15;
+            avatarGroup.add(torsoMesh);
+
+            const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMesh = new THREE.Mesh(headGeo, skinMat);
+            headMesh.position.y = 2.0;
+            avatarGroup.add(headMesh);
+
+            const visorGeo = new THREE.BoxGeometry(0.62, 0.2, 0.3);
+            const visorMat = new THREE.MeshStandardMaterial({
+                color: isLifeMode ? 0x38bdf8 : 0x00e5ff,
+                metalness: 0.9,
+                roughness: 0.1
+            });
+            const visorMesh = new THREE.Mesh(visorGeo, visorMat);
+            visorMesh.position.set(0, 2.05, 0.2);
+            avatarGroup.add(visorMesh);
+
+            const selectionRingGeo = new THREE.RingGeometry(0.9, 1.2, 32);
+            const selectionRingMat = new THREE.MeshBasicMaterial({
+                color: isLifeMode ? 0x06b6d4 : 0x00e5ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            const selectionRingMesh = new THREE.Mesh(selectionRingGeo, selectionRingMat);
+            selectionRingMesh.rotation.x = Math.PI / 2;
+            selectionRingMesh.position.y = 0.05;
+            avatarGroup.add(selectionRingMesh);
+
+            // Default Starting Position
+            const homeKickoffPos = new THREE.Vector3(0, 0.4, 30);
+            avatarGroup.position.copy(homeKickoffPos);
+            scene.add(avatarGroup);
+
+            /* ------------------------------------------------------------------
+               7. DYNAMIC CHRONOLOGICAL SPLINE & CHECKPOINT ENGINE
+               ------------------------------------------------------------------ */
+            let splineTubeMesh = null;
+            let checkpointRings = [];
+            let splineCurve = null;
+            let targetU = 0;
+            let currentU = 0;
+
+            function rebuild3DSpline() {
+                if (splineTubeMesh) scene.remove(splineTubeMesh);
+                checkpointRings.forEach(r => scene.remove(r.group));
+                checkpointRings = [];
+
+                const memories = getActiveMemories();
+
+                if (memories.length === 0) {
+                    gsap.to(avatarGroup.position, { x: 0, y: 0.4, z: 30, duration: 1 });
+                    updateHUDEmptyState();
+                    updateSubBenchWidget();
+                    return;
+                }
+
+                // Generate points dynamically based on memories count
+                const points = [];
+                memories.forEach((mem, idx) => {
+                    const z = 32 - (idx / Math.max(1, memories.length - 1)) * 64;
+                    const x = Math.sin(idx * 0.95) * 11;
+                    points.push(new THREE.Vector3(x, 0.3, z));
+                });
+
+                if (points.length >= 2) {
+                    splineCurve = new THREE.CatmullRomCurve3(points);
+                    const tubeGeo = new THREE.TubeGeometry(splineCurve, 120, 0.18, 12, false);
+                    const tubeMat = new THREE.MeshStandardMaterial({
+                        color: isLifeMode ? 0x06b6d4 : 0x00e676,
+                        emissive: isLifeMode ? 0x0891b2 : 0x00b359,
+                        emissiveIntensity: 0.8,
+                        roughness: 0.3
+                    });
+                    splineTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+                    scene.add(splineTubeMesh);
+                } else {
+                    splineCurve = null;
+                }
+
+                // Render Checkpoint Ring Meshes
+                points.forEach((pt, idx) => {
+                    const ringGroup = new THREE.Group();
+                    ringGroup.position.copy(pt);
+
+                    const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
+                    const themeColor = isLifeMode ? 0x06b6d4 : 0x00e676;
+                    const ringMat = new THREE.MeshStandardMaterial({
+                        color: idx === activeNodeIndex ? 0x38bdf8 : themeColor,
+                        emissive: idx === activeNodeIndex ? 0x38bdf8 : themeColor,
+                        emissiveIntensity: 1
+                    });
+                    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                    ringMesh.rotation.x = Math.PI / 2;
+                    ringGroup.add(ringMesh);
+
+                    const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.2, 16, 1, true);
+                    const beamMat = new THREE.MeshBasicMaterial({
+                        color: themeColor,
+                        transparent: true,
+                        opacity: 0.18,
+                        side: THREE.DoubleSide
+                    });
+                    const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+                    beamMesh.position.y = 1.6;
+                    ringGroup.add(beamMesh);
+
+                    ringGroup.userData = { nodeIndex: idx };
+                    scene.add(ringGroup);
+                    checkpointRings.push({ group: ringGroup, mesh: ringMesh });
+                });
+
+                if (activeNodeIndex < 0 || activeNodeIndex >= memories.length) {
+                    activeNodeIndex = memories.length - 1;
+                }
+                updateActiveNode(activeNodeIndex);
+                updateSubBenchWidget();
+            }
+
+            function updateHUDEmptyState() {
+                activeNodeIndex = -1;
+                const modeWord = isLifeMode ? 'MEMORIES' : 'PLAYS';
+                document.getElementById('snippet-node-tag').textContent = isLifeMode ? 'ORIGIN WAYPOINT' : 'KICKOFF SPOT';
+                document.getElementById('snippet-era-tag').textContent = 'Ready to Log';
+                document.getElementById('snippet-title').textContent = isLifeMode
+                    ? 'No memories logged yet for LIFE.'
+                    : `No plays logged yet for ${currentSport.toUpperCase()}.`;
+                document.getElementById('snippet-sentiment').textContent = isLifeMode ? "CLICK '+ ADD MEMORY'" : "CLICK '+ LOG PLAY'";
+                document.getElementById('snippet-journal-preview').textContent = isLifeMode
+                    ? `"Click '+ ADD MEMORY' in the top header to record your first milestone and watch your 3D memory trail come alive!"`
+                    : `"Click '+ LOG PLAY' in the top header to record your first milestone and watch your 3D spline timeline come alive!"`;
+                document.getElementById('snippet-progress-fill').style.width = '0%';
+                document.getElementById('snippet-progress-text').textContent = `0 / 0 ${modeWord}`;
+                document.getElementById('plays-count-display').textContent = `0 LOGGED ${modeWord} • ${isLifeMode ? 'LIFE JOURNEY' : 'TACTICAL'} TIMELINE`;
+            }
+
+            function updateActiveNode(index) {
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    updateHUDEmptyState();
+                    return;
+                }
+
+                if (index < 0) index = 0;
+                if (index >= memories.length) index = memories.length - 1;
+                activeNodeIndex = index;
+
+                targetU = memories.length > 1 ? (activeNodeIndex / (memories.length - 1)) : 0;
+
+                const play = memories[activeNodeIndex];
+                const modeWord = isLifeMode ? 'MEMORIES' : 'PLAYS';
+                document.getElementById('snippet-node-tag').textContent = `NODE #${play.id || (activeNodeIndex + 1)} OF ${memories.length}`;
+                document.getElementById('snippet-era-tag').textContent = play.era || 'Career Era';
+                document.getElementById('snippet-title').textContent = play.title;
+                document.getElementById('snippet-sentiment').textContent = `SENTIMENT: ${play.sentiment}/100`;
+                document.getElementById('snippet-journal-preview').textContent = `"${play.journal}"`;
+
+                const pct = ((activeNodeIndex + 1) / memories.length) * 100;
+                document.getElementById('snippet-progress-fill').style.width = `${pct}%`;
+                document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${memories.length} ${modeWord}`;
+                document.getElementById('plays-count-display').textContent = `${memories.length} LOGGED ${modeWord} • ${isLifeMode ? 'LIFE' : 'TACTICAL'} TIMELINE`;
+
+                const activeHighlightColor = isLifeMode ? 0x38bdf8 : 0x00e5ff;
+                const standardColor = isLifeMode ? 0x06b6d4 : 0x00e676;
+
+                checkpointRings.forEach((r, idx) => {
+                    r.mesh.material.color.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
+                    r.mesh.material.emissive.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
+                });
+
+                if (splineCurve && memories.length > 1) {
+                    const pt = splineCurve.getPointAt(targetU);
+                    spotlight.target.position.copy(pt);
+                    spotlight.position.set(pt.x, 16, pt.z + 5);
+                } else if (memories.length === 1) {
+                    const pt = new THREE.Vector3(0, 0.3, 32);
+                    gsap.to(avatarGroup.position, { x: pt.x, y: 0.4, z: pt.z, duration: 1 });
+                }
+            }
+
+            /* ------------------------------------------------------------------
+               8. SUB-BENCH KNOWLEDGE BASE & DYNAMIC RAG UPDATES
+               ------------------------------------------------------------------ */
+            function updateSubBenchWidget() {
+                const memories = getActiveMemories();
+                const photosCount = memories.filter(m => m.photo).length;
+
+                const countEl = document.getElementById('sub-bench-learned-count');
+                const speechEl = document.getElementById('sub-bench-speech-bubble');
+
+                if (countEl) {
+                    countEl.textContent = `${memories.length} MEMORIES • ${photosCount} PHOTOS`;
+                }
+
+                if (speechEl) {
+                    if (memories.length === 0) {
+                        speechEl.textContent = isLifeMode
+                            ? `"I'm sitting under the breeze tree! Add your first memory and I'll learn your life story."`
+                            : `"Coach, I'm watching from the sideline bench! Record your first play so I can learn from your journey."`;
+                    } else {
+                        const recent = memories[memories.length - 1];
+                        const photoSnippet = recent.caption ? ` Looking at '${recent.caption}',` : '';
+                        speechEl.textContent = `"I just learned '${recent.title}' (${recent.date})!${photoSnippet} You wrote: '${recent.journal.slice(0, 50)}...'."`;
+                    }
+                }
+            }
+
+            document.getElementById('btn-call-sub-bench').addEventListener('click', () => {
+                document.getElementById('btn-open-ai-companion').click();
             });
 
-            // 5. Data Submission & Chronological Node Unlock Logic
-            inputForm.addEventListener('submit', (e) => {
+            // Snippet Prev/Next Navigation
+            document.getElementById('btn-prev-play').addEventListener('click', () => {
+                if (activeNodeIndex > 0) updateActiveNode(activeNodeIndex - 1);
+            });
+            document.getElementById('btn-next-play').addEventListener('click', () => {
+                const memories = getActiveMemories();
+                if (activeNodeIndex < memories.length - 1) updateActiveNode(activeNodeIndex + 1);
+            });
+
+            /* ------------------------------------------------------------------
+               9. TACTICAL MEMORY LOGGING MODAL (+ ADD MEMORY)
+               ------------------------------------------------------------------ */
+            const modalLogPlay = document.getElementById('modal-log-play');
+            const formLogPlay = document.getElementById('form-log-play');
+            const logSentimentSlider = document.getElementById('log-input-sentiment');
+            const logSentimentBadge = document.getElementById('log-sentiment-badge');
+            const logInputFile = document.getElementById('log-input-file');
+            const logPreviewBox = document.getElementById('log-preview-box');
+            const logPreviewImg = document.getElementById('log-preview-img');
+
+            let tempBase64Photo = '';
+
+            document.getElementById('btn-open-log-modal').addEventListener('click', () => {
+                document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
+                modalLogPlay.classList.add('active');
+            });
+            document.getElementById('btn-close-log-modal').addEventListener('click', () => {
+                modalLogPlay.classList.remove('active');
+            });
+
+            logSentimentSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                let label = "Peak Victory / Joy 🌟";
+                if (val < 40) label = "Exhaustion / Reflective 🔴";
+                else if (val < 70) label = "Determined Effort 💪";
+                logSentimentBadge.textContent = `${val} / 100 (${label})`;
+            });
+
+            // Emotion Tag Chips Toggle
+            document.querySelectorAll('#emotion-chips-box .tag-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('bg-emerald-500') || chip.classList.contains('bg-cyan-500')) {
+                        chip.className = 'tag-chip px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 text-[11px] font-bold hover:bg-white/20 transition';
+                    } else {
+                        const activeColor = isLifeMode ? 'bg-cyan-500' : 'bg-emerald-500';
+                        chip.className = `tag-chip px-2.5 py-1 rounded-lg ${activeColor} text-black text-[11px] font-extrabold transition`;
+                    }
+                });
+            });
+
+            // File upload Base64
+            logInputFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (res) => {
+                        tempBase64Photo = res.target.result;
+                        logPreviewImg.src = tempBase64Photo;
+                        logPreviewBox.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function assignEraFromDate(dateStr) {
+                const year = new Date(dateStr).getFullYear();
+                if (isLifeMode) {
+                    if (year <= 2015) return "Early Childhood Era";
+                    if (year <= 2020) return "Youth & School Era";
+                    return "Present Life Journey";
+                }
+                if (year <= 2018) return "Rookie Era (Age 14-18)";
+                if (year <= 2022) return "College Era (Age 19-22)";
+                return "Pro Athlete Era (Present)";
+            }
+
+            formLogPlay.addEventListener('submit', (e) => {
                 e.preventDefault();
 
-                if (currentActiveIdx !== -1) {
-                    const title = document.getElementById('input-title').value;
-                    const date = document.getElementById('input-date').value;
-                    const journal = document.getElementById('input-journal').value;
-                    const sentiment = parseInt(document.getElementById('input-sentiment').value);
+                const title = document.getElementById('log-input-title').value;
+                const date = document.getElementById('log-input-date').value;
+                const journal = document.getElementById('log-input-journal').value;
+                const sentiment = parseInt(logSentimentSlider.value);
+                const caption = document.getElementById('log-input-caption').value;
 
-                    // Compute Earned Stars
-                    const starsEarned = sentiment >= 80 ? 3 : (sentiment >= 50 ? 2 : 1);
+                const selectedTags = [];
+                document.querySelectorAll('#emotion-chips-box .bg-emerald-500, #emotion-chips-box .bg-cyan-500').forEach(c => {
+                    selectedTags.push(c.dataset.tag);
+                });
 
-                    // Update completed node
-                    memoryNodes[currentActiveIdx].title = title;
-                    memoryNodes[currentActiveIdx].date = date;
-                    memoryNodes[currentActiveIdx].journal = journal;
-                    memoryNodes[currentActiveIdx].stars = starsEarned;
-                    memoryNodes[currentActiveIdx].isActive = false;
+                const newPlay = {
+                    id: (allMemoriesStore[currentSport] ? allMemoriesStore[currentSport].length : 0) + 1,
+                    title: title,
+                    date: date,
+                    era: assignEraFromDate(date),
+                    journal: journal,
+                    sentiment: sentiment,
+                    tags: selectedTags.length > 0 ? selectedTags : [isLifeMode ? "#Grateful" : "#Victorious"],
+                    photo: tempBase64Photo || (isLifeMode ? "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600" : "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600"),
+                    caption: caption
+                };
 
-                    // Unlock next node N+1 automatically
-                    if (currentActiveIdx + 1 < memoryNodes.length) {
-                        memoryNodes[currentActiveIdx + 1].isActive = true;
-                        memoryNodes[currentActiveIdx + 1].isLocked = false;
-                        memoryNodes[currentActiveIdx + 1].date = "Ready to Log";
-                    }
+                if (!allMemoriesStore[currentSport]) allMemoriesStore[currentSport] = [];
+                allMemoriesStore[currentSport].push(newPlay);
+                allMemoriesStore[currentSport].sort((a, b) => new Date(a.date) - new Date(b.date));
+                allMemoriesStore[currentSport].forEach((p, idx) => p.id = idx + 1);
 
-                    // Save updated array to localStorage
-                    localStorage.setItem(storageKey, JSON.stringify(memoryNodes));
+                saveMemoriesStore();
 
-                    // Trigger Confetti Celebration!
-                    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+                confetti({
+                    particleCount: 120,
+                    spread: 85,
+                    origin: { y: 0.6 },
+                    colors: isLifeMode ? ['#06b6d4', '#38bdf8', '#f472b6'] : ['#00e676', '#ffb300', '#00e5ff']
+                });
 
-                    modalOverlay.classList.remove('active');
-                    renderNodesPath();
+                // Reset form
+                formLogPlay.reset();
+                tempBase64Photo = '';
+                logPreviewBox.classList.add('hidden');
+                modalLogPlay.classList.remove('active');
+
+                rebuild3DSpline();
+                updateActiveNode(allMemoriesStore[currentSport].length - 1);
+            });
+
+            /* ------------------------------------------------------------------
+               10. MEMORY INSPECTION DRAWER
+               ------------------------------------------------------------------ */
+            const modalInspect = document.getElementById('modal-inspect-play');
+
+            document.getElementById('snippet-clickable-area').addEventListener('click', () => {
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    document.getElementById('btn-open-log-modal').click();
+                    return;
+                }
+
+                const play = memories[activeNodeIndex];
+                document.getElementById('inspect-node-badge').textContent = `NODE #${play.id}`;
+                document.getElementById('inspect-date-badge').textContent = play.date;
+                document.getElementById('inspect-title').textContent = play.title;
+                document.getElementById('inspect-sentiment-badge').textContent = `SENTIMENT: ${play.sentiment}/100`;
+                document.getElementById('inspect-tags-badge').textContent = (play.tags || []).join(' ');
+                document.getElementById('inspect-journal').textContent = `"${play.journal}"`;
+                document.getElementById('inspect-ai-quote').textContent = `"I remember writing down '${play.title}' on ${play.date}! Your sentiment of ${play.sentiment}/100 shows how dedicated we were."`;
+
+                if (play.photo) {
+                    document.getElementById('inspect-photo-box').classList.remove('hidden');
+                    document.getElementById('inspect-img').src = play.photo;
+                    document.getElementById('inspect-photo-caption').textContent = play.caption ? `📸 "${play.caption}"` : '';
+                } else {
+                    document.getElementById('inspect-photo-box').classList.add('hidden');
+                }
+
+                modalInspect.classList.add('active');
+            });
+
+            document.getElementById('btn-close-inspect-modal').addEventListener('click', () => modalInspect.classList.remove('active'));
+            document.getElementById('btn-close-inspect').addEventListener('click', () => modalInspect.classList.remove('active'));
+
+            document.getElementById('btn-delete-play').addEventListener('click', () => {
+                const memories = getActiveMemories();
+                if (memories.length > 0 && activeNodeIndex !== -1) {
+                    memories.splice(activeNodeIndex, 1);
+                    memories.forEach((p, idx) => p.id = idx + 1);
+                    saveMemoriesStore();
+                    modalInspect.classList.remove('active');
+                    rebuild3DSpline();
                 }
             });
 
-            // 6. Ground Pitch Texture Switcher (Football vs Basketball vs Tennis)
-            const mainViewport = document.getElementById('main-viewport');
-            const pitchMarkings = document.getElementById('pitch-markings');
+            /* ------------------------------------------------------------------
+               11. YOUNGER SELF RAG AI WITH FULL DESCRIPTIONS & PHOTO RECALL
+               ------------------------------------------------------------------ */
+            const drawerAI = document.getElementById('drawer-ai-companion');
+            const btnAICompanion = document.getElementById('btn-open-ai-companion');
+            const btnCloseAIDrawer = document.getElementById('btn-close-ai-drawer');
+            const aiChatBox = document.getElementById('ai-chat-box');
+            const aiInputText = document.getElementById('ai-input-text');
+            const btnSendAI = document.getElementById('btn-send-ai');
 
-            document.getElementById('btn-sport-football').addEventListener('click', () => {
-                mainViewport.className = 'cinematic-entry field-football';
-                pitchMarkings.style.display = 'block';
+            btnAICompanion.addEventListener('click', () => {
+                drawerAI.classList.add('active');
+                gsap.to(camera.position, { x: 13, y: 3.5, z: 4.5, duration: 1.5, ease: 'power2.inOut' });
+                gsap.to(controls.target, { x: 15, y: 0.8, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            document.getElementById('btn-sport-basketball').addEventListener('click', () => {
-                mainViewport.className = 'cinematic-entry field-basketball';
-                pitchMarkings.style.display = 'none';
+            btnCloseAIDrawer.addEventListener('click', () => {
+                drawerAI.classList.remove('active');
+                gsap.to(camera.position, { x: defaultCamPos.x, y: defaultCamPos.y, z: defaultCamPos.z, duration: 1.5, ease: 'power2.inOut' });
+                gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            document.getElementById('btn-sport-tennis').addEventListener('click', () => {
-                mainViewport.className = 'cinematic-entry field-tennis';
-                pitchMarkings.style.display = 'none';
+            // Enhanced Cognitive RAG Engine: Evaluates full descriptions, dates, photos & sentiment
+            function performRAGQuery(userPrompt) {
+                const memories = getActiveMemories();
+                if (memories.length === 0) {
+                    return isLifeMode
+                        ? `Hey Marcus! I'm sitting by the garden bench under the breeze tree. You haven't recorded any life memories yet! Click '+ ADD MEMORY' so I can learn from your story!`
+                        : `Hey Marcus! I'm sitting on the substitute bench watching the field. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
+                }
+
+                const query = userPrompt.toLowerCase();
+
+                // 1. Burnout & Exhaustion Grounding
+                if (
+                    query.includes('burnout') || query.includes('exhausted') || query.includes('tired') || 
+                    query.includes('giving up') || query.includes('hard') || query.includes('lost') ||
+                    query.includes('quit') || query.includes('failure')
+                ) {
+                    const peak = memories.reduce((max, m) => ((m.sentiment || 0) > (max.sentiment || 0) ? m : max), memories[0]);
+                    return `Hey... take a deep breath. Look at how far we've come! Back when we were working toward our ${isLifeMode ? 'life dreams' : currentSport.toUpperCase()}, we put so much heart and sweat into this journey. Don't give up on us now—remember why we started! Remember when we achieved '${peak.title}' on ${peak.date}? You wrote: "${peak.journal.slice(0, 95)}...". We scored that sentiment ${peak.sentiment}/100! That unbreakable spirit is still right inside you today.`;
+                }
+
+                // 2. Future Probing
+                if (
+                    query.includes('future') || query.includes('promotion') || query.includes('what happens next') ||
+                    query.includes('2025') || query.includes('2026') || query.includes('2027') || query.includes('2030') ||
+                    query.includes('did we make it') || query.includes('are we successful')
+                ) {
+                    return `I don't remember that happening yet—did that happen after this season? Back here on the bench in our ${isLifeMode ? 'Life Journey' : currentSport.toUpperCase()} path, I can only see the challenges right in front of us! Did all those long hours and early mornings really pay off? Tell me what our future looks like!`;
+                }
+
+                // 3. Photo & Visual Memories
+                if (
+                    query.includes('photo') || query.includes('picture') || query.includes('pic') || 
+                    query.includes('image') || query.includes('camera') || query.includes('look at')
+                ) {
+                    const photoMem = memories.find(m => m.caption || m.photo);
+                    if (photoMem) {
+                        const capStr = photoMem.caption ? `"${photoMem.caption}"` : `'${photoMem.title}'`;
+                        return `I remember taking that picture so clearly! Looking at ${capStr} from ${photoMem.date}, it completely captures our feeling. You wrote in our journal: "${photoMem.journal.slice(0, 90)}...". When you look back at that photo, does it bring back that same energy?`;
+                    }
+                }
+
+                // 4. Specific Memory Matching
+                let matched = memories.find(m =>
+                    m.title.toLowerCase().includes(query) ||
+                    m.journal.toLowerCase().includes(query) ||
+                    (m.caption && m.caption.toLowerCase().includes(query)) ||
+                    (m.tags && m.tags.some(t => t.toLowerCase().includes(query))) ||
+                    (m.date && query.includes(m.date))
+                );
+
+                if (matched) {
+                    const photoMention = matched.caption ? ` Looking at that picture '${matched.caption}', ` : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
+                    const sentimentRemark = matched.sentiment >= 80 
+                        ? `With a sentiment score of ${matched.sentiment}/100, we were on top of the world!`
+                        : `Even though that day felt like a ${matched.sentiment}/100 struggle, we grew stronger from it.`;
+
+                    return `I remember '${matched.title}' like it happened yesterday! On ${matched.date},${photoMention}you wrote in our journal: "${matched.journal.slice(0, 110)}...". ${sentimentRemark} Are you still carrying those lessons with you today?`;
+                }
+
+                // 5. Sentiment Inquiry
+                if (query.includes('feel') || query.includes('sentiment') || query.includes('happy') || query.includes('sad') || query.includes('lesson')) {
+                    const topMem = memories[0];
+                    return `Our emotions were so real! When we recorded '${topMem.title}', we scored it a ${topMem.sentiment}/100 sentiment. You described it: "${topMem.journal.slice(0, 90)}...". We never held back our feelings, and that honesty is what makes our story beautiful.`;
+                }
+
+                // Default contextual recall
+                const active = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
+                const photoMention = active.caption ? ` Looking at that picture '${active.caption}', ` : (active.photo ? ` Looking back at our uploaded photo, ` : ' ');
+                return `Reflecting on '${active.title}' from our ${active.era}...${photoMention}You wrote: "${active.journal.slice(0, 80)}...". With a sentiment score of ${active.sentiment}/100, every single milestone we record makes our younger self proud! What else would you like to reflect on?`;
+            }
+
+            async function sendAIMessage(promptText) {
+                if (!promptText.trim()) return;
+
+                const userEl = document.createElement('div');
+                userEl.className = 'bg-emerald-900/30 text-emerald-200 p-2.5 rounded-2xl border border-emerald-500/20 text-right font-medium animate-fadeIn';
+                userEl.textContent = promptText;
+                aiChatBox.appendChild(userEl);
+                aiInputText.value = '';
+
+                // Typing indicator
+                const typingEl = document.createElement('div');
+                typingEl.id = 'ai-typing-indicator';
+                typingEl.className = 'text-xs text-amber-300 italic flex items-center gap-1.5 p-2';
+                typingEl.innerHTML = `<span>⚡ Younger Self is thinking back...</span>`;
+                aiChatBox.appendChild(typingEl);
+                aiChatBox.scrollTop = aiChatBox.scrollHeight;
+
+                const memories = getActiveMemories();
+                const activeMem = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
+
+                let aiReply = '';
+                let photoToEmbed = null;
+                let captionToEmbed = null;
+
+                // 1. Try Backend API
+                try {
+                    const res = await fetch('http://localhost:5000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: 'usr_marcus',
+                            era: activeMem?.era || (isLifeMode ? 'Life Journey' : 'Pro Athlete Era'),
+                            journeyType: isLifeMode ? 'life' : 'sports',
+                            domain: isLifeMode ? null : currentSport,
+                            userMessage: promptText,
+                            clientMemories: memories
+                        })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.response) {
+                            aiReply = data.response;
+                        }
+                    }
+                } catch (e) {
+                    // Backend unavailable - client cognitive engine handles seamlessly
+                }
+
+                // 2. Client Cognitive Fallback
+                if (!aiReply) {
+                    aiReply = performRAGQuery(promptText);
+                }
+
+                // 3. Photo Thumbnail Embedding
+                const qLower = promptText.toLowerCase();
+                const matchedWithPhoto = memories.find(m => 
+                    m.photo && (
+                        qLower.includes('photo') || qLower.includes('picture') || qLower.includes('pic') ||
+                        qLower.includes(m.title.toLowerCase()) || (m.caption && qLower.includes(m.caption.toLowerCase()))
+                    )
+                ) || (memories.find(m => m.photo) && (qLower.includes('look at') || qLower.includes('image')));
+
+                if (matchedWithPhoto && matchedWithPhoto.photo) {
+                    photoToEmbed = matchedWithPhoto.photo;
+                    captionToEmbed = matchedWithPhoto.caption;
+                }
+
+                typingEl.remove();
+
+                const aiEl = document.createElement('div');
+                aiEl.className = 'bg-amber-900/30 text-amber-200 p-3.5 rounded-2xl border border-amber-500/20 font-medium space-y-2.5 animate-fadeIn';
+                
+                let photoHtml = '';
+                if (photoToEmbed) {
+                    photoHtml = `
+                        <div class="mt-2 rounded-xl overflow-hidden border border-amber-500/30 max-w-[220px] bg-black/50 shadow-md">
+                            <img src="${photoToEmbed}" alt="Recalled Memory" class="w-full h-28 object-cover">
+                            ${captionToEmbed ? `<p class="p-1.5 text-[10px] bg-black/80 text-amber-100 italic">📸 "${captionToEmbed}"</p>` : ''}
+                        </div>
+                    `;
+                }
+
+                aiEl.innerHTML = `<div>⚡ <b>Your Younger Self:</b> ${aiReply}</div>${photoHtml}`;
+                aiChatBox.appendChild(aiEl);
+                aiChatBox.scrollTop = aiChatBox.scrollHeight;
+            }
+
+            btnSendAI.addEventListener('click', () => sendAIMessage(aiInputText.value));
+            aiInputText.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendAIMessage(aiInputText.value);
+            });
+            document.querySelectorAll('.ai-chip-btn').forEach(btn => {
+                btn.addEventListener('click', () => sendAIMessage(btn.textContent.replace(/"/g, '')));
+            });
+
+            /* ------------------------------------------------------------------
+               12. PRO CARD & LIVE SEARCH
+               ------------------------------------------------------------------ */
+            const modalProCard = document.getElementById('modal-pro-card');
+            const proCardInner = document.getElementById('pro-card-inner');
+
+            document.getElementById('btn-open-pro-card').addEventListener('click', () => {
+                const memories = getActiveMemories();
+                const container = document.getElementById('sentiment-bars-container');
+                container.innerHTML = '';
+
+                if (memories.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-gray-400 italic">No milestones logged yet to generate sentiment graph.</p>`;
+                } else {
+                    memories.forEach(m => {
+                        const bar = document.createElement('div');
+                        bar.className = 'w-6 bg-emerald-400 rounded-t transition-all hover:scale-110';
+                        bar.style.height = `${m.sentiment}%`;
+                        bar.title = `${m.title}: ${m.sentiment}%`;
+                        container.appendChild(bar);
+                    });
+                }
+
+                modalProCard.classList.add('active');
+            });
+
+            document.getElementById('btn-close-pro-card').addEventListener('click', () => modalProCard.classList.remove('active'));
+            document.getElementById('btn-close-pro-card-back').addEventListener('click', () => modalProCard.classList.remove('active'));
+            document.getElementById('btn-flip-to-back').addEventListener('click', () => proCardInner.classList.add('flipped'));
+            document.getElementById('btn-flip-to-front').addEventListener('click', () => proCardInner.classList.remove('flipped'));
+
+            // Live Search
+            document.getElementById('live-search-input').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const memories = getActiveMemories();
+                if (!query) {
+                    document.getElementById('search-count-badge').textContent = 'ALL';
+                    return;
+                }
+                const foundIdx = memories.findIndex(p =>
+                    p.title.toLowerCase().includes(query) ||
+                    p.journal.toLowerCase().includes(query) ||
+                    (p.caption && p.caption.toLowerCase().includes(query)) ||
+                    (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+                );
+                if (foundIdx !== -1) {
+                    updateActiveNode(foundIdx);
+                    document.getElementById('search-count-badge').textContent = `FOUND #${foundIdx + 1}`;
+                } else {
+                    document.getElementById('search-count-badge').textContent = '0 MATCHES';
+                }
+            });
+
+            /* ------------------------------------------------------------------
+               13. INITIALIZATION & CINEMATIC INTRO ANIMATION
+               ------------------------------------------------------------------ */
+            renderDomainSwitcher();
+            rebuild3DSpline();
+            updateSubBenchWidget();
+
+            // Cinematic Intro Camera Sweep
+            gsap.to(camera.position, {
+                x: defaultCamPos.x,
+                y: defaultCamPos.y,
+                z: defaultCamPos.z,
+                duration: 2.2,
+                ease: 'power3.out'
+            });
+
+            // UI Breeze slow-mo leaves overlay generator for Life Sanctuary
+            if (isLifeMode) {
+                const breezeOverlay = document.getElementById('breeze-overlay');
+                if (breezeOverlay) {
+                    breezeOverlay.classList.add('active');
+                    breezeOverlay.innerHTML = '';
+                    for (let i = 0; i < 18; i++) {
+                        const leaf = document.createElement('div');
+                        leaf.className = 'breeze-leaf';
+                        const size = 18 + Math.random() * 16;
+                        leaf.style.width = `${size}px`;
+                        leaf.style.height = `${size}px`;
+                        leaf.style.left = `${Math.random() * 95}%`;
+                        leaf.style.top = `${Math.random() * 85}%`;
+                        const dur = 9 + Math.random() * 9;
+                        const delay = Math.random() * 12;
+                        leaf.style.animationDuration = `${dur}s`;
+                        leaf.style.animationDelay = `-${delay}s`;
+                        const isPink = i % 2 === 0;
+                        leaf.innerHTML = isPink
+                            ? `<svg viewBox="0 0 24 24" fill="#f472b6" fill-opacity="0.65"><path d="M12 2C9 5 2 12 2 16a10 10 0 0 0 16 3c3-3 4-9 4-13S15 0 12 2z"/></svg>`
+                            : `<svg viewBox="0 0 24 24" fill="#4ade80" fill-opacity="0.55"><path d="M17 8C8 10 5 19 5 19s9-3 11-12c1-4-1-6-1-6z"/></svg>`;
+                        breezeOverlay.appendChild(leaf);
+                    }
+                }
+            }
+
+            // 3D Canvas Raycaster: click checkpoint rings to jump, or click bench to chat
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                // Click on Younger Self substitute bench
+                const benchHits = raycaster.intersectObjects(benchGroup.children, true);
+                if (benchHits.length > 0) {
+                    btnAICompanion.click();
+                    return;
+                }
+
+                // Click on checkpoint rings
+                const ringGroups = checkpointRings.map(r => r.group);
+                const ringHits = raycaster.intersectObjects(ringGroups, true);
+                if (ringHits.length > 0) {
+                    let hitObj = ringHits[0].object;
+                    while (hitObj && hitObj.userData.nodeIndex === undefined && hitObj.parent) {
+                        hitObj = hitObj.parent;
+                    }
+                    if (hitObj && hitObj.userData.nodeIndex !== undefined) {
+                        updateActiveNode(hitObj.userData.nodeIndex);
+                    }
+                }
+            });
+
+            /* ------------------------------------------------------------------
+               14. 60FPS ANIMATION LOOP (TREES SWAYING & DRIFTING BREEZE)
+               ------------------------------------------------------------------ */
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const delta = clock.getDelta();
+                const time = clock.getElapsedTime();
+
+                const memories = getActiveMemories();
+                if (splineCurve && memories.length > 1) {
+                    currentU += (targetU - currentU) * 0.08;
+                    const pos = splineCurve.getPointAt(currentU);
+                    avatarGroup.position.copy(pos);
+
+                    const tangent = splineCurve.getTangentAt(currentU);
+                    const angle = Math.atan2(tangent.x, tangent.z);
+                    avatarGroup.rotation.y = angle;
+                }
+
+                // Selection Ring Pulse
+                selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
+                checkpointRings.forEach((r, idx) => {
+                    r.mesh.rotation.z = time * 0.5 + idx;
+                });
+
+                // SLOW-MO TREES SWAYING IN THE BREEZE (Life Mode)
+                if (treesGroup) {
+                    treesGroup.children.forEach(tree => {
+                        const seed = tree.userData.seed || 0;
+                        tree.rotation.z = Math.sin(time * 0.75 + seed) * 0.038;
+                        tree.rotation.x = Math.cos(time * 0.55 + seed) * 0.022;
+                        if (tree.userData.canopy) {
+                            tree.userData.canopy.rotation.x = Math.sin(time * 1.1 + seed) * 0.03;
+                        }
+                    });
+                }
+
+                // DRIFTING BREEZE LEAVES & BLOSSOM PETALS
+                if (leavesParticleSystem && leavesPositions) {
+                    const pos = leavesParticleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < numLeaves; i++) {
+                        pos[i * 3] += Math.sin(time * 0.7 + i) * 0.022;
+                        pos[i * 3 + 1] -= 0.012;
+                        pos[i * 3 + 2] += 0.035;
+                        if (pos[i * 3 + 1] < 0.2) {
+                            pos[i * 3 + 1] = 12 + Math.random() * 4;
+                            pos[i * 3] = (Math.random() - 0.5) * 50;
+                            pos[i * 3 + 2] = -40;
+                        }
+                    }
+                    leavesParticleSystem.geometry.attributes.position.needsUpdate = true;
+                }
+
+                // IDLE SUBSTITUTE AVATAR BREATHING ON BENCH
+                if (subAvatarGroup) {
+                    subAvatarGroup.position.y = 0.7 + Math.sin(time * 2.2) * 0.025;
+                }
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
         });
