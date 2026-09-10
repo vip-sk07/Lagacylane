@@ -280,7 +280,8 @@ export async function generateYoungerSelfResponse({
       const photoStr = mem.photo ? (mem.caption ? `"${mem.caption}" (${mem.photo})` : mem.photo) : null;
       let block = `### Memory ${i + 1}: ${titleStr}\n- **Date**: ${dateStr}\n- **Era**: ${mem.era || selectedEra}\n- **Emotions**: ${emotionStr}\n- **Journal Excerpt**: "${(mem.journal || '').slice(0, 250)}"`;
       if (typeof mem.sentiment === 'number') {
-        block += `\n- **Sentiment Score**: ${mem.sentiment}/100`;
+        const energyLabel = mem.sentiment >= 75 ? 'Joyful & Triumphant' : mem.sentiment >= 50 ? 'Grounded & Hopeful' : 'Tested & Resilient';
+        block += `\n- **Emotional Energy**: ${energyLabel} (${mem.sentiment}/100)`;
       }
       if (photoStr) {
         block += `\n- **Photo Captured**: ${photoStr}`;
@@ -456,7 +457,7 @@ export async function generateYoungerSelfResponse({
     let reply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
     if (parsedMemories.length > 0) {
       const peakMemory = parsedMemories.reduce((max, m) => (m.sentiment > max.sentiment ? m : max), parsedMemories[0]);
-      reply += ` Remember when we achieved '${peakMemory.title}' on ${peakMemory.date}? You wrote: "${peakMemory.journal.slice(0, 95)}...". We scored that sentiment ${peakMemory.sentiment}/100! That unbreakable spirit is still right inside you.`;
+      reply += ` Remember when we achieved '${peakMemory.title}' on ${peakMemory.date}? You wrote: "${peakMemory.journal.slice(0, 95)}...". The pure passion and grit radiating from your words that day—that unbreakable spirit is still right inside you.`;
     }
     return {
       response: reply,
@@ -534,8 +535,8 @@ export async function generateYoungerSelfResponse({
         : (matched.photo ? ` Looking back at our uploaded photo, ` : ' ');
       
       const sentimentRemark = matched.sentiment >= 80 
-        ? `With a sentiment score of ${matched.sentiment}/100, we were on top of the world!`
-        : `Even though that day felt like a ${matched.sentiment}/100 struggle, we grew stronger from it.`;
+        ? `I can still feel that surge of pride and joy—we were on top of the world!`
+        : `Even though that day was such an uphill battle, we poured our heart into it and grew so much stronger.`;
 
       return {
         response: `I remember '${matched.title}' like it happened yesterday! On ${matched.date},${photoMention}you wrote in our journal: "${matched.journal.slice(0, 110)}...". ${sentimentRemark} Are you still carrying those lessons with you today?`,
@@ -567,7 +568,7 @@ export async function generateYoungerSelfResponse({
     if (parsedMemories.length > 0) {
       const topMem = parsedMemories[0];
       return {
-        response: `Back in our ${selectedEra} at age ${eraAge}, our emotions were so intense and real! When we recorded '${topMem.title}', we scored it a ${topMem.sentiment}/100 sentiment. You described it: "${topMem.journal.slice(0, 90)}...". We never held back our feelings, and that honesty is what makes our story beautiful.`,
+        response: `Back in our ${selectedEra} at age ${eraAge}, our emotions were so intense and real! When we recorded '${topMem.title}', you poured your whole heart into it: "${topMem.journal.slice(0, 90)}...". We never held back our feelings, and that honesty is what makes our story beautiful.`,
         crisisTriggered: false,
         isBurnout: false,
         selectedEra,

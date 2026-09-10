@@ -146,7 +146,8 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, jour
       const scorePct = typeof mem.sentimentScore === 'number' && mem.sentimentScore <= 1.0 
         ? Math.round((mem.sentimentScore + 1) * 50) 
         : mem.sentimentScore;
-      block += `- **Sentiment Score**: ${scorePct}/100\n`;
+      const energyLabel = scorePct >= 75 ? 'Joyful & Triumphant' : scorePct >= 50 ? 'Grounded & Hopeful' : 'Tested & Resilient';
+      block += `- **Emotional Resonance**: ${energyLabel} (${scorePct}/100)\n`;
     }
 
     if (mem.caption || mem.mediaUrl) {
