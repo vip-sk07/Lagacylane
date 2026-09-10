@@ -23,10 +23,13 @@ import {
 import { encryptText, decryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
+import compression from 'compression';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(compression());
 const PORT = process.env.PORT || 5000;
 const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 

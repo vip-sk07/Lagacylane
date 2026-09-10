@@ -18,8 +18,12 @@ try {
   }
 }
 
-// Enable Foreign Keys
+// Enable Foreign Keys & High-Performance WAL mode
 db.pragma('foreign_keys = ON');
+try {
+  db.pragma('journal_mode = WAL');
+  db.pragma('synchronous = NORMAL');
+} catch (e) {}
 
 // Initialize Schema based on LegacyLane_Database_Dictionary.pdf & SRS
 db.exec(`
