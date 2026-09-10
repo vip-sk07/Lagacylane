@@ -61,6 +61,12 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve uploaded images statically
 app.use('/uploads', express.static(uploadsDir));
 
+// Serve unified Frontend web application statically
+const frontendDir = path.join(__dirname, '../Frontend');
+const publicDir = path.join(frontendDir, 'public');
+app.use(express.static(frontendDir));
+app.use(express.static(publicDir));
+
 // Storage Engine for Image Uploads — with file-type and size guards
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -941,6 +947,23 @@ app.delete('/api/users/:userId', async (req, res) => {
     console.error('Delete Account Error:', err);
     res.status(500).json({ error: 'Server error wiping account.' });
   }
+});
+
+// Unified Multi-Page Fallback Route for Full Website
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/ws') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  const cleanPath = req.path.replace(/^\//, '');
+  const requestedFile = path.join(frontendDir, cleanPath);
+  if (cleanPath && fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
+    return res.sendFile(requestedFile);
+  }
+  const publicFile = path.join(publicDir, cleanPath);
+  if (cleanPath && fs.existsSync(publicFile) && fs.statSync(publicFile).isFile()) {
+    return res.sendFile(publicFile);
+  }
+  res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 // Start Server & Connect MongoDB
