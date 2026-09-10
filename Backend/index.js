@@ -1106,6 +1106,10 @@ app.get('*', (req, res, next) => {
     return next();
   }
   const cleanPath = req.path.replace(/^\//, '');
+  if (cleanPath === 'selector.html') {
+    const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    return res.redirect(301, '/timeline.html' + query);
+  }
   const requestedFile = path.join(frontendDir, cleanPath);
   if (cleanPath && fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
     return res.sendFile(requestedFile);

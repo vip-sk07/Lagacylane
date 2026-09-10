@@ -191,7 +191,7 @@ Developed by students of **B.Tech Artificial Intelligence & Data Science** at **
 
 | Role | Name | Core Engineering Focus |
 | :--- | :--- | :--- |
-| **Frontend Lead** | **Gowtham Raj K** | React architecture, Three.js 3D visual engines, Score! Hero timeline UX |
+| **Frontend Lead** | **Gowtham Raj K** | React architecture, Three.js 3D visual engines, Interactive 3D timeline UX |
 | **Backend Lead** | **Karan Raj T** | Node.js/Express architecture, MongoDB & SQLite dual-persistence, API integrity |
 | **AI Lead** | **Navis Joshva Donel J** | RAG retrieval pipeline, persona orchestration, AES-256 encryption, sentiment engine |
 
