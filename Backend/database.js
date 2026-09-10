@@ -51,6 +51,18 @@ db.exec(`
     FOREIGN KEY(User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
   );
 
+  -- Structured Data Table: LifeProfiles (Sanctuary & Chronicler Roadmap)
+  CREATE TABLE IF NOT EXISTS LifeProfiles (
+    Profile_ID TEXT PRIMARY KEY,
+    User_ID TEXT NOT NULL,
+    LifeDomain TEXT NOT NULL,
+    CoreValues TEXT,
+    PersonalMotto TEXT,
+    Bio TEXT,
+    UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(User_ID) REFERENCES Users(User_ID) ON DELETE CASCADE
+  );
+
   -- Structured Data Table: UserConnections (Followers & Teammates)
   CREATE TABLE IF NOT EXISTS UserConnections (
     Connection_ID TEXT PRIMARY KEY,

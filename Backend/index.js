@@ -240,33 +240,136 @@ app.post('/api/auth/google', async (req, res) => {
 
 app.get('/api/profile/:userId', (req, res) => {
   const { userId } = req.params;
-  const user = db.prepare('SELECT User_ID, Name, Email, ProfileType, AvatarURL, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  let user = db.prepare('SELECT User_ID, Name, Email, ProfileType, AvatarURL, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
+  
+  if (!user) {
+    user = {
+      User_ID: userId,
+      Name: 'Athlete',
+      Email: `${userId}@legacylane.local`,
+      ProfileType: 'Athlete',
+      AvatarURL: null
+    };
+  }
 
-  const profile = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
-  res.json({ user, profile });
+  const athleteProfile = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId) || null;
+  const lifeProfile = db.prepare('SELECT * FROM LifeProfiles WHERE User_ID = ?').get(userId) || null;
+
+  res.json({ 
+    user, 
+    profile: athleteProfile, 
+    athleteProfile, 
+    lifeProfile 
+  });
 });
 
-app.put('/api/profile/:userId', (req, res) => {
-  const { userId } = req.params;
-  const { name, sportType, position, teamHistory, jerseyNumber, bio } = req.body;
+app.put('/api/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { 
+      name, 
+      sportType, 
+      sport,
+      position, 
+      teamHistory, 
+      team,
+      jerseyNumber, 
+      jersey,
+      bio, 
+      avatarUrl,
+      lifeDomain, 
+      domain,
+      coreValues, 
+      values,
+      personalMotto,
+      motto 
+    } = req.body;
 
-  if (name) {
-    db.prepare('UPDATE Users SET Name = ? WHERE User_ID = ?').run(name, userId);
-  }
-  if (sportType || position || teamHistory || jerseyNumber || bio) {
-    db.prepare(`
-      UPDATE AthleteProfiles 
-      SET SportType = COALESCE(?, SportType),
-          Position = COALESCE(?, Position),
-          TeamHistory = COALESCE(?, TeamHistory),
-          JerseyNumber = COALESCE(?, JerseyNumber),
-          Bio = COALESCE(?, Bio)
-      WHERE User_ID = ?
-    `).run(sportType, position, teamHistory, jerseyNumber, bio, userId);
-  }
+    const resolvedSport = sportType || sport;
+    const resolvedJersey = jerseyNumber !== undefined ? jerseyNumber : jersey;
+    const resolvedTeam = teamHistory || team;
+    const resolvedLifeDomain = lifeDomain || domain;
+    const resolvedCoreValues = coreValues || values;
+    const resolvedMotto = personalMotto || motto;
 
-  res.json({ message: 'Profile updated successfully' });
+    // 1. Ensure User row exists in Users table
+    let userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    if (!userRow) {
+      const dummyPassword = await bcrypt.hash('guest_legacy_pass', 10);
+      const profileType = resolvedLifeDomain ? 'Standard' : 'Athlete';
+      db.prepare(`
+        INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, AvatarURL)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(userId, name || 'Athlete', `${userId}@legacylane.local`, dummyPassword, profileType, avatarUrl || null);
+      userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    } else if (name || avatarUrl) {
+      db.prepare(`
+        UPDATE Users 
+        SET Name = COALESCE(?, Name), 
+            AvatarURL = COALESCE(?, AvatarURL),
+            UpdatedAt = CURRENT_TIMESTAMP
+        WHERE User_ID = ?
+      `).run(name || null, avatarUrl || null, userId);
+      userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    }
+
+    // 2. Athlete Profile Upsert
+    let athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
+    if (resolvedSport || position || resolvedTeam || resolvedJersey !== undefined || bio) {
+      if (athleteRow) {
+        db.prepare(`
+          UPDATE AthleteProfiles 
+          SET SportType = COALESCE(?, SportType),
+              Position = COALESCE(?, Position),
+              TeamHistory = COALESCE(?, TeamHistory),
+              JerseyNumber = COALESCE(?, JerseyNumber),
+              Bio = COALESCE(?, Bio)
+          WHERE User_ID = ?
+        `).run(resolvedSport || null, position || null, resolvedTeam || null, resolvedJersey !== undefined ? Number(resolvedJersey) : null, bio || null, userId);
+      } else {
+        const profileId = 'prof_ath_' + Date.now();
+        db.prepare(`
+          INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory, JerseyNumber, Bio)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(profileId, userId, resolvedSport || 'football', position || 'Player', resolvedTeam || 'Personal Academy', resolvedJersey !== undefined ? Number(resolvedJersey) : 10, bio || '');
+      }
+      athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userId);
+    }
+
+    // 3. Life Profile Upsert
+    let lifeRow = db.prepare('SELECT * FROM LifeProfiles WHERE User_ID = ?').get(userId);
+    if (resolvedLifeDomain || resolvedCoreValues || resolvedMotto) {
+      if (lifeRow) {
+        db.prepare(`
+          UPDATE LifeProfiles 
+          SET LifeDomain = COALESCE(?, LifeDomain),
+              CoreValues = COALESCE(?, CoreValues),
+              PersonalMotto = COALESCE(?, PersonalMotto),
+              Bio = COALESCE(?, Bio),
+              UpdatedAt = CURRENT_TIMESTAMP
+          WHERE User_ID = ?
+        `).run(resolvedLifeDomain || null, resolvedCoreValues || null, resolvedMotto || null, bio || null, userId);
+      } else {
+        const profileId = 'prof_life_' + Date.now();
+        db.prepare(`
+          INSERT INTO LifeProfiles (Profile_ID, User_ID, LifeDomain, CoreValues, PersonalMotto, Bio)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).run(profileId, userId, resolvedLifeDomain || 'Creative Craft', resolvedCoreValues || 'Resilience & Courage', resolvedMotto || 'Walk with purpose', bio || '');
+      }
+      lifeRow = db.prepare('SELECT * FROM LifeProfiles WHERE User_ID = ?').get(userId);
+    }
+
+    res.json({ 
+      message: 'Profile synchronized successfully', 
+      user: userRow, 
+      profile: athleteRow, 
+      athleteProfile: athleteRow, 
+      lifeProfile: lifeRow 
+    });
+  } catch (err) {
+    console.error('Profile Update Error:', err);
+    res.status(500).json({ error: 'Server error updating profile: ' + err.message });
+  }
 });
 
 // ----------------------------------------------------

@@ -401,6 +401,61 @@
     </div>
 
     <!-- ==========================================================================
+         MODAL 0: "EDIT 3D PLAYER PROFILE & DOSSIER" MODAL
+         ========================================================================== -->
+    <div id="modal-edit-profile" class="drawer-overlay">
+        <div class="w-full max-w-md tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/10">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                    <span id="modal-edit-profile-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-medium border border-cyan-500/30">3D PLAYER DOSSIER</span>
+                    <h2 id="modal-edit-profile-title" class="text-xl font-semibold text-stone-100 mt-1">Customize Athlete Profile</h2>
+                </div>
+                <button id="btn-close-edit-profile" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition">✕</button>
+            </div>
+
+            <form id="form-edit-profile" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-stone-300 mb-1">Display Name *</label>
+                    <input type="text" id="edit-profile-name" required class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                </div>
+
+                <div id="edit-profile-sports-fields" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-stone-300 mb-1">Jersey Number *</label>
+                            <input type="number" id="edit-profile-jersey" min="0" max="99" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-stone-300 mb-1">Tactical Position</label>
+                            <input type="text" id="edit-profile-position" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Team / Club / Academy</label>
+                        <input type="text" id="edit-profile-team" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div id="edit-profile-life-fields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Focus Domain / Craft</label>
+                        <input type="text" id="edit-profile-domain" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Life Motto / Core Philosophy</label>
+                        <input type="text" id="edit-profile-motto" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" id="btn-cancel-edit-profile" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 text-xs font-medium transition">Cancel</button>
+                    <button type="submit" id="btn-save-edit-profile" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-stone-950 font-bold text-xs shadow-lg transition">Save & Sync 3D Player</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
          MODAL 1: "+ WRITE MEMORY" / "+ LOG MATCH MILESTONE" MODAL
          ========================================================================== -->
     <div id="modal-log-play" class="drawer-overlay">
@@ -705,6 +760,8 @@
                             <div>
                                 <h3 id="pro-card-player-name" class="text-lg font-semibold text-stone-100">Personal Chronicle</h3>
                                 <p id="pro-card-sport" class="text-[10px] font-mono text-stone-400">LIFE SANCTUARY ARCHIVE</p>
+                                <p id="pro-card-role" class="text-[11px] font-mono text-cyan-400 font-semibold"></p>
+                                <p id="pro-card-team" class="text-[10px] font-mono text-stone-400"></p>
                             </div>
                         </div>
                         <button id="btn-close-pro-card" class="w-8 h-8 rounded-xl bg-white/5 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm">✕</button>
@@ -854,8 +911,43 @@
             }
 
             function getJerseyNumber() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('jersey');
+                if (param && param.trim()) return param.trim();
                 const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
-                return athleteProfile.jerseyNumber || athleteProfile.jersey || '';
+                return athleteProfile.jerseyNumber || athleteProfile.jersey || '10';
+            }
+
+            function getPositionRole() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('position');
+                if (param && param.trim()) return param.trim();
+                const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                return athleteProfile.position || 'Attacking Midfielder (#10)';
+            }
+
+            function getTeamHistory() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('team');
+                if (param && param.trim()) return param.trim();
+                const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                return athleteProfile.team || 'Legacy Academy XI';
+            }
+
+            function getLifeDomain() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('domain');
+                if (param && param.trim()) return param.trim();
+                const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
+                return lifeProfile.focus || 'Creative Craft';
+            }
+
+            function getLifeMotto() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('motto');
+                if (param && param.trim()) return param.trim();
+                const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
+                return lifeProfile.motto || 'Walk with purpose and quiet courage';
             }
 
             function getUserId() {
@@ -876,12 +968,24 @@
                 const playerDisplayEl = document.getElementById('player-name-display');
                 if (playerDisplayEl) {
                     playerDisplayEl.textContent = displayName;
-                    playerDisplayEl.title = "Click to customize your name";
+                    playerDisplayEl.title = "Click to customize player profile";
                 }
 
                 const proCardNameEl = document.getElementById('pro-card-player-name');
                 if (proCardNameEl) {
                     proCardNameEl.textContent = displayName;
+                }
+
+                const playerOvrEl = document.getElementById('player-ovr-display');
+                const playerOvrLabel = document.getElementById('player-ovr-label');
+                if (playerOvrEl && playerOvrLabel) {
+                    if (isLifeMode) {
+                        playerOvrEl.textContent = '✦';
+                        playerOvrLabel.textContent = 'Seeker';
+                    } else {
+                        playerOvrEl.textContent = jersey || '10';
+                        playerOvrLabel.textContent = 'Jersey';
+                    }
                 }
 
                 updateChatGreeting();
@@ -897,22 +1001,37 @@
                 }
             }
 
-            // Click to customize name in real-time
-            const playerNameEl = document.getElementById('player-name-display');
-            if (playerNameEl) {
-                playerNameEl.addEventListener('click', () => {
-                    const currentName = getUserName();
-                    const newName = prompt("Enter your name to personalize your archive:", currentName === 'Athlete' || currentName === 'Life Chronicler' ? '' : currentName);
-                    if (newName && newName.trim()) {
-                        const clean = newName.trim();
-                        localStorage.setItem('legacy_user', clean);
-                        localStorage.setItem('username', clean);
-                        const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
-                        athleteProfile.name = clean;
-                        localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
+            // Sync with backend API on page load
+            async function syncProfileFromBackend() {
+                const userId = getUserId();
+                try {
+                    const res = await fetch('/api/profile/' + encodeURIComponent(userId));
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.athleteProfile) {
+                            const ath = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                            if (data.user?.Name) ath.name = data.user.Name;
+                            if (data.athleteProfile.JerseyNumber) ath.jerseyNumber = data.athleteProfile.JerseyNumber;
+                            if (data.athleteProfile.Position) ath.position = data.athleteProfile.Position;
+                            if (data.athleteProfile.TeamHistory) ath.team = data.athleteProfile.TeamHistory;
+                            localStorage.setItem('legacy_athlete_profile', JSON.stringify(ath));
+                        }
+                        if (data.lifeProfile) {
+                            const lif = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
+                            if (data.user?.Name) lif.name = data.user.Name;
+                            if (data.lifeProfile.LifeDomain) lif.focus = data.lifeProfile.LifeDomain;
+                            if (data.lifeProfile.CoreValues) lif.phase = data.lifeProfile.CoreValues;
+                            if (data.lifeProfile.PersonalMotto) lif.motto = data.lifeProfile.PersonalMotto;
+                            localStorage.setItem('legacy_life_profile', JSON.stringify(lif));
+                        }
                         updateDisplayedUserName();
+                        if (typeof update3DJerseyAndCard === 'function') {
+                            update3DJerseyAndCard();
+                        }
                     }
-                });
+                } catch (e) {
+                    console.warn('Sync profile error:', e);
+                }
             }
 
             /* ------------------------------------------------------------------
@@ -2682,17 +2801,302 @@
                ------------------------------------------------------------------ */
             const avatarGroup = new THREE.Group();
 
-            const bodyMat = new THREE.MeshStandardMaterial({
-                color: isLifeMode ? 0x06b6d4 : 0x00e676,
-                roughness: 0.4
-            });
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 });
+            // Procedural Canvas Texture Generator for 3D Jersey (Front, Back, Sides)
+            function createJerseyTextures(options = {}) {
+                const sport = options.sport || currentSport;
+                const name = (options.name || getUserName()).toUpperCase();
+                const jersey = options.jersey || getJerseyNumber() || '10';
+                const isLife = isLifeMode;
+
+                // Color palette tailored per discipline
+                let baseColor = '#00e676';
+                let accentColor = '#ffffff';
+                let numColor = '#ffffff';
+                let collarColor = '#004d40';
+
+                if (sport === 'basketball') {
+                    baseColor = '#1d4ed8'; // Royal Blue
+                    accentColor = '#f59e0b'; // Gold
+                    numColor = '#ffffff';
+                    collarColor = '#1e3a8a';
+                } else if (sport === 'tennis') {
+                    baseColor = '#0284c7'; // Tournament Blue
+                    accentColor = '#38bdf8';
+                    numColor = '#ffffff';
+                    collarColor = '#0369a1';
+                } else if (sport === 'cricket') {
+                    baseColor = '#f8fafc'; // Pure Whites
+                    accentColor = '#f59e0b';
+                    numColor = '#1e293b';
+                    collarColor = '#cbd5e1';
+                } else if (sport === 'track') {
+                    baseColor = '#dc2626'; // Cardinal Red
+                    accentColor = '#fbbf24';
+                    numColor = '#ffffff';
+                    collarColor = '#991b1b';
+                } else if (isLife) {
+                    baseColor = '#0f172a'; // Celestial Obsidian
+                    accentColor = '#38bdf8'; // Starlight Cyan
+                    numColor = '#fbbf24';
+                    collarColor = '#0284c7';
+                }
+
+                // 1. FRONT TEXTURE CANVAS (256x256)
+                const frontCanvas = document.createElement('canvas');
+                frontCanvas.width = 256;
+                frontCanvas.height = 256;
+                const fCtx = frontCanvas.getContext('2d');
+
+                fCtx.fillStyle = baseColor;
+                fCtx.fillRect(0, 0, 256, 256);
+
+                fCtx.fillStyle = 'rgba(255,255,255,0.08)';
+                for (let x = 24; x < 256; x += 40) {
+                    fCtx.fillRect(x, 0, 20, 256);
+                }
+
+                // V-neck Collar Band
+                fCtx.fillStyle = collarColor;
+                fCtx.beginPath();
+                fCtx.moveTo(70, 0);
+                fCtx.lineTo(128, 55);
+                fCtx.lineTo(186, 0);
+                fCtx.closePath();
+                fCtx.fill();
+                fCtx.strokeStyle = accentColor;
+                fCtx.lineWidth = 4;
+                fCtx.stroke();
+
+                // Left Chest Crest Badge
+                fCtx.fillStyle = accentColor;
+                fCtx.beginPath();
+                fCtx.arc(68, 85, 15, 0, Math.PI * 2);
+                fCtx.fill();
+                fCtx.fillStyle = baseColor;
+                fCtx.font = 'bold 13px sans-serif';
+                fCtx.textAlign = 'center';
+                fCtx.textBaseline = 'middle';
+                fCtx.fillText(isLife ? '✦' : 'LL', 68, 85);
+
+                // Front Squad Number
+                fCtx.fillStyle = numColor;
+                fCtx.font = '900 72px "Impact", "Arial Black", sans-serif';
+                fCtx.textAlign = 'center';
+                fCtx.textBaseline = 'middle';
+                fCtx.shadowColor = 'rgba(0,0,0,0.6)';
+                fCtx.shadowBlur = 8;
+                fCtx.fillText(isLife ? '✦' : jersey, 128, 145);
+                fCtx.shadowBlur = 0;
+
+                // 2. BACK TEXTURE CANVAS (256x256)
+                const backCanvas = document.createElement('canvas');
+                backCanvas.width = 256;
+                backCanvas.height = 256;
+                const bCtx = backCanvas.getContext('2d');
+
+                bCtx.fillStyle = baseColor;
+                bCtx.fillRect(0, 0, 256, 256);
+
+                // Back collar band
+                bCtx.fillStyle = collarColor;
+                bCtx.fillRect(70, 0, 116, 26);
+                bCtx.strokeStyle = accentColor;
+                bCtx.lineWidth = 3;
+                bCtx.strokeRect(70, 0, 116, 26);
+
+                // Player Name
+                bCtx.fillStyle = numColor;
+                bCtx.font = 'bold 22px "Arial Black", sans-serif';
+                bCtx.textAlign = 'center';
+                const nameParts = name.trim().split(' ');
+                const shortName = (nameParts[nameParts.length - 1] || name).slice(0, 10);
+                bCtx.fillText(isLife ? 'SEEKER' : shortName, 128, 65);
+
+                // Large Back Squad Number
+                bCtx.font = '900 98px "Impact", "Arial Black", sans-serif';
+                bCtx.textAlign = 'center';
+                bCtx.textBaseline = 'middle';
+                bCtx.shadowColor = 'rgba(0,0,0,0.7)';
+                bCtx.shadowBlur = 10;
+                bCtx.fillText(isLife ? '∞' : jersey, 128, 155);
+                bCtx.shadowBlur = 0;
+
+                // 3. SIDES & ACCENTS
+                const sideCanvas = document.createElement('canvas');
+                sideCanvas.width = 128;
+                sideCanvas.height = 256;
+                const sCtx = sideCanvas.getContext('2d');
+                sCtx.fillStyle = baseColor;
+                sCtx.fillRect(0, 0, 128, 256);
+                sCtx.fillStyle = accentColor;
+                sCtx.fillRect(56, 0, 16, 256);
+
+                const frontTex = new THREE.CanvasTexture(frontCanvas);
+                const backTex = new THREE.CanvasTexture(backCanvas);
+                const sideTex = new THREE.CanvasTexture(sideCanvas);
+
+                return [
+                    new THREE.MeshStandardMaterial({ map: sideTex, roughness: 0.35 }),  // +X
+                    new THREE.MeshStandardMaterial({ map: sideTex, roughness: 0.35 }),  // -X
+                    new THREE.MeshStandardMaterial({ color: collarColor, roughness: 0.4 }), // +Y
+                    new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.4 }),   // -Y
+                    new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.35 }), // +Z (Front)
+                    new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.35 })   // -Z (Back)
+                ];
+            }
+
+            function createTacticalCardTexture(options = {}) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 240;
+                const ctx = canvas.getContext('2d');
+
+                const isLife = isLifeMode;
+                const userName = (options.name || getUserName()).toUpperCase();
+                const jersey = options.jersey || getJerseyNumber() || '10';
+                const position = options.position || getPositionRole();
+                const team = options.team || getTeamHistory();
+                const domain = options.domain || getLifeDomain();
+                const motto = options.motto || getLifeMotto();
+
+                const radius = 24;
+                ctx.clearRect(0, 0, 512, 240);
+
+                // Dark glassmorphic card body
+                ctx.beginPath();
+                ctx.roundRect(8, 8, 496, 224, radius);
+                ctx.fillStyle = isLife ? 'rgba(10, 20, 32, 0.90)' : 'rgba(8, 14, 24, 0.90)';
+                ctx.fill();
+
+                ctx.strokeStyle = isLife ? 'rgba(245, 158, 11, 0.75)' : 'rgba(0, 229, 255, 0.85)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Top Accent Gradient Line
+                ctx.beginPath();
+                ctx.roundRect(12, 12, 488, 6, 3);
+                const grad = ctx.createLinearGradient(12, 12, 500, 12);
+                if (isLife) {
+                    grad.addColorStop(0, '#f59e0b');
+                    grad.addColorStop(1, '#38bdf8');
+                } else {
+                    grad.addColorStop(0, '#00e5ff');
+                    grad.addColorStop(1, '#00e676');
+                }
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                if (!isLife) {
+                    // --- SPORTS TACTICAL CARD ---
+                    ctx.beginPath();
+                    ctx.roundRect(28, 36, 68, 44, 12);
+                    ctx.fillStyle = 'rgba(0, 229, 255, 0.2)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#00e5ff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#00e5ff';
+                    ctx.font = '900 24px "Impact", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('#' + jersey, 62, 58);
+
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(userName, 110, 52);
+
+                    ctx.beginPath();
+                    ctx.roundRect(386, 36, 98, 32, 8);
+                    ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+                    ctx.fill();
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = 'bold 15px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('★ 95 OVR', 435, 56);
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(28, 96);
+                    ctx.lineTo(484, 96);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('⚡ ' + position.toUpperCase(), 28, 134);
+
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '17px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText('🛡️ ' + team, 28, 172);
+
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '13px monospace';
+                    ctx.fillText('ACTIVE LEGACY LANE SQUAD MEMBER', 28, 206);
+                } else {
+                    // --- LIFE CHRONICLER CARD ---
+                    ctx.beginPath();
+                    ctx.roundRect(28, 36, 56, 44, 12);
+                    ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.font = '24px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🕊️', 56, 58);
+
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(userName, 98, 52);
+
+                    ctx.beginPath();
+                    ctx.roundRect(324, 36, 160, 32, 8);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+                    ctx.fill();
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 13px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('SANCTUARY SEEKER', 404, 56);
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(28, 96);
+                    ctx.lineTo(484, 96);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('🌿 ' + domain.toUpperCase(), 28, 134);
+
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = 'italic 16px "Plus Jakarta Sans", serif';
+                    const displayMotto = motto.length > 42 ? `"${motto.slice(0, 42)}..."` : `"${motto}"`;
+                    ctx.fillText(displayMotto, 28, 172);
+
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '13px monospace';
+                    ctx.fillText('PERSONAL ARCHIVE • LIVING CHRONICLE', 28, 206);
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.needsUpdate = true;
+                return texture;
+            }
 
             const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
-            const torsoMesh = new THREE.Mesh(torsoGeo, bodyMat);
+            const torsoMesh = new THREE.Mesh(torsoGeo, createJerseyTextures());
             torsoMesh.position.y = 1.15;
             avatarGroup.add(torsoMesh);
 
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.5 });
             const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
             const headMesh = new THREE.Mesh(headGeo, skinMat);
             headMesh.position.y = 2.0;
@@ -2707,6 +3111,27 @@
             const visorMesh = new THREE.Mesh(visorGeo, visorMat);
             visorMesh.position.set(0, 2.05, 0.2);
             avatarGroup.add(visorMesh);
+
+            // Floating 3D Tactical Card Hologram
+            const tacticalCardTexture = createTacticalCardTexture();
+            const tacticalCardSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: tacticalCardTexture,
+                transparent: true,
+                depthTest: false
+            }));
+            tacticalCardSprite.position.set(0, 3.0, 0);
+            tacticalCardSprite.scale.set(2.4, 1.15, 1);
+            avatarGroup.add(tacticalCardSprite);
+
+            function update3DJerseyAndCard() {
+                if (torsoMesh) {
+                    torsoMesh.material = createJerseyTextures();
+                }
+                if (tacticalCardSprite) {
+                    tacticalCardSprite.material.map = createTacticalCardTexture();
+                    tacticalCardSprite.material.needsUpdate = true;
+                }
+            }
 
             const selectionRingGeo = new THREE.RingGeometry(0.9, 1.2, 32);
             const selectionRingMat = new THREE.MeshBasicMaterial({
@@ -4037,10 +4462,21 @@
                         ]
                     };
 
-                    const traits = sportTraitsMap[currentSport] || sportTraitsMap.football;
-                    document.getElementById('pro-card-player-name').textContent = getUserName();
-                    document.getElementById('pro-card-sport').textContent = `${currentSport.toUpperCase()} CAREER LEDGER`;
-                    document.getElementById('pro-card-metric-rating').textContent = '92';
+                    const roleEl = document.getElementById('pro-card-role');
+                    const teamEl = document.getElementById('pro-card-team');
+                    if (isLifeMode) {
+                        document.getElementById('pro-card-player-name').textContent = getUserName();
+                        document.getElementById('pro-card-sport').textContent = 'PERSONAL CHRONICLE ARCHIVE';
+                        document.getElementById('pro-card-metric-rating').textContent = '✦';
+                        if (roleEl) roleEl.textContent = `🌿 ${getLifeDomain().toUpperCase()} • SEEKER`;
+                        if (teamEl) teamEl.textContent = `"${getLifeMotto()}"`;
+                    } else {
+                        document.getElementById('pro-card-player-name').textContent = `${getUserName()} #${getJerseyNumber()}`;
+                        document.getElementById('pro-card-sport').textContent = `${currentSport.toUpperCase()} CAREER LEDGER`;
+                        document.getElementById('pro-card-metric-rating').textContent = getJerseyNumber() || '10';
+                        if (roleEl) roleEl.textContent = `⚡ ${getPositionRole()}`;
+                        if (teamEl) teamEl.textContent = `🛡️ ${getTeamHistory()}`;
+                    }
 
                     traits.forEach(t => {
                         const row = document.createElement('div');
@@ -4056,6 +4492,115 @@
                         container.appendChild(row);
                     });
                 }
+            }
+
+            // ==============================================================
+            // INTERACTIVE 3D PLAYER PROFILE EDITOR MODAL
+            // ==============================================================
+            const modalEditProfile = document.getElementById('modal-edit-profile');
+            const btnCloseEditProfile = document.getElementById('btn-close-edit-profile');
+            const btnCancelEditProfile = document.getElementById('btn-cancel-edit-profile');
+            const formEditProfile = document.getElementById('form-edit-profile');
+
+            function openProfileEditor() {
+                if (!modalEditProfile) return;
+                document.getElementById('edit-profile-name').value = getUserName();
+                if (isLifeMode) {
+                    document.getElementById('edit-profile-sports-fields').classList.add('hidden');
+                    document.getElementById('edit-profile-life-fields').classList.remove('hidden');
+                    document.getElementById('edit-profile-domain').value = getLifeDomain();
+                    document.getElementById('edit-profile-motto').value = getLifeMotto();
+                    document.getElementById('modal-edit-profile-badge').textContent = 'SEEKER DOSSIER';
+                    document.getElementById('modal-edit-profile-title').textContent = 'Customize Seeker Sanctuary';
+                } else {
+                    document.getElementById('edit-profile-sports-fields').classList.remove('hidden');
+                    document.getElementById('edit-profile-life-fields').classList.add('hidden');
+                    document.getElementById('edit-profile-jersey').value = getJerseyNumber() || 10;
+                    document.getElementById('edit-profile-position').value = getPositionRole();
+                    document.getElementById('edit-profile-team').value = getTeamHistory();
+                    document.getElementById('modal-edit-profile-badge').textContent = 'ATHLETE DOSSIER';
+                    document.getElementById('modal-edit-profile-title').textContent = 'Customize 3D Athlete Profile';
+                }
+                modalEditProfile.classList.add('active');
+                playSoftSound('chime');
+            }
+
+            function closeProfileEditor() {
+                if (modalEditProfile) modalEditProfile.classList.remove('active');
+            }
+
+            if (btnCloseEditProfile) btnCloseEditProfile.addEventListener('click', closeProfileEditor);
+            if (btnCancelEditProfile) btnCancelEditProfile.addEventListener('click', closeProfileEditor);
+            if (modalEditProfile) {
+                modalEditProfile.addEventListener('click', (e) => {
+                    if (e.target === modalEditProfile) closeProfileEditor();
+                });
+            }
+
+            const playerAvatarBox = document.getElementById('player-avatar-box');
+            if (playerAvatarBox) {
+                playerAvatarBox.classList.add('cursor-pointer');
+                playerAvatarBox.addEventListener('click', openProfileEditor);
+            }
+
+            const playerNameDisplay = document.getElementById('player-name-display');
+            if (playerNameDisplay) {
+                playerNameDisplay.classList.add('cursor-pointer');
+                playerNameDisplay.addEventListener('click', openProfileEditor);
+            }
+
+            if (formEditProfile) {
+                formEditProfile.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const newName = document.getElementById('edit-profile-name').value.trim() || 'Athlete';
+                    const userId = getUserId();
+
+                    localStorage.setItem('legacy_user', newName);
+                    localStorage.setItem('username', newName);
+
+                    const payload = { name: newName };
+
+                    if (isLifeMode) {
+                        const newDomain = document.getElementById('edit-profile-domain').value.trim() || 'Creative Craft';
+                        const newMotto = document.getElementById('edit-profile-motto').value.trim() || '';
+                        const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
+                        lifeProfile.name = newName;
+                        lifeProfile.focus = newDomain;
+                        lifeProfile.motto = newMotto;
+                        localStorage.setItem('legacy_life_profile', JSON.stringify(lifeProfile));
+                        payload.lifeDomain = newDomain;
+                        payload.personalMotto = newMotto;
+                    } else {
+                        const newJersey = parseInt(document.getElementById('edit-profile-jersey').value, 10) || 10;
+                        const newPosition = document.getElementById('edit-profile-position').value.trim() || 'Player';
+                        const newTeam = document.getElementById('edit-profile-team').value.trim() || 'Legacy Academy';
+                        const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                        athleteProfile.name = newName;
+                        athleteProfile.jerseyNumber = newJersey;
+                        athleteProfile.jersey = newJersey;
+                        athleteProfile.position = newPosition;
+                        athleteProfile.team = newTeam;
+                        localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
+                        payload.jerseyNumber = newJersey;
+                        payload.position = newPosition;
+                        payload.teamHistory = newTeam;
+                        payload.sportType = currentSport;
+                    }
+
+                    updateDisplayedUserName();
+                    update3DJerseyAndCard();
+                    closeProfileEditor();
+
+                    try {
+                        await fetch('/api/profile/' + encodeURIComponent(userId), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } catch (err) {
+                        console.warn('Live profile update sync warning:', err);
+                    }
+                });
             }
 
             document.getElementById('btn-open-pro-card').addEventListener('click', () => {
@@ -4287,11 +4832,17 @@
                     });
                 }
 
+                // FLOATING 3D TACTICAL CARD GENTLE HOVER
+                if (tacticalCardSprite) {
+                    tacticalCardSprite.position.y = 3.0 + Math.sin(time * 2.5) * 0.04;
+                }
+
                 controls.update();
                 renderer.render(scene, camera);
             }
 
             animate();
+            syncProfileFromBackend();
 
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;

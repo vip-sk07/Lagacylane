@@ -1828,16 +1828,29 @@
                 }
             });
 
-            lifeForm.addEventListener('submit', (e) => {
+            function getOrCreateUserId(name) {
+                let id = localStorage.getItem('legacy_user_id');
+                if (!id || id === 'usr_marcus') {
+                    const cleanName = (name || 'user').toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    id = 'usr_' + cleanName + '_' + Math.random().toString(36).substring(2, 7);
+                    localStorage.setItem('legacy_user_id', id);
+                }
+                return id;
+            }
+
+            lifeForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const lifeFocus = lifeFocusSelect.value;
-                const lifePhase = document.getElementById('life-phase').value;
-                const lifeMotto = document.getElementById('life-motto').value;
+                const lifeFocus = lifeFocusSelect.value || 'Creative Craft';
+                const lifePhase = document.getElementById('life-phase')?.value || 'Exploration';
+                const lifeMotto = document.getElementById('life-motto')?.value || '';
 
                 const enteredName = (document.getElementById('life-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Life Chronicler';
+                const userId = getOrCreateUserId(enteredName);
+
                 localStorage.setItem('legacy_user', enteredName);
                 localStorage.setItem('username', enteredName);
+                localStorage.setItem('legacy_user_id', userId);
 
                 const lifeProfile = {
                     name: enteredName,
@@ -1850,16 +1863,39 @@
                 localStorage.setItem('legacy_journey_mode', 'LIFE');
                 localStorage.setItem('legacy_life_profile', JSON.stringify(lifeProfile));
 
-                lifeLaunchBtn.innerHTML = `Launching...`;
+                lifeLaunchBtn.innerHTML = `Synchronizing Profile...`;
                 lifeLaunchBtn.disabled = true;
 
                 playSynthSound(920, 'sine', 0.4, 0.1);
-
                 document.getElementById('wipe-overlay').classList.add('active');
 
+                // Asynchronously synchronize profile to backend database
+                try {
+                    await fetch('/api/profile/' + encodeURIComponent(userId), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: enteredName,
+                            lifeDomain: lifeFocus,
+                            coreValues: lifePhase,
+                            personalMotto: lifeMotto
+                        })
+                    });
+                } catch (syncErr) {
+                    console.warn('Profile backend sync warning:', syncErr);
+                }
+
                 setTimeout(() => {
-                    window.location.href = `timeline.html?mode=life&sport=life&name=${encodeURIComponent(enteredName)}`;
-                }, 500);
+                    const queryParams = new URLSearchParams({
+                        mode: 'life',
+                        sport: 'life',
+                        name: enteredName,
+                        domain: lifeFocus,
+                        values: lifePhase,
+                        motto: lifeMotto
+                    });
+                    window.location.href = `timeline.html?${queryParams.toString()}`;
+                }, 400);
             });
 
             /* ------------------------------------------------------------------
@@ -1927,42 +1963,69 @@
                 }
             });
 
-            athleteForm.addEventListener('submit', (e) => {
+            athleteForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const primarySport = sportSelect.value;
-                const positionRole = document.getElementById('position-role').value;
-                const teamHistory = document.getElementById('team-history').value;
+                const primarySport = sportSelect.value || 'football';
+                const positionRole = document.getElementById('position-role')?.value || 'Player';
+                const teamHistory = document.getElementById('team-history')?.value || 'Legacy Academy';
 
                 const enteredName = (document.getElementById('athlete-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Athlete';
-                const enteredJersey = (document.getElementById('athlete-jersey')?.value || '').trim();
+                const enteredJersey = (document.getElementById('athlete-jersey')?.value || '').trim() || '10';
+                const chosenSport = (primarySport || 'football').toLowerCase();
+                const userId = getOrCreateUserId(enteredName);
 
                 const athleteProfile = {
                     name: enteredName,
-                    jerseyNumber: enteredJersey || '10',
-                    sport: primarySport,
+                    jerseyNumber: enteredJersey,
+                    jersey: enteredJersey,
+                    sport: chosenSport,
                     position: positionRole,
                     team: teamHistory,
                     updatedAt: new Date().toISOString()
                 };
 
-                const chosenSport = (primarySport || 'football').toLowerCase();
                 localStorage.setItem('legacy_user', enteredName);
                 localStorage.setItem('username', enteredName);
+                localStorage.setItem('legacy_user_id', userId);
                 localStorage.setItem('legacy_journey_mode', 'SPORTS');
                 localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
                 localStorage.setItem('legacy_selected_sport', chosenSport);
 
-                launchBtn.innerHTML = `Launching...`;
+                launchBtn.innerHTML = `Synchronizing Profile...`;
                 launchBtn.disabled = true;
 
                 playSynthSound(920, 'sine', 0.4, 0.1);
-
                 document.getElementById('wipe-overlay').classList.add('active');
 
+                // Asynchronously synchronize profile to backend database
+                try {
+                    await fetch('/api/profile/' + encodeURIComponent(userId), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: enteredName,
+                            sportType: chosenSport,
+                            position: positionRole,
+                            teamHistory: teamHistory,
+                            jerseyNumber: parseInt(enteredJersey, 10) || 10
+                        })
+                    });
+                } catch (syncErr) {
+                    console.warn('Profile backend sync warning:', syncErr);
+                }
+
                 setTimeout(() => {
-                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}&name=${encodeURIComponent(enteredName)}`;
-                }, 500);
+                    const queryParams = new URLSearchParams({
+                        mode: 'sports',
+                        sport: chosenSport,
+                        name: enteredName,
+                        jersey: enteredJersey,
+                        position: positionRole,
+                        team: teamHistory
+                    });
+                    window.location.href = `timeline.html?${queryParams.toString()}`;
+                }, 400);
             });
 
         });
