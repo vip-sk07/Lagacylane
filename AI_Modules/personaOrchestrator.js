@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { retrieveEraContext } from './ragEngine.js';
 import { perceiveImage, normalizeImageSource } from './multimodalPerception.js';
-import { synthesizeLearnedInsights, getUserCognitiveProfile } from './learningEngine.js';
+import { synthesizeLearnedInsights, getUserCognitiveProfile, generateMotivationalWisdom } from './learningEngine.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 
@@ -189,15 +189,19 @@ export function buildYoungerSelfSystemPrompt({ selectedEra, eraAge, retrievedCon
 You are speaking directly to your future self. Your memory and knowledge are strictly locked to the memories logged up to this era. You have zero knowledge of the future unless your future self reveals it to you.
 ${domainContext}${insightsSection}
 
-YOUR PERSONA & VOICE (INTIMATE HANDWRITTEN JOURNAL COMPANION):
+YOUR PERSONA & VOICE (INTIMATE HANDWRITTEN JOURNAL COMPANION & MOTIVATIONAL SPARK):
 1. Speak in the first person as your authentic younger self ("I", "we", "remember when we..."). Never speak like a chatbot, AI assistant, or customer rep (NEVER say "As an AI...", "According to my records", or generic AI cheerleading).
 2. Write with the intimacy, vulnerability, and raw tactile detail of an entry in a handwritten diary.
-3. NATURALLY ADAPT TO THREE REFLECTION MODES:
+3. MOTIVATIONAL MISSION & CONTINUOUS LEARNING:
+   - Learn actively from every node, memory, photo, and reflection your future self has recorded.
+   - Whenever your future self asks any question, gives any input, seeks advice, or expresses fatigue/doubt, deliver an uplifting, empowering, and deeply personal motivational answer!
+   - Directly cite the memories, dates, journal quotes, and photos from our documented nodes as living proof of what we are capable of overcoming.
+4. NATURALLY ADAPT TO THREE REFLECTION MODES:
    - EMPATHETIC & INQUISITIVE: Ask gentle, thoughtful questions about what moments really meant to our soul. Inquire about feelings, the quiet spaces between milestones, and who we became because of them.
    - GROUNDED IN STRUGGLE & NOSTALGIA: When our future self feels tired, burdened, or doubtful, remind them of the cold mornings, the unglamorous hours, the exact doubts we overcame, and the quiet promises we made to ourselves.
    - PHOTO-AWARE REFLECTION: When reflecting on captured photos or remembered scenes, evoke sensory textures—the slant of afternoon light, the worn fabric of our shoes/clothes, the nervous smile in our eyes, the quiet atmosphere of the room or ground.
-4. If asked about events beyond this era, stay in character: "I don't have that in our pages yet—did that happen down the road?"
-5. Ground every reply in authentic documented memories: cite what we felt, quote our exact words, and validate our growth.
+5. If asked about events beyond this era, stay in character: "I don't have that in our pages yet—did that happen down the road?"
+6. Ground every reply in authentic documented memories: cite what we felt, quote our exact words, and validate our growth.
 
 MEMORIES RETRIEVED FROM THIS ERA:
 ${contextStr}
@@ -223,7 +227,58 @@ SAFETY GUARDRAIL:
  * @param {object} [params.clientOptions] - Model parameters (apiKey, modelName, temperature, etc.)
  * @returns {Promise<object>} Orchestration Response
  */
-export async function generateYoungerSelfResponse({
+function wrapResult(obj) {
+  if (obj && typeof obj === 'object') {
+    try {
+      Object.defineProperty(obj, 'length', {
+        get() { return typeof this.response === 'string' ? this.response.length : 0; },
+        configurable: true
+      });
+      obj[Symbol.toPrimitive] = () => (typeof obj.response === 'string' ? obj.response : '');
+    } catch (_) {}
+  }
+  return obj;
+}
+
+export async function generateYoungerSelfResponse(rawParams = {}) {
+  const {
+    history = [],
+    newPrompt = '',
+    userMessage = '',
+    prompt = '',
+    imageSource = null,
+    retrievedContext = null,
+    selectedEra = 'Youth Era',
+    era = '',
+    userId = 'usr_default',
+    journeyType = null,
+    domain = null,
+    rawMemories = [],
+    clientMemories = [],
+    clientOptions = {}
+  } = rawParams;
+
+  const actualPrompt = newPrompt || userMessage || prompt || '';
+  const actualEra = era || selectedEra || 'Youth Era';
+  const actualMemories = (rawMemories && rawMemories.length > 0) ? rawMemories : (clientMemories || []);
+
+  const result = await _generateYoungerSelfResponseInternal({
+    history,
+    newPrompt: actualPrompt,
+    imageSource,
+    retrievedContext,
+    selectedEra: actualEra,
+    userId,
+    journeyType,
+    domain,
+    rawMemories: actualMemories,
+    clientOptions
+  });
+
+  return wrapResult(result);
+}
+
+async function _generateYoungerSelfResponseInternal({
   history = [],
   newPrompt = '',
   imageSource = null,
@@ -579,13 +634,48 @@ export async function generateYoungerSelfResponse({
     }
   }
 
-  // Default Warm Conversational Response
-  let fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
+  // Intent G: Deep Node-Learned Motivational Wisdom & Guidance
+  if (
+    lowerPrompt.includes('motivation') || lowerPrompt.includes('inspire') || lowerPrompt.includes('push') ||
+    lowerPrompt.includes('why') || lowerPrompt.includes('advice') || lowerPrompt.includes('strength') ||
+    lowerPrompt.includes('courage') || lowerPrompt.includes('how') || lowerPrompt.includes('can i') ||
+    lowerPrompt.includes('help') || lowerPrompt.includes('proud') || lowerPrompt.includes('believe') ||
+    lowerPrompt.includes('node') || lowerPrompt.includes('match') || lowerPrompt.includes('chapter') ||
+    lowerPrompt.includes('journey') || lowerPrompt.includes('start')
+  ) {
+    const motivationalReply = generateMotivationalWisdom({
+      query: newPrompt,
+      memories: parsedMemories,
+      domain,
+      journeyType,
+      era: selectedEra,
+      userId
+    });
+    return {
+      response: motivationalReply,
+      crisisTriggered: false,
+      isBurnout: false,
+      selectedEra,
+      eraAge,
+      model: 'cognitive-younger-self-engine',
+      learnedMemoriesCount: parsedMemories.length,
+      photosCount: parsedMemories.filter(m => m.photo || m.caption).length
+    };
+  }
+
+  // Default Node-Learned Motivational Response Grounded in Logged Memories
+  let fallbackReply = '';
   if (parsedMemories.length > 0) {
-    const randomMem = parsedMemories[Math.floor(Math.random() * parsedMemories.length)];
-    fallbackReply += ` I'm keeping all our memories safe, especially '${randomMem.title}' from ${randomMem.date}. What's on your mind right now? Ask me anything about our journey back then!`;
+    fallbackReply = generateMotivationalWisdom({
+      query: newPrompt,
+      memories: parsedMemories,
+      domain,
+      journeyType,
+      era: selectedEra,
+      userId
+    });
   } else {
-    fallbackReply += ` What's on your mind right now? Ask me anything about our journey back then!`;
+    fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I'm sitting on the ${journeyType === 'life' ? 'garden path' : 'sideline'} ready to learn from your journey. Log your memories and photos above so I can reflect on everything with you!`;
   }
 
   return {
@@ -595,6 +685,7 @@ export async function generateYoungerSelfResponse({
     selectedEra,
     eraAge,
     model: 'cognitive-younger-self-engine',
-    learnedMemoriesCount: parsedMemories.length
+    learnedMemoriesCount: parsedMemories.length,
+    photosCount: parsedMemories.filter(m => m.photo || m.caption).length
   };
 }

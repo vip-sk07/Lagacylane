@@ -29,6 +29,7 @@ export {
   updateContinuousLearningGraph, 
   getUserCognitiveProfile, 
   synthesizeLearnedInsights,
+  generateMotivationalWisdom,
   MILESTONE_ARCHETYPES
 } from './learningEngine.js';
 export { 

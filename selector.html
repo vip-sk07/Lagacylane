@@ -1238,7 +1238,8 @@
             function launchTimeline() {
                 playSound('whistle');
                 const modeParam = currentMode === 'sports' ? 'sports' : 'life';
-                window.location.href = `timeline.html?mode=${modeParam}`;
+                const chosenSport = localStorage.getItem('legacy_selected_sport') || 'football';
+                window.location.href = `timeline.html?mode=${modeParam}&sport=${encodeURIComponent(chosenSport)}`;
             }
 
             document.getElementById('btn-launch-3d-timeline').addEventListener('click', launchTimeline);

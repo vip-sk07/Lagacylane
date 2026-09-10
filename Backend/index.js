@@ -18,7 +18,8 @@ import {
   initSidelineWebSocketServer,
   removeUserVectors,
   perceiveImage,
-  getUserCognitiveProfile
+  getUserCognitiveProfile,
+  updateContinuousLearningGraph
 } from '../AI_Modules/index.js';
 import { encryptText, decryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
@@ -365,6 +366,11 @@ app.get('/api/memories/:userId', async (req, res) => {
         plainContent = r.MatchDetails || '';
       }
 
+      const allPhotos = Array.isArray(r.MediaAssets) 
+        ? r.MediaAssets.map(a => typeof a === 'string' ? a : a.url).filter(Boolean)
+        : [];
+      if (allPhotos.length === 0 && r.Photo) allPhotos.push(r.Photo);
+
       return {
         id: r.Memory_ID,
         levelNumber: r.LevelNumber || skip + idx + 1,
@@ -381,8 +387,10 @@ app.get('/api/memories/:userId', async (req, res) => {
         victoryMessage: r.VictoryMessage || '',
         sentiment: typeof r.SentimentScore === 'number' ? r.SentimentScore : 85,
         sentimentLabel: r.SentimentLabel || '',
-        photo: r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].url : null,
-        media: r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].url : null,
+        photo: (r.MediaAssets && r.MediaAssets[0]) ? r.MediaAssets[0].url : (allPhotos[0] || null),
+        photos: allPhotos,
+        media: (r.MediaAssets && r.MediaAssets[0]) ? r.MediaAssets[0].url : (allPhotos[0] || null),
+        mediaAssets: r.MediaAssets || [],
         caption: r.PhotoCaption || (r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].caption : ''),
         location: r.Location || '',
         people: r.People || '',
@@ -390,6 +398,9 @@ app.get('/api/memories/:userId', async (req, res) => {
         tags: Array.isArray(r.Tags?.context) ? r.Tags.context : []
       };
     });
+
+    // Enforce strict chronological ascending sort (earliest to latest)
+    memories.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     res.json({ memories, count: memories.length, page: parseInt(page, 10), limit: parseInt(limit, 10) });
   } catch (err) {
@@ -402,7 +413,7 @@ app.post('/api/memories', async (req, res) => {
   try {
     const {
       userId, title, era, date, matchDetails, content, journal, victoryMessage,
-      stars, mediaUrl, photo, caption, tags, location, people, isFavorite, sentimentLabel,
+      stars, mediaUrl, photo, photos, caption, tags, location, people, isFavorite, sentimentLabel,
       journeyType = 'life',
       domain = 'life'
     } = req.body;
@@ -417,8 +428,19 @@ app.post('/api/memories', async (req, res) => {
     // Analyze sentiment dynamically using the AI module or given score
     let sentimentScore = typeof req.body.sentiment === 'number' ? req.body.sentiment : analyzeSentiment(title, textContent + ' ' + (victoryMessage || ''));
 
-    // Resolve media URL
-    const activePhotoUrl = photo || mediaUrl || null;
+    // Resolve media URLs (support both single photo and multiple photos array)
+    let mediaAssetsList = [];
+    if (Array.isArray(photos) && photos.length > 0) {
+      mediaAssetsList = photos.map(p => {
+        if (typeof p === 'string') return { url: p, type: 'image', caption: caption || '' };
+        return { url: p.url, type: p.type || 'image', caption: p.caption || caption || '' };
+      });
+    } else if (photo || mediaUrl) {
+      const singleUrl = photo || mediaUrl;
+      mediaAssetsList = [{ url: singleUrl, type: 'image', caption: caption || '' }];
+    }
+
+    const activePhotoUrl = mediaAssetsList.length > 0 ? mediaAssetsList[0].url : null;
     let resolvedImageSource = activePhotoUrl;
     if (activePhotoUrl && typeof activePhotoUrl === 'string') {
       const match = activePhotoUrl.match(/\/uploads\/([^/?#]+)/);
@@ -485,10 +507,31 @@ app.post('/api/memories', async (req, res) => {
       IsFavorite: Boolean(isFavorite),
       PhotoCaption: caption || '',
       Tags: { era: era || 'Youth & Formative Years', context: tags || [] },
-      MediaAssets: activePhotoUrl ? [{ url: activePhotoUrl, type: 'image', caption: caption || '' }] : [],
+      MediaAssets: mediaAssetsList,
       VisualPerception: visualPerception,
       CreatedAt: new Date()
     };
+
+    // Update Continuous Cognitive Learning Graph
+    try {
+      updateContinuousLearningGraph({
+        userId,
+        memory: {
+          title,
+          description: textContent,
+          journal: textContent,
+          entryDate: doc.EntryDate,
+          era: doc.Era,
+          domain,
+          sentimentScore,
+          caption: doc.PhotoCaption,
+          mediaUrl: activePhotoUrl
+        },
+        visualPerception
+      });
+    } catch (learnErr) {
+      console.warn('Continuous learning graph update warning:', learnErr.message);
+    }
 
     const collection = getCollection('MemoryLogs');
     await collection.insertOne(doc);
@@ -510,6 +553,8 @@ app.post('/api/memories', async (req, res) => {
         people: doc.People,
         isFavorite: doc.IsFavorite,
         photo: activePhotoUrl,
+        photos: mediaAssetsList.map(m => m.url),
+        mediaAssets: mediaAssetsList,
         caption: doc.PhotoCaption,
         tags: doc.Tags.context,
         journeyType,

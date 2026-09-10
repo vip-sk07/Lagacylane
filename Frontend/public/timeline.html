@@ -361,10 +361,14 @@
                         </span>
                     </div>
 
-                    <!-- Previous/Next Arrows -->
+                    <!-- Previous/Tour/Next Controls for Visiting Nodes -->
                     <div class="flex items-center gap-2">
-                        <button id="btn-prev-play" title="Previous Play" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
-                        <button id="btn-next-play" title="Next Play" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❯</button>
+                        <button id="btn-prev-play" title="Visit Previous Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
+                        <button id="btn-tour-journey" title="Auto-Tour Chronological Nodes" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 flex items-center gap-1.5 font-bold text-xs border border-amber-500/30 transition shadow-sm">
+                            <span id="tour-icon">▶</span>
+                            <span id="tour-label">Tour Nodes</span>
+                        </button>
+                        <button id="btn-next-play" title="Visit Next Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❯</button>
                     </div>
                 </div>
 
@@ -378,7 +382,7 @@
                         "Click '+ Write Memory' above to begin preserving moments, milestones, and reflections across your timeline."
                     </p>
                     <p id="snippet-cta-text" class="text-[11px] text-amber-300/90 font-medium tracking-normal mt-1.5 flex items-center gap-1 group-hover:underline">
-                        <span>Open inspection drawer to view memory</span> →
+                        <span>Click to visit and inspect node memories, photos & keepsakes</span> →
                     </p>
                 </div>
 
@@ -428,21 +432,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
                     <div>
                         <label class="block text-xs font-medium text-stone-300 mb-1">Milestone Era *</label>
-                        <select id="log-input-era" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-200 text-xs focus:border-amber-400 focus:outline-none">
-                            <option value="Childhood Years (Age 5-12)">Childhood Years (Age 5-12)</option>
-                            <option value="Youth & Formative Years (Age 13-18)">Youth & Formative Years (Age 13-18)</option>
-                            <option value="College / Early Journey (Age 19-22)">College / Early Journey (Age 19-22)</option>
-                            <option value="Pro Debut & Career Milestones (Age 23+)">Pro Debut & Milestones (Age 23+)</option>
-                            <option value="Late Career & Reflection">Late Career & Reflection</option>
+                        <select id="log-input-era" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                            <option value="Youth & Formative Years">Youth & Formative Years</option>
+                            <option value="High School & Early Ambition">High School & Early Ambition</option>
+                            <option value="Collegiate / Trial Era">Collegiate / Trial Era</option>
+                            <option value="Championship & Breakthrough">Championship & Breakthrough</option>
+                            <option value="Comeback & Resilience Season">Comeback & Resilience Season</option>
+                            <option value="Mastery & Legacy Chapters">Mastery & Legacy Chapters</option>
                         </select>
                     </div>
-                    <div class="pt-5">
-                        <label class="flex items-center gap-2.5 text-xs text-stone-300 cursor-pointer p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition">
-                            <input type="checkbox" id="log-input-favorite" class="w-4 h-4 rounded text-amber-400 focus:ring-0 bg-stone-900 border-stone-700">
-                            <span class="flex items-center gap-1.5 font-medium">
-                                <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                Pin as Landmark Milestone
-                            </span>
+                    <div class="flex items-center gap-2 pt-5">
+                        <input type="checkbox" id="log-input-favorite" class="w-4 h-4 rounded bg-stone-900 border-white/20 text-amber-500 focus:ring-amber-400">
+                        <label for="log-input-favorite" class="text-xs text-stone-300 cursor-pointer flex items-center gap-1">
+                            <span>Mark as Landmark Memory</span>
+                            <span class="text-amber-400">★</span>
                         </label>
                     </div>
                 </div>
@@ -508,24 +511,22 @@
                     <textarea id="log-input-journal" rows="3" required placeholder="Write freely about what happened, how your heart and mind felt, and what echoes from this day..." class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                 </div>
 
-                <!-- Real Multipart Photo Upload Box -->
+                <!-- Multipart Multi-Photo Keepsakes Upload Box -->
                 <div>
-                    <label class="block text-xs font-medium text-stone-300 mb-1">Visual Keepsake (Optional)</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-medium text-stone-300">Visual Keepsakes (Attach Multiple Photos)</label>
+                        <span id="attached-photos-count" class="text-[10px] font-mono text-stone-400">0 attached</span>
+                    </div>
                     <div id="media-dropzone" class="border-2 border-dashed border-white/15 hover:border-amber-400/50 rounded-2xl p-4 text-center cursor-pointer bg-stone-900/40 transition relative">
-                        <input type="file" id="log-input-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <input type="file" id="log-input-file" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                         <div class="flex flex-col items-center gap-1 pointer-events-none">
                             <svg class="w-6 h-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <p class="text-xs font-medium text-stone-300" id="media-dropzone-label">Click or Drag Photo Here</p>
-                            <span class="text-[10px] text-stone-500 font-mono">PNG, JPG, WEBP up to 20MB</span>
+                            <p class="text-xs font-medium text-stone-300" id="media-dropzone-label">Click or Drag Multiple Photos Here</p>
+                            <span class="text-[10px] text-stone-500 font-mono">Select one or many photos • JPG, PNG, WEBP</span>
                         </div>
                     </div>
-                    <div id="log-preview-box" class="mt-2 hidden flex items-center gap-3">
-                        <img id="log-preview-img" src="" class="w-16 h-16 rounded-xl object-cover border border-white/10 shadow">
-                        <div class="flex-1 space-y-1">
-                            <input type="text" id="log-input-caption" placeholder="Enter photo caption..." class="w-full px-3 py-2 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
-                            <button type="button" id="btn-remove-photo" class="text-[10px] text-red-400 hover:underline">Remove image</button>
-                        </div>
-                    </div>
+                    <!-- Live Gallery of Uploaded Photos with Individual Captions -->
+                    <div id="log-photos-preview-container" class="mt-2.5 space-y-2 max-h-48 overflow-y-auto"></div>
                 </div>
 
                 <input type="hidden" id="editing-memory-id" value="">
@@ -540,7 +541,7 @@
     </div>
 
     <!-- ==========================================================================
-         MODAL 2: MEMORY INSPECTION DRAWER
+         MODAL 2: MEMORY INSPECTION DRAWER (VISITED NODE VIEW)
          ========================================================================== -->
     <div id="modal-inspect-play" class="drawer-overlay">
         <div class="w-full max-w-2xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/10">
@@ -549,7 +550,7 @@
                 <div class="flex items-center gap-2">
                     <span id="inspect-node-badge" class="px-3 py-1 rounded-xl bg-stone-800 text-stone-300 font-mono text-xs font-medium border border-white/10">NODE #1</span>
                     <span id="inspect-date-badge" class="px-3 py-1 rounded-xl bg-amber-500/15 text-amber-300 font-mono text-xs font-medium border border-amber-500/30">2023-06-30</span>
-                    <span id="inspect-landmark-star" class="hidden text-amber-400" title="Landmark Milestone">★ Landmark</span>
+                    <span id="inspect-landmark-star" class="hidden text-amber-400 font-mono text-xs" title="Landmark Milestone">★ Landmark</span>
                 </div>
                 <button id="btn-close-inspect-modal" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition">✕</button>
             </div>
@@ -574,9 +575,13 @@
                 </span>
             </div>
 
-            <!-- Uploaded Photo & Caption -->
-            <div id="inspect-photo-box" class="hidden space-y-1.5">
-                <img id="inspect-img" src="" class="w-full h-64 rounded-2xl object-cover border border-white/10 shadow-lg">
+            <!-- Uploaded Photos Gallery with Lightbox -->
+            <div id="inspect-photo-box" class="hidden space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-stone-400 font-medium tracking-wide">CAPTURED VISUAL KEEPSAKES</span>
+                    <span id="inspect-photos-count" class="text-[10px] font-mono text-amber-300">1 Photo</span>
+                </div>
+                <div id="inspect-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
                 <p id="inspect-photo-caption" class="text-xs font-mono text-stone-300 text-center italic"></p>
             </div>
 
@@ -601,22 +606,40 @@
                 <p id="inspect-ai-quote" class="text-xs text-amber-100 leading-relaxed italic">"Younger self commentary..."</p>
             </div>
 
-            <div class="flex items-center justify-between pt-2">
+            <!-- Modal Action Buttons & Node Visit Navigation -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10">
                 <div class="flex items-center gap-2">
+                    <button id="btn-add-to-this-node" class="btn-hover-lift px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-semibold text-xs border border-amber-500/40 transition flex items-center gap-1.5" title="Add another memory or photo to this node">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        <span>Add to this Node</span>
+                    </button>
                     <button id="btn-edit-memory" class="btn-hover-lift px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-stone-200 font-medium text-xs border border-white/10 transition flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <span>Edit Memory</span>
+                        <span>Edit</span>
                     </button>
-                    <button id="btn-delete-play" class="btn-hover-lift px-3.5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 font-medium text-xs border border-red-500/30 transition flex items-center gap-1.5">
+                    <button id="btn-delete-play" class="btn-hover-lift px-3 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 font-medium text-xs border border-red-500/30 transition flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        <span>Release Memory</span>
+                        <span>Delete</span>
                     </button>
                 </div>
-                <button id="btn-close-inspect" class="btn-hover-lift px-5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium text-xs transition">
-                    Close
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="btn-inspect-prev-node" class="btn-hover-lift px-3 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 text-xs border border-white/10 transition">❮ Prev Node</button>
+                    <button id="btn-inspect-next-node" class="btn-hover-lift px-3 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 text-xs border border-white/10 transition">Next Node ❯</button>
+                    <button id="btn-close-inspect" class="btn-hover-lift px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium text-xs transition">
+                        Close
+                    </button>
+                </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Full-Screen Lightbox Modal -->
+    <div id="modal-photo-lightbox" class="drawer-overlay" style="z-index: 9999;">
+        <div class="max-w-4xl max-h-[90vh] flex flex-col items-center justify-center p-4 relative">
+            <button id="btn-close-lightbox" class="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white text-lg flex items-center justify-center transition border border-white/20">✕</button>
+            <img id="lightbox-img" src="" class="max-h-[75vh] max-w-full rounded-2xl object-contain shadow-2xl border border-white/20">
+            <p id="lightbox-caption" class="mt-3 text-xs font-mono text-stone-200 text-center bg-black/70 px-4 py-1.5 rounded-full border border-white/10"></p>
         </div>
     </div>
 
@@ -789,10 +812,17 @@
             if (!allMemoriesStore.life) allMemoriesStore.life = [];
 
             function getActiveMemories() {
-                return allMemoriesStore[currentSport] || [];
+                const list = (allMemoriesStore[currentSport] || []).slice();
+                list.sort((a, b) => new Date(a.date) - new Date(b.date));
+                list.forEach((m, idx) => { m.id = idx + 1; });
+                return list;
             }
 
             function saveMemoriesStore() {
+                if (allMemoriesStore[currentSport] && Array.isArray(allMemoriesStore[currentSport])) {
+                    allMemoriesStore[currentSport].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    allMemoriesStore[currentSport].forEach((m, idx) => { m.id = idx + 1; });
+                }
                 localStorage.setItem('legacylane_memories_v2', JSON.stringify(allMemoriesStore));
             }
 
@@ -1012,6 +1042,11 @@
             let leavesParticleSystem = null;
             let leavesPositions = null;
             const numLeaves = 140;
+            let sanctuaryLanternLights = [];
+            let stadiumGroup = null;
+            let stadiumCornerFlags = [];
+            let stadiumSpotlights = [];
+            let arenaCubeScoreboard = null;
 
             function createFieldTexture(sport) {
                 const cv = document.createElement('canvas');
@@ -1058,51 +1093,211 @@
                         ctx.fill();
                     }
                 } else if (sport === 'basketball') {
-                    // Hardwood Court
-                    ctx.fillStyle = '#8d6e63';
+                    // Professional Hardwood Parquet Floor
+                    ctx.fillStyle = '#d97706'; // Rich Honey Maple
                     ctx.fillRect(0, 0, 1024, 2048);
-                    for (let x = 0; x < 1024; x += 64) {
-                        ctx.fillStyle = (x / 64) % 2 === 0 ? '#795548' : '#8d6e63';
-                        ctx.fillRect(x, 0, 64, 2048);
+
+                    // Parquet alternating slats
+                    for (let y = 0; y < 2048; y += 32) {
+                        for (let x = 0; x < 1024; x += 64) {
+                            const isAlt = ((x / 64) + (y / 32)) % 2 === 0;
+                            ctx.fillStyle = isAlt ? '#b45309' : '#d97706';
+                            ctx.fillRect(x, y, 64, 32);
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                            ctx.strokeRect(x, y, 64, 32);
+                        }
                     }
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 8;
-                    ctx.strokeRect(60, 60, 904, 1928);
-                    ctx.beginPath();
-                    ctx.arc(512, 1024, 200, 0, Math.PI * 2);
-                    ctx.stroke();
-                } else if (sport === 'track') {
-                    // Tartan Red Track Lanes
-                    ctx.fillStyle = '#b71c1c';
-                    ctx.fillRect(0, 0, 1024, 2048);
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                    ctx.lineWidth = 6;
-                    for (let x = 100; x < 950; x += 120) {
-                        ctx.beginPath();
-                        ctx.moveTo(x, 0);
-                        ctx.lineTo(x, 2048);
-                        ctx.stroke();
+
+                    // Subtle wood grain horizontal lines
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+                    for (let y = 0; y < 2048; y += 8) {
+                        ctx.fillRect(0, y, 1024, 1);
                     }
-                } else if (sport === 'cricket') {
-                    // Green Oval + Central Pitch Crease
-                    ctx.fillStyle = '#33691e';
-                    ctx.fillRect(0, 0, 1024, 2048);
-                    ctx.fillStyle = '#d7ccc8';
-                    ctx.fillRect(412, 600, 200, 848);
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 6;
-                    ctx.strokeRect(412, 600, 200, 848);
-                } else if (sport === 'tennis') {
-                    // Blue Tennis Court
-                    ctx.fillStyle = '#1565c0';
-                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Boundary Lines
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 10;
-                    ctx.strokeRect(120, 120, 784, 1808);
+                    ctx.strokeRect(80, 80, 864, 1888);
+
+                    // Midcourt Division Line
                     ctx.beginPath();
-                    ctx.moveTo(120, 1024);
-                    ctx.lineTo(904, 1024);
+                    ctx.moveTo(80, 1024);
+                    ctx.lineTo(944, 1024);
                     ctx.stroke();
+
+                    // Center Circle
+                    ctx.beginPath();
+                    ctx.arc(512, 1024, 140, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(180, 83, 9, 0.4)';
+                    ctx.fill();
+
+                    // Key Areas (Painted Lanes) - North & South
+                    const keyW = 320;
+                    const keyH = 380;
+                    // North Key
+                    ctx.fillStyle = '#9a3412';
+                    ctx.fillRect(512 - keyW / 2, 80, keyW, keyH);
+                    ctx.strokeRect(512 - keyW / 2, 80, keyW, keyH);
+                    // North Free Throw Circle
+                    ctx.beginPath();
+                    ctx.arc(512, 80 + keyH, 120, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // South Key
+                    ctx.fillStyle = '#9a3412';
+                    ctx.fillRect(512 - keyW / 2, 1968 - keyH, keyW, keyH);
+                    ctx.strokeRect(512 - keyW / 2, 1968 - keyH, keyW, keyH);
+                    // South Free Throw Circle
+                    ctx.beginPath();
+                    ctx.arc(512, 1968 - keyH, 120, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // 3-Point Arcs (Radius ~ 480)
+                    ctx.beginPath();
+                    ctx.arc(512, 120, 420, 0.25 * Math.PI, 0.75 * Math.PI, false);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(512, 1928, 420, 1.25 * Math.PI, 1.75 * Math.PI, false);
+                    ctx.stroke();
+                } else if (sport === 'tennis') {
+                    // Tournament Court: Rich Navy Blue Inner Court + Deep Forest Green Apron
+                    ctx.fillStyle = '#1e3a8a'; // Tournament Royal Blue
+                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Forest Green outer border surround
+                    ctx.fillStyle = '#14532d';
+                    ctx.fillRect(0, 0, 1024, 180);
+                    ctx.fillRect(0, 1868, 1024, 180);
+                    ctx.fillRect(0, 0, 140, 2048);
+                    ctx.fillRect(884, 0, 140, 2048);
+
+                    // Regulation White Court Markings
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 8;
+
+                    // Doubles Court Boundary
+                    const bx = 140, by = 180, bw = 744, bh = 1688;
+                    ctx.strokeRect(bx, by, bw, bh);
+
+                    // Singles Sidelines (inward by 90px)
+                    ctx.beginPath();
+                    ctx.moveTo(bx + 90, by);
+                    ctx.lineTo(bx + 90, by + bh);
+                    ctx.moveTo(bx + bw - 90, by);
+                    ctx.lineTo(bx + bw - 90, by + bh);
+                    ctx.stroke();
+
+                    // Net Line (Center Division)
+                    ctx.beginPath();
+                    ctx.moveTo(bx - 30, 1024);
+                    ctx.lineTo(bx + bw + 30, 1024);
+                    ctx.stroke();
+
+                    // Service Lines (North & South)
+                    const sDist = 380;
+                    ctx.beginPath();
+                    ctx.moveTo(bx + 90, 1024 - sDist);
+                    ctx.lineTo(bx + bw - 90, 1024 - sDist);
+                    ctx.moveTo(bx + 90, 1024 + sDist);
+                    ctx.lineTo(bx + bw - 90, 1024 + sDist);
+                    ctx.stroke();
+
+                    // Center Service Line
+                    ctx.beginPath();
+                    ctx.moveTo(512, 1024 - sDist);
+                    ctx.lineTo(512, 1024 + sDist);
+                    ctx.stroke();
+
+                    // Baseline Center Tick Marks
+                    ctx.beginPath();
+                    ctx.moveTo(512, by);
+                    ctx.lineTo(512, by + 20);
+                    ctx.moveTo(512, by + bh);
+                    ctx.lineTo(512, by + bh - 20);
+                    ctx.stroke();
+                } else if (sport === 'cricket') {
+                    // Emerald Green Oval with concentric circular cut mowing
+                    ctx.fillStyle = '#1e3f20';
+                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Concentric mow rings
+                    for (let r = 900; r > 100; r -= 100) {
+                        ctx.strokeStyle = (r / 100) % 2 === 0 ? '#2d5a27' : '#1e3f20';
+                        ctx.lineWidth = 50;
+                        ctx.beginPath();
+                        ctx.ellipse(512, 1024, r * 0.48, r, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    // Central 22-Yard Rectangular Tan Turf Pitch
+                    const pw = 180, ph = 760;
+                    const px = 512 - pw / 2, py = 1024 - ph / 2;
+                    ctx.fillStyle = '#d4b896'; // Sand/Clay pitch color
+                    ctx.fillRect(px, py, pw, ph);
+
+                    // Pitch grain texture
+                    ctx.fillStyle = 'rgba(120, 85, 45, 0.15)';
+                    for (let y = py; y < py + ph; y += 6) {
+                        ctx.fillRect(px, y, pw, 2);
+                    }
+
+                    // Crease Markings (Bowling Crease, Popping Crease, Return Crease)
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 5;
+
+                    // North Wicket Crease
+                    ctx.strokeRect(px + 20, py + 40, pw - 40, 2); // Bowling crease
+                    ctx.strokeRect(px, py + 95, pw, 2); // Popping crease
+                    ctx.strokeRect(px, py + 40, 2, 55); // Left return
+                    ctx.strokeRect(px + pw, py + 40, 2, 55); // Right return
+
+                    // South Wicket Crease
+                    ctx.strokeRect(px + 20, py + ph - 40, pw - 40, 2); // Bowling crease
+                    ctx.strokeRect(px, py + ph - 95, pw, 2); // Popping crease
+                    ctx.strokeRect(px, py + ph - 95, 2, 55); // Left return
+                    ctx.strokeRect(px + pw, py + ph - 95, 2, 55); // Right return
+
+                    // White Boundary Oval Marking
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.ellipse(512, 1024, 460, 940, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (sport === 'track') {
+                    // Polyurethane Tartan Red Athletic Running Track
+                    ctx.fillStyle = '#991b1b'; // Deep Tartan Red
+                    ctx.fillRect(0, 0, 1024, 2048);
+
+                    // Infield grass oval
+                    ctx.fillStyle = '#166534';
+                    ctx.beginPath();
+                    ctx.ellipse(512, 1024, 240, 720, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 8 Running Lanes with White Separator Stripes
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    for (let lane = 1; lane <= 8; lane++) {
+                        const rx = 240 + lane * 26;
+                        const ry = 720 + lane * 42;
+                        ctx.beginPath();
+                        ctx.ellipse(512, 1024, rx, ry, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    // Finish Line White Band (at South Straightaway)
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(240, 1550, 240, 14);
+
+                    // Stenciled Lane Numbers
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 24px monospace';
+                    ctx.textAlign = 'center';
+                    for (let lane = 1; lane <= 8; lane++) {
+                        const lx = 240 + (lane - 0.5) * 26;
+                        ctx.fillText(`${lane}`, lx, 1530);
+                    }
                 } else {
                     // Authentic Emerald Football / Soccer Grass Pitch
                     ctx.fillStyle = '#183b1b';
@@ -1250,7 +1445,7 @@
                 return tex;
             }
 
-            function createLedBoardTexture() {
+            function createLedBoardTexture(sportName = 'FOOTBALL') {
                 const cv = document.createElement('canvas');
                 cv.width = 1024;
                 cv.height = 64;
@@ -1266,10 +1461,9 @@
                     }
                 }
 
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = 'bold 22px monospace';
+                ctx.font = 'bold 20px monospace';
                 ctx.textBaseline = 'middle';
-                const bannerText = "★  LEGACY LANE  ★  ARCHIVE CUP  ★  CAREER LEDGER  ★  THE BEAUTIFUL GAME  ★  EST. 2026  ★  LEGACY LANE  ★";
+                const bannerText = `★  LEGACY LANE  ★  ${(sportName || 'CAREER').toUpperCase()} VAULT  ★  CHAMPIONSHIP ARENA  ★  EST. 2026  ★  THE ONE WHO LIVES  ★`;
 
                 ctx.shadowColor = '#38bdf8';
                 ctx.shadowBlur = 8;
@@ -1287,10 +1481,94 @@
                 return tex;
             }
 
-            function buildTreesAndBreeze() {
-                if (treesGroup) scene.remove(treesGroup);
-                if (leavesParticleSystem) scene.remove(leavesParticleSystem);
+            function createScoreboardTexture(sportTitle = 'BASKETBALL') {
+                const cv = document.createElement('canvas');
+                cv.width = 512;
+                cv.height = 320;
+                const ctx = cv.getContext('2d');
 
+                ctx.fillStyle = '#050811';
+                ctx.fillRect(0, 0, 512, 320);
+
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(6, 6, 500, 308);
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 24px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`★ LEGACY LANE ARENA ★`, 256, 42);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 36px monospace';
+                ctx.fillText(`HOME 108   AWAY 102`, 256, 120);
+
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'bold 30px monospace';
+                ctx.fillText(`PERIOD 4  •  01:45`, 256, 185);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 20px monospace';
+                ctx.fillText(`SHOT CLOCK: 14  •  FOULS: 3`, 256, 240);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '16px monospace';
+                ctx.fillText(`${(sportTitle || '').toUpperCase()} SHOWCASE`, 256, 285);
+
+                const tex = new THREE.CanvasTexture(cv);
+                return tex;
+            }
+
+            function clearAllEnvironments() {
+                if (stadiumSpotlights.length > 0) {
+                    stadiumSpotlights.forEach(spot => {
+                        if (spot.target) scene.remove(spot.target);
+                        scene.remove(spot);
+                    });
+                    stadiumSpotlights = [];
+                }
+                if (sanctuaryLanternLights.length > 0) {
+                    sanctuaryLanternLights.forEach(light => scene.remove(light));
+                    sanctuaryLanternLights = [];
+                }
+                if (stadiumGroup) {
+                    stadiumGroup.traverse(child => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+                            else child.material.dispose();
+                        }
+                    });
+                    scene.remove(stadiumGroup);
+                    stadiumGroup = null;
+                }
+                stadiumCornerFlags = [];
+                arenaCubeScoreboard = null;
+
+                if (treesGroup) {
+                    treesGroup.traverse(child => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+                            else child.material.dispose();
+                        }
+                    });
+                    scene.remove(treesGroup);
+                    treesGroup = null;
+                }
+                if (leavesParticleSystem) {
+                    if (leavesParticleSystem.geometry) leavesParticleSystem.geometry.dispose();
+                    if (leavesParticleSystem.material) leavesParticleSystem.material.dispose();
+                    scene.remove(leavesParticleSystem);
+                    leavesParticleSystem = null;
+                    leavesPositions = null;
+                }
+            }
+
+            /* ------------------------------------------------------------------
+               4A. LIFE SANCTUARY (TREES, FLUTTERING BREEZE & GLOWING LANTERNS)
+               ------------------------------------------------------------------ */
+            function buildLifeSanctuary() {
                 treesGroup = new THREE.Group();
 
                 // 16 Stylized 3D trees flanking the path in the breeze
@@ -1331,6 +1609,57 @@
                     treesGroup.add(tree);
                 });
 
+                // 8 Glowing Japanese Stone Lanterns (tōrō) along path
+                const lanternCoords = [
+                    [-7.2, -30], [7.2, -20], [-7.2, -10], [7.2, 0],
+                    [-7.2, 10], [7.2, 20], [-7.2, 30], [7.2, 40]
+                ];
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 });
+                const glowChamberMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+
+                lanternCoords.forEach(([lx, lz], idx) => {
+                    const lantern = new THREE.Group();
+                    lantern.position.set(lx, 0, lz);
+
+                    // Base Pedestal
+                    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 0.4, 6), stoneMat);
+                    base.position.y = 0.2;
+                    lantern.add(base);
+
+                    // Shaft
+                    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.1, 6), stoneMat);
+                    shaft.position.y = 0.95;
+                    lantern.add(shaft);
+
+                    // Middle Platform
+                    const midPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.35, 0.2, 6), stoneMat);
+                    midPlate.position.y = 1.6;
+                    lantern.add(midPlate);
+
+                    // Light Chamber (warm golden emissive core)
+                    const chamber = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.45, 0.4), glowChamberMat);
+                    chamber.position.y = 1.9;
+                    lantern.add(chamber);
+
+                    // Pagoda Roof
+                    const roof = new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.45, 6), stoneMat);
+                    roof.position.y = 2.35;
+                    lantern.add(roof);
+
+                    // Top Finial
+                    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), stoneMat);
+                    finial.position.y = 2.65;
+                    lantern.add(finial);
+
+                    treesGroup.add(lantern);
+
+                    // Soft warm point light
+                    const pLight = new THREE.PointLight(0xf59e0b, 1.2, 9, 1.5);
+                    pLight.position.set(lx, 2.0, lz);
+                    scene.add(pLight);
+                    sanctuaryLanternLights.push(pLight);
+                });
+
                 scene.add(treesGroup);
 
                 // Drifting Breeze Leaves / Petals Particle System
@@ -1354,30 +1683,16 @@
                 scene.add(leavesParticleSystem);
             }
 
-            function clearTreesAndBreeze() {
-                if (treesGroup) {
-                    scene.remove(treesGroup);
-                    treesGroup = null;
-                }
-                if (leavesParticleSystem) {
-                    scene.remove(leavesParticleSystem);
-                    leavesParticleSystem = null;
-                    leavesPositions = null;
-                }
-            }
-
-            let stadiumGroup = null;
-            let stadiumCornerFlags = [];
-            let stadiumSpotlights = [];
-
-            function buildRealisticStadium(sport) {
-                clearStadium();
+            /* ------------------------------------------------------------------
+               4B. REALISTIC FOOTBALL / SOCCER STADIUM
+               ------------------------------------------------------------------ */
+            function buildRealisticFootballStadium() {
                 stadiumGroup = new THREE.Group();
                 stadiumCornerFlags = [];
                 stadiumSpotlights = [];
 
                 const crowdTex = createCrowdTexture();
-                const ledTex = createLedBoardTexture();
+                const ledTex = createLedBoardTexture('FOOTBALL');
 
                 const concreteMat = new THREE.MeshStandardMaterial({
                     color: 0x1e293b,
@@ -1795,26 +2110,442 @@
                 scene.add(stadiumGroup);
             }
 
-            function clearStadium() {
-                if (stadiumSpotlights.length > 0) {
-                    stadiumSpotlights.forEach(spot => {
-                        scene.remove(spot.target);
-                        scene.remove(spot);
-                    });
-                    stadiumSpotlights = [];
-                }
-                if (stadiumGroup) {
-                    stadiumGroup.traverse(child => {
-                        if (child.geometry) child.geometry.dispose();
-                        if (child.material) {
-                            if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
-                            else child.material.dispose();
-                        }
-                    });
-                    scene.remove(stadiumGroup);
-                    stadiumGroup = null;
-                }
+            /* ------------------------------------------------------------------
+               4C. REALISTIC BASKETBALL ARENA (HOOPS, SCOREBOARD CUBE, INDOOR BOWL)
+               ------------------------------------------------------------------ */
+            function buildRealisticBasketballArena() {
+                stadiumGroup = new THREE.Group();
                 stadiumCornerFlags = [];
+                stadiumSpotlights = [];
+
+                const crowdTex = createCrowdTexture();
+                const concreteDarkMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.95 });
+                const crowdMat = new THREE.MeshStandardMaterial({ map: crowdTex, roughness: 0.75 });
+                const stanchionMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.3 });
+                const rimMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.2, metalness: 0.5, emissive: 0xea580c, emissiveIntensity: 0.2 });
+                const netMat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.65 });
+                const glassBackboardMat = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.6,
+                    roughness: 0.1,
+                    metalness: 0.1
+                });
+
+                // 1. Dark Court Apron
+                const apronGeo = new THREE.PlaneGeometry(54, 108);
+                const apronMat = new THREE.MeshStandardMaterial({ color: 0x0b1329, roughness: 0.9 });
+                const apronMesh = new THREE.Mesh(apronGeo, apronMat);
+                apronMesh.rotation.x = -Math.PI / 2;
+                apronMesh.position.y = -0.02;
+                stadiumGroup.add(apronMesh);
+
+                // 2. Indoor Tiered Arena Bowl Stands (Sides & Ends)
+                const westStandGroup = new THREE.Group();
+                westStandGroup.position.set(-20, 0, 0);
+                const deckGeo = new THREE.PlaneGeometry(16, 92);
+                const westDeck = new THREE.Mesh(deckGeo, crowdMat);
+                westDeck.position.set(-6, 6, 0);
+                westDeck.rotation.x = -Math.PI / 2;
+                westDeck.rotation.y = -Math.atan2(8, 12);
+                westStandGroup.add(westDeck);
+                stadiumGroup.add(westStandGroup);
+
+                const eastStandGroup = new THREE.Group();
+                eastStandGroup.position.set(20, 0, 0);
+                const eastDeck = new THREE.Mesh(deckGeo, crowdMat);
+                eastDeck.position.set(6, 6, 0);
+                eastDeck.rotation.x = -Math.PI / 2;
+                eastDeck.rotation.y = Math.atan2(8, 12);
+                eastStandGroup.add(eastDeck);
+                stadiumGroup.add(eastStandGroup);
+
+                const endDeckGeo = new THREE.PlaneGeometry(42, 16);
+                const northStand = new THREE.Mesh(endDeckGeo, crowdMat);
+                northStand.position.set(0, 7, -50);
+                northStand.rotation.x = Math.PI / 2 - Math.atan2(8, 12);
+                stadiumGroup.add(northStand);
+
+                const southStand = new THREE.Mesh(endDeckGeo, crowdMat);
+                southStand.position.set(0, 7, 50);
+                southStand.rotation.x = -(Math.PI / 2 - Math.atan2(8, 12));
+                stadiumGroup.add(southStand);
+
+                // 3. Dual 3D Regulation Basketball Hoops
+                function createBasketballHoop(posZ, facingNorth) {
+                    const hoopGroup = new THREE.Group();
+                    hoopGroup.position.set(0, 0, posZ);
+
+                    // Padded Stanchion Base
+                    const baseGeo = new THREE.BoxGeometry(2.4, 1.3, 2.0);
+                    const base = new THREE.Mesh(baseGeo, stanchionMat);
+                    base.position.set(0, 0.65, facingNorth ? -2.2 : 2.2);
+                    hoopGroup.add(base);
+
+                    // Angled Support Arm
+                    const armLen = 4.6;
+                    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, armLen, 8), stanchionMat);
+                    arm.position.set(0, 2.2, facingNorth ? -1.0 : 1.0);
+                    arm.rotation.x = (facingNorth ? 1 : -1) * 0.45;
+                    hoopGroup.add(arm);
+
+                    // Glass Backboard (Regulation 6ft x 3.5ft / ~3.6m x 2.1m in world scale)
+                    const backboard = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.1, 0.08), glassBackboardMat);
+                    backboard.position.set(0, 3.8, 0);
+                    hoopGroup.add(backboard);
+
+                    // Backboard border & target rectangle frame
+                    const targetBox = new THREE.Mesh(
+                        new THREE.BoxGeometry(1.2, 0.9, 0.1),
+                        new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true })
+                    );
+                    targetBox.position.set(0, 3.6, 0);
+                    hoopGroup.add(targetBox);
+
+                    // Orange Steel Rim (10ft / ~3.05m regulation height)
+                    const rimZ = facingNorth ? 0.75 : -0.75;
+                    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.045, 12, 24), rimMat);
+                    rim.rotation.x = Math.PI / 2;
+                    rim.position.set(0, 3.15, rimZ);
+                    hoopGroup.add(rim);
+
+                    // White Net
+                    const net = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.32, 0.85, 12, 4, true), netMat);
+                    net.position.set(0, 2.7, rimZ);
+                    hoopGroup.add(net);
+
+                    return hoopGroup;
+                }
+
+                stadiumGroup.add(createBasketballHoop(-40, true));
+                stadiumGroup.add(createBasketballHoop(40, false));
+
+                // 4. Center-Hung 4-Sided Overhead Scoreboard Cube (Jumbotron)
+                const sbTex = createScoreboardTexture('BASKETBALL');
+                const sbMat = new THREE.MeshStandardMaterial({
+                    map: sbTex,
+                    emissive: 0x38bdf8,
+                    emissiveIntensity: 0.3,
+                    roughness: 0.2
+                });
+                arenaCubeScoreboard = new THREE.Mesh(new THREE.BoxGeometry(8, 4.5, 8), sbMat);
+                arenaCubeScoreboard.position.set(0, 16.5, 0);
+                stadiumGroup.add(arenaCubeScoreboard);
+
+                // Suspension Cables
+                const cableMat = new THREE.MeshBasicMaterial({ color: 0x64748b });
+                [[-3.8, -3.8], [3.8, -3.8], [-3.8, 3.8], [3.8, 3.8]].forEach(([cx, cz]) => {
+                    const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 14, 6), cableMat);
+                    cable.position.set(cx, 23.5, cz);
+                    stadiumGroup.add(cable);
+                });
+
+                // 5. Four Indoor Arena High-Bay Spotlights
+                const courtSpots = [
+                    { x: -14, z: -20 }, { x: 14, z: -20 },
+                    { x: -14, z: 20 }, { x: 14, z: 20 }
+                ];
+                courtSpots.forEach(pos => {
+                    const spot = new THREE.SpotLight(0xfff7ed, 1.8, 65, Math.PI / 3.4, 0.4, 1.2);
+                    spot.position.set(pos.x, 22, pos.z);
+                    spot.target.position.set(pos.x * 0.3, 0, pos.z * 0.3);
+                    scene.add(spot);
+                    scene.add(spot.target);
+                    stadiumSpotlights.push(spot);
+                });
+
+                scene.add(stadiumGroup);
+            }
+
+            /* ------------------------------------------------------------------
+               4D. REALISTIC TENNIS ARENA (NET, POSTS, UMPIRE CHAIR, STANDS)
+               ------------------------------------------------------------------ */
+            function buildRealisticTennisArena() {
+                stadiumGroup = new THREE.Group();
+                stadiumCornerFlags = [];
+                stadiumSpotlights = [];
+
+                const crowdTex = createCrowdTexture();
+                const crowdMat = new THREE.MeshStandardMaterial({ map: crowdTex, roughness: 0.75 });
+                const netPostMat = new THREE.MeshStandardMaterial({ color: 0x14532d, metalness: 0.6, roughness: 0.3 });
+                const netWireMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, wireframe: true, transparent: true, opacity: 0.65 });
+                const whiteTapeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+                const umpireWoodMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5 });
+
+                // 1. Surrounding Arena Stands
+                const westStandGroup = new THREE.Group();
+                westStandGroup.position.set(-18, 0, 0);
+                const sideDeck = new THREE.Mesh(new THREE.PlaneGeometry(14, 88), crowdMat);
+                sideDeck.position.set(-5, 5, 0);
+                sideDeck.rotation.x = -Math.PI / 2;
+                sideDeck.rotation.y = -Math.atan2(7, 10);
+                westStandGroup.add(sideDeck);
+                stadiumGroup.add(westStandGroup);
+
+                const eastStandGroup = new THREE.Group();
+                eastStandGroup.position.set(18, 0, 0);
+                const eastDeck = new THREE.Mesh(new THREE.PlaneGeometry(14, 88), crowdMat);
+                eastDeck.position.set(5, 5, 0);
+                eastDeck.rotation.x = -Math.PI / 2;
+                eastDeck.rotation.y = Math.atan2(7, 10);
+                eastStandGroup.add(eastDeck);
+                stadiumGroup.add(eastStandGroup);
+
+                const endDeckGeo = new THREE.PlaneGeometry(36, 14);
+                const northStand = new THREE.Mesh(endDeckGeo, crowdMat);
+                northStand.position.set(0, 6, -46);
+                northStand.rotation.x = Math.PI / 2 - Math.atan2(7, 10);
+                stadiumGroup.add(northStand);
+
+                const southStand = new THREE.Mesh(endDeckGeo, crowdMat);
+                southStand.position.set(0, 6, 46);
+                southStand.rotation.x = -(Math.PI / 2 - Math.atan2(7, 10));
+                stadiumGroup.add(southStand);
+
+                // 2. Regulation 3D Tennis Net (Z = 0 across X from -11 to +11)
+                const netGroup = new THREE.Group();
+                netGroup.position.set(0, 0, 0);
+
+                // Dark green metal posts at sidelines
+                const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 12), netPostMat);
+                postL.position.set(-11, 0.7, 0);
+                netGroup.add(postL);
+
+                const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 12), netPostMat);
+                postR.position.set(11, 0.7, 0);
+                netGroup.add(postR);
+
+                // Net mesh body
+                const netMesh = new THREE.Mesh(new THREE.BoxGeometry(22, 1.05, 0.04), netWireMat);
+                netMesh.position.set(0, 0.6, 0);
+                netGroup.add(netMesh);
+
+                // White vinyl top cable tape
+                const topTape = new THREE.Mesh(new THREE.BoxGeometry(22, 0.1, 0.08), whiteTapeMat);
+                topTape.position.set(0, 1.15, 0);
+                netGroup.add(topTape);
+
+                // Center White Strap (pulling down to 3ft / ~0.95m center regulation)
+                const centerStrap = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.15, 0.1), whiteTapeMat);
+                centerStrap.position.set(0, 0.58, 0);
+                netGroup.add(centerStrap);
+
+                stadiumGroup.add(netGroup);
+
+                // 3. Umpire Elevated High Chair with Canopy (West Touchline at X = -12.5, Z = 0)
+                const umpireGroup = new THREE.Group();
+                umpireGroup.position.set(-12.5, 0, 0);
+
+                // 4 Legs
+                [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]].forEach(([lx, lz]) => {
+                    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.6, 8), umpireWoodMat);
+                    leg.position.set(lx, 1.3, lz);
+                    umpireGroup.add(leg);
+                });
+
+                // High Seating Platform
+                const platform = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.1, 1.4), umpireWoodMat);
+                platform.position.y = 2.6;
+                umpireGroup.add(platform);
+
+                // Chair & Desk
+                const chair = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.6), umpireWoodMat);
+                chair.position.set(-0.2, 3.0, 0);
+                umpireGroup.add(chair);
+
+                // Canopy Arch
+                const canopy = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 1.6), whiteTapeMat);
+                canopy.position.set(0, 4.0, 0);
+                umpireGroup.add(canopy);
+
+                stadiumGroup.add(umpireGroup);
+
+                // 4. Spotlights
+                const spots = [
+                    { x: -16, z: -30 }, { x: 16, z: -30 },
+                    { x: -16, z: 30 }, { x: 16, z: 30 }
+                ];
+                spots.forEach(pos => {
+                    const spot = new THREE.SpotLight(0xffffff, 1.6, 65, Math.PI / 3.4, 0.45);
+                    spot.position.set(pos.x, 20, pos.z);
+                    spot.target.position.set(0, 0, 0);
+                    scene.add(spot);
+                    scene.add(spot.target);
+                    stadiumSpotlights.push(spot);
+                });
+
+                scene.add(stadiumGroup);
+            }
+
+            /* ------------------------------------------------------------------
+               4E. REALISTIC CRICKET OVAL (WICKETS, SIGHT SCREENS, PITCH CREASE)
+               ------------------------------------------------------------------ */
+            function buildRealisticCricketOval() {
+                stadiumGroup = new THREE.Group();
+                stadiumCornerFlags = [];
+                stadiumSpotlights = [];
+
+                const crowdTex = createCrowdTexture();
+                const crowdMat = new THREE.MeshStandardMaterial({ map: crowdTex, roughness: 0.8 });
+                const woodMat = new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.4 });
+                const whiteScreenMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
+
+                // 1. Oval Stands
+                const sideDeckGeo = new THREE.PlaneGeometry(16, 92);
+                const westStand = new THREE.Mesh(sideDeckGeo, crowdMat);
+                westStand.position.set(-25, 5, 0);
+                westStand.rotation.x = -Math.PI / 2;
+                westStand.rotation.y = -Math.atan2(6, 12);
+                stadiumGroup.add(westStand);
+
+                const eastStand = new THREE.Mesh(sideDeckGeo, crowdMat);
+                eastStand.position.set(25, 5, 0);
+                eastStand.rotation.x = -Math.PI / 2;
+                eastStand.rotation.y = Math.atan2(6, 12);
+                stadiumGroup.add(eastStand);
+
+                // 2. Dual 3-Stump Wickets with Bails at Pitch Ends (Z = -10.5 and Z = 10.5)
+                function createWicket(posZ) {
+                    const wicketGroup = new THREE.Group();
+                    wicketGroup.position.set(0, 0, posZ);
+
+                    const stumpRadius = 0.035;
+                    const stumpH = 0.85;
+                    [-0.14, 0, 0.14].forEach(sx => {
+                        const stump = new THREE.Mesh(new THREE.CylinderGeometry(stumpRadius, stumpRadius, stumpH, 8), woodMat);
+                        stump.position.set(sx, stumpH / 2, 0);
+                        wicketGroup.add(stump);
+                    });
+
+                    // 2 Horizontal Bails atop the stumps
+                    [-0.07, 0.07].forEach(bx => {
+                        const bail = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.13, 8), woodMat);
+                        bail.position.set(bx, stumpH + 0.02, 0);
+                        bail.rotation.z = Math.PI / 2;
+                        wicketGroup.add(bail);
+                    });
+
+                    return wicketGroup;
+                }
+
+                stadiumGroup.add(createWicket(-10.5));
+                stadiumGroup.add(createWicket(10.5));
+
+                // 3. White Sight Screens at North & South Boundaries
+                function createSightScreen(posZ) {
+                    const screenGroup = new THREE.Group();
+                    screenGroup.position.set(0, 0, posZ);
+
+                    // Large White Slatted Billboard
+                    const screen = new THREE.Mesh(new THREE.BoxGeometry(11, 4.5, 0.25), whiteScreenMat);
+                    screen.position.y = 2.4;
+                    screenGroup.add(screen);
+
+                    // Wheeled support frame
+                    const frame = new THREE.Mesh(new THREE.BoxGeometry(11.2, 0.4, 2.2), new THREE.MeshStandardMaterial({ color: 0x334155 }));
+                    frame.position.y = 0.2;
+                    screenGroup.add(frame);
+
+                    return screenGroup;
+                }
+
+                stadiumGroup.add(createSightScreen(-45));
+                stadiumGroup.add(createSightScreen(45));
+
+                // 4. White Boundary Rope with Foam Wedges
+                const ropeCurve = new THREE.EllipseCurve(0, 0, 20, 42, 0, 2 * Math.PI, false, 0);
+                const ropePts = ropeCurve.getPoints(64).map(p => new THREE.Vector3(p.x, 0.08, p.y));
+                const ropeGeo = new THREE.BufferGeometry().setFromPoints(ropePts);
+                const ropeMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 4 });
+                const ropeLine = new THREE.LineLoop(ropeGeo, ropeMat);
+                stadiumGroup.add(ropeLine);
+
+                // 5. Floodlight Pylons
+                [[-26, -40], [26, -40], [-26, 40], [26, 40]].forEach(([px, pz]) => {
+                    const spot = new THREE.SpotLight(0xfffbeb, 1.5, 75, Math.PI / 3.5, 0.5);
+                    spot.position.set(px, 24, pz);
+                    spot.target.position.set(0, 0, 0);
+                    scene.add(spot);
+                    scene.add(spot.target);
+                    stadiumSpotlights.push(spot);
+                });
+
+                scene.add(stadiumGroup);
+            }
+
+            /* ------------------------------------------------------------------
+               4F. REALISTIC TRACK & FIELD STADIUM (OVERHEAD GANTRY & BLEACHERS)
+               ------------------------------------------------------------------ */
+            function buildRealisticTrackStadium() {
+                stadiumGroup = new THREE.Group();
+                stadiumCornerFlags = [];
+                stadiumSpotlights = [];
+
+                const crowdTex = createCrowdTexture();
+                const crowdMat = new THREE.MeshStandardMaterial({ map: crowdTex, roughness: 0.8 });
+                const steelTrussMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.25 });
+
+                // 1. Stadium Bleachers along the home straight
+                const westStand = new THREE.Mesh(new THREE.PlaneGeometry(16, 92), crowdMat);
+                westStand.position.set(-24, 6, 0);
+                westStand.rotation.x = -Math.PI / 2;
+                westStand.rotation.y = -Math.atan2(7, 12);
+                stadiumGroup.add(westStand);
+
+                const eastStand = new THREE.Mesh(new THREE.PlaneGeometry(16, 92), crowdMat);
+                eastStand.position.set(24, 6, 0);
+                eastStand.rotation.x = -Math.PI / 2;
+                eastStand.rotation.y = Math.atan2(7, 12);
+                stadiumGroup.add(eastStand);
+
+                // 2. Overhead Finish Line Timing Gantry Arch (at Z = 32 across track)
+                const gantryGroup = new THREE.Group();
+                gantryGroup.position.set(0, 0, 32);
+
+                // Left & Right Support Truss Towers
+                const towerL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 7, 8), steelTrussMat);
+                towerL.position.set(-14, 3.5, 0);
+                gantryGroup.add(towerL);
+
+                const towerR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 7, 8), steelTrussMat);
+                towerR.position.set(14, 3.5, 0);
+                gantryGroup.add(towerR);
+
+                // Overhead Crossbar Truss
+                const crossbeam = new THREE.Mesh(new THREE.BoxGeometry(28.5, 0.8, 0.8), steelTrussMat);
+                crossbeam.position.set(0, 7.0, 0);
+                gantryGroup.add(crossbeam);
+
+                // Digital Race Clock Display
+                const clockCv = document.createElement('canvas');
+                clockCv.width = 256; clockCv.height = 64;
+                const cCtx = clockCv.getContext('2d');
+                cCtx.fillStyle = '#050505'; cCtx.fillRect(0, 0, 256, 64);
+                cCtx.fillStyle = '#22c55e'; cCtx.font = 'bold 32px monospace';
+                cCtx.textAlign = 'center'; cCtx.textBaseline = 'middle';
+                cCtx.fillText("00:09.58", 128, 32);
+                const clockTex = new THREE.CanvasTexture(clockCv);
+
+                const clockMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(5.2, 1.4, 0.2),
+                    new THREE.MeshBasicMaterial({ map: clockTex })
+                );
+                clockMesh.position.set(0, 7.0, 0.45);
+                gantryGroup.add(clockMesh);
+
+                stadiumGroup.add(gantryGroup);
+
+                // 3. Floodlights
+                [[-20, -35], [20, -35], [-20, 35], [20, 35]].forEach(([px, pz]) => {
+                    const spot = new THREE.SpotLight(0xffffff, 1.7, 70, Math.PI / 3.4, 0.5);
+                    spot.position.set(px, 22, pz);
+                    spot.target.position.set(0, 0, 0);
+                    scene.add(spot);
+                    scene.add(spot.target);
+                    stadiumSpotlights.push(spot);
+                });
+
+                scene.add(stadiumGroup);
             }
 
             function rebuildFieldMesh(sport) {
@@ -1824,21 +2555,34 @@
                 const fieldGeo = new THREE.PlaneGeometry(36, 90);
                 const fieldMat = new THREE.MeshStandardMaterial({
                     map: tex,
-                    roughness: sport === 'life' ? 0.8 : 0.65,
-                    metalness: 0.05
+                    roughness: sport === 'life' ? 0.8 : (sport === 'basketball' ? 0.3 : 0.65),
+                    metalness: sport === 'basketball' ? 0.15 : 0.05
                 });
                 fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
                 fieldMesh.rotation.x = -Math.PI / 2;
                 scene.add(fieldMesh);
 
+                clearAllEnvironments();
+
                 if (sport === 'life') {
                     scene.background = new THREE.Color(0x06151b);
-                    clearStadium();
-                    buildTreesAndBreeze();
+                    buildLifeSanctuary();
+                } else if (sport === 'basketball') {
+                    scene.background = new THREE.Color(0x070b14);
+                    buildRealisticBasketballArena();
+                } else if (sport === 'tennis') {
+                    scene.background = new THREE.Color(0x06101e);
+                    buildRealisticTennisArena();
+                } else if (sport === 'cricket') {
+                    scene.background = new THREE.Color(0x081510);
+                    buildRealisticCricketOval();
+                } else if (sport === 'track') {
+                    scene.background = new THREE.Color(0x130909);
+                    buildRealisticTrackStadium();
                 } else {
+                    // Football / Soccer
                     scene.background = new THREE.Color(0x08101a);
-                    clearTreesAndBreeze();
-                    buildRealisticStadium(sport);
+                    buildRealisticFootballStadium();
                 }
             }
 
@@ -2307,6 +3051,11 @@
                                 sentimentLabel: m.sentimentLabel || 'Pure Gratitude 🕊️',
                                 photo: m.photo || (m.media ? m.media : null),
                                 caption: m.caption || '',
+                                photos: (Array.isArray(m.photos) && m.photos.length > 0)
+                                    ? m.photos
+                                    : ((Array.isArray(m.mediaAssets) && m.mediaAssets.length > 0)
+                                        ? m.mediaAssets.map(a => ({ url: a.url, caption: a.caption || '' }))
+                                        : (m.photo ? [{ url: m.photo, caption: m.caption || '' }] : [])),
                                 location: m.location || '',
                                 people: m.people || '',
                                 isFavorite: Boolean(m.isFavorite),
@@ -2404,73 +3153,122 @@
             });
 
             /* ------------------------------------------------------------------
-               12. MULTIPART MEDIA UPLOAD & MEMORY MODAL CRUD
+               12. MULTIPART MULTI-PHOTO UPLOAD & MEMORY MODAL CRUD
                ------------------------------------------------------------------ */
-            let uploadedMediaUrl = '';
-            let tempBase64Photo = '';
+            let attachedPhotos = []; // array of { url: string, caption: string }
             let editingMemoryId = null;
 
             const modalLogPlay = document.getElementById('modal-log-play');
             const formLogPlay = document.getElementById('form-log-play');
+            const mediaDropzone = document.getElementById('media-dropzone');
             const mediaDropzoneLabel = document.getElementById('media-dropzone-label');
             const logInputFile = document.getElementById('log-input-file');
-            const logPreviewBox = document.getElementById('log-preview-box');
-            const logPreviewImg = document.getElementById('log-preview-img');
-            const btnRemovePhoto = document.getElementById('btn-remove-photo');
+            const logPhotosPreviewContainer = document.getElementById('log-photos-preview-container');
+            const attachedPhotosCount = document.getElementById('attached-photos-count');
 
-            async function handleFileUpload(file) {
-                if (!file) return;
-                if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Uploading visual keepsake...';
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    tempBase64Photo = e.target.result;
-                    logPreviewImg.src = tempBase64Photo;
-                    logPreviewBox.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-
-                const formData = new FormData();
-                formData.append('media', file);
-                try {
-                    const res = await fetch(`${API_BASE}/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.url) {
-                            uploadedMediaUrl = data.url;
-                            if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Visual keepsake uploaded ✓';
-                        }
-                    } else {
-                        if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Saved locally (offline)';
-                    }
-                } catch (e) {
-                    if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Saved locally (offline)';
+            function renderAttachedPhotosPreview() {
+                if (attachedPhotosCount) {
+                    attachedPhotosCount.textContent = `${attachedPhotos.length} attached`;
                 }
+                if (!logPhotosPreviewContainer) return;
+                logPhotosPreviewContainer.innerHTML = '';
+
+                attachedPhotos.forEach((photo, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'flex items-center gap-2.5 p-2 rounded-xl bg-stone-900/90 border border-white/10 shadow-sm';
+                    card.innerHTML = `
+                        <img src="${photo.url}" class="w-12 h-12 rounded-lg object-cover border border-white/10 flex-shrink-0" alt="Keepsake preview">
+                        <div class="flex-1 min-w-0">
+                            <input type="text" class="photo-caption-input w-full px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-[11px] text-stone-200 placeholder-stone-500 focus:border-amber-400 focus:outline-none" placeholder="Caption for this photo..." value="${photo.caption || ''}">
+                        </div>
+                        <button type="button" class="btn-remove-single-photo w-7 h-7 rounded-lg bg-red-500/15 hover:bg-red-500/30 text-red-300 flex items-center justify-center text-xs flex-shrink-0 transition" title="Remove photo">✕</button>
+                    `;
+
+                    const captionInput = card.querySelector('.photo-caption-input');
+                    captionInput.addEventListener('input', (e) => {
+                        attachedPhotos[idx].caption = e.target.value;
+                    });
+
+                    const removeBtn = card.querySelector('.btn-remove-single-photo');
+                    removeBtn.addEventListener('click', () => {
+                        attachedPhotos.splice(idx, 1);
+                        renderAttachedPhotosPreview();
+                        playSoftSound('click');
+                    });
+
+                    logPhotosPreviewContainer.appendChild(card);
+                });
+            }
+
+            async function handleFilesUpload(fileList) {
+                if (!fileList || fileList.length === 0) return;
+                if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = `Processing ${fileList.length} photo(s)...`;
+
+                for (let i = 0; i < fileList.length; i++) {
+                    const file = fileList[i];
+                    if (!file.type.startsWith('image/')) continue;
+
+                    // Immediate local preview via FileReader
+                    const dataUrl = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+
+                    const photoItem = {
+                        url: dataUrl,
+                        caption: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+                    };
+                    attachedPhotos.push(photoItem);
+                    renderAttachedPhotosPreview();
+
+                    // Upload in background to get server asset path if backend is running
+                    const formData = new FormData();
+                    formData.append('media', file);
+                    try {
+                        const res = await fetch(`${API_BASE}/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.url) {
+                                photoItem.url = data.url;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Click or Drag Multiple Photos Here';
+                playSoftSound('chime');
             }
 
             if (logInputFile) {
-                logInputFile.addEventListener('change', (e) => handleFileUpload(e.target.files[0]));
+                logInputFile.addEventListener('change', (e) => handleFilesUpload(e.target.files));
             }
-            if (btnRemovePhoto) {
-                btnRemovePhoto.addEventListener('click', () => {
-                    uploadedMediaUrl = '';
-                    tempBase64Photo = '';
-                    logPreviewImg.src = '';
-                    logPreviewBox.classList.add('hidden');
-                    if (mediaDropzoneLabel) mediaDropzoneLabel.textContent = 'Click or Drag Photo Here';
-                    playSoftSound('click');
+
+            if (mediaDropzone) {
+                mediaDropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    mediaDropzone.classList.add('border-amber-400/60');
+                });
+                mediaDropzone.addEventListener('dragleave', () => {
+                    mediaDropzone.classList.remove('border-amber-400/60');
+                });
+                mediaDropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    mediaDropzone.classList.remove('border-amber-400/60');
+                    if (e.dataTransfer && e.dataTransfer.files) {
+                        handleFilesUpload(e.dataTransfer.files);
+                    }
                 });
             }
 
             document.getElementById('btn-open-log-modal').addEventListener('click', () => {
                 editingMemoryId = null;
                 formLogPlay.reset();
-                uploadedMediaUrl = '';
-                tempBase64Photo = '';
-                logPreviewBox.classList.add('hidden');
+                attachedPhotos = [];
+                renderAttachedPhotosPreview();
                 document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Preserve Memory' : 'Log Match Milestone';
                 modalLogPlay.classList.add('active');
@@ -2494,8 +3292,14 @@
                 const sentiment = parseInt(logInputSentiment.value) || 85;
                 const sentimentLabel = logInputSentimentLabel.value || 'Pure Gratitude 🕊️';
                 const journal = document.getElementById('log-input-journal').value.trim();
-                const caption = document.getElementById('log-input-caption').value.trim();
-                const photoUrl = uploadedMediaUrl || tempBase64Photo || null;
+
+                // Build photos array with individual captions
+                const photosList = attachedPhotos.map(p => ({
+                    url: p.url,
+                    caption: (p.caption || '').trim()
+                }));
+                const primaryPhoto = photosList[0]?.url || null;
+                const primaryCaption = photosList[0]?.caption || '';
 
                 const memories = getActiveMemories();
 
@@ -2512,14 +3316,18 @@
                         targetMem.sentiment = sentiment;
                         targetMem.sentimentLabel = sentimentLabel;
                         targetMem.journal = journal;
-                        targetMem.caption = caption;
-                        if (photoUrl) targetMem.photo = photoUrl;
+                        targetMem.photo = primaryPhoto;
+                        targetMem.caption = primaryCaption;
+                        targetMem.photos = photosList;
 
                         saveMemoriesStore();
 
                         const payload = {
                             title, date, era, location, people, isFavorite,
-                            sentiment, sentimentLabel, journal, caption, photo: targetMem.photo
+                            sentiment, sentimentLabel, journal,
+                            photo: primaryPhoto,
+                            caption: primaryCaption,
+                            photos: photosList
                         };
 
                         try {
@@ -2548,8 +3356,9 @@
                         sentiment,
                         sentimentLabel,
                         journal,
-                        photo: photoUrl,
-                        caption,
+                        photo: primaryPhoto,
+                        caption: primaryCaption,
+                        photos: photosList,
                         tags: [sentimentLabel.split(' ')[0] || '#Reflective'],
                         domain: currentSport,
                         journeyType: isLifeMode ? 'life' : 'sports'
@@ -2557,15 +3366,15 @@
 
                     if (!allMemoriesStore[currentSport]) allMemoriesStore[currentSport] = [];
                     allMemoriesStore[currentSport].push(newMemory);
-                    allMemoriesStore[currentSport].sort((a, b) => new Date(a.date) - new Date(b.date));
-                    allMemoriesStore[currentSport].forEach((p, idx) => p.id = idx + 1);
                     saveMemoriesStore();
 
                     const payload = {
                         userId: getUserId(),
                         title, date, era, location, people, isFavorite,
-                        sentiment, sentimentLabel, journal, caption,
-                        photo: photoUrl,
+                        sentiment, sentimentLabel, journal,
+                        photo: primaryPhoto,
+                        caption: primaryCaption,
+                        photos: photosList,
                         tags: newMemory.tags,
                         domain: currentSport,
                         journeyType: isLifeMode ? 'life' : 'sports'
@@ -2593,41 +3402,187 @@
                         colors: isLifeMode ? ['#f59e0b', '#38bdf8', '#fbcfe8'] : ['#10b981', '#f59e0b', '#06b6d4']
                     });
 
-                    const newIdx = allMemoriesStore[currentSport].findIndex(m => m.id === newMemory.id || m.title === newMemory.title);
-                    updateActiveNode(newIdx !== -1 ? newIdx : allMemoriesStore[currentSport].length - 1);
+                    const sortedList = getActiveMemories();
+                    const newIdx = sortedList.findIndex(m => m.Memory_ID === newMemory.Memory_ID || m.title === newMemory.title);
+                    updateActiveNode(newIdx !== -1 ? newIdx : sortedList.length - 1);
                 }
 
                 formLogPlay.reset();
                 editingMemoryId = null;
-                uploadedMediaUrl = '';
-                tempBase64Photo = '';
-                logPreviewBox.classList.add('hidden');
+                attachedPhotos = [];
+                renderAttachedPhotosPreview();
                 modalLogPlay.classList.remove('active');
                 rebuild3DSpline();
                 renderProCardTraits();
             });
 
             /* ------------------------------------------------------------------
-               13. MEMORY INSPECTION DRAWER & KEEPSAKES
+               13. NODE VISITING, AUTO-TOUR ENGINE, & KEEPSAKES LIGHTBOX
                ------------------------------------------------------------------ */
+            let isTourActive = false;
+            let tourInterval = null;
+
+            function visitNode(index, openModal = false) {
+                const memories = getActiveMemories();
+                if (memories.length === 0) return;
+                if (index < 0) index = 0;
+                if (index >= memories.length) index = memories.length - 1;
+
+                activeNodeIndex = index;
+                updateActiveNode(index);
+
+                // Compute node 3D coordinates on the spline
+                const targetZ = 32 - (index / Math.max(1, memories.length - 1)) * 64;
+                const targetX = Math.sin(index * 0.95) * 11;
+
+                // Animate avatar position smoothly to node
+                gsap.to(avatarGroup.position, {
+                    x: targetX,
+                    y: 0.4,
+                    z: targetZ,
+                    duration: 1.2,
+                    ease: 'power2.out'
+                });
+
+                // Smoothly glide controls target and camera
+                gsap.to(controls.target, {
+                    x: targetX,
+                    y: 1.2,
+                    z: targetZ,
+                    duration: 1.3,
+                    ease: 'power2.out'
+                });
+
+                const camOffsetX = targetX > 0 ? -9 : 9;
+                gsap.to(camera.position, {
+                    x: targetX + camOffsetX,
+                    y: 8,
+                    z: targetZ + 12,
+                    duration: 1.5,
+                    ease: 'power2.out'
+                });
+
+                playSoftSound('chime');
+
+                if (openModal) {
+                    setTimeout(() => {
+                        openInspectModalForNode(index);
+                    }, 350);
+                }
+            }
+
+            function toggleTour() {
+                if (isTourActive) {
+                    stopTour();
+                } else {
+                    startTour();
+                }
+            }
+
+            function startTour() {
+                const memories = getActiveMemories();
+                if (memories.length === 0) return;
+                isTourActive = true;
+
+                const tourBtn = document.getElementById('btn-tour-journey');
+                if (tourBtn) {
+                    tourBtn.classList.add('bg-amber-500/30', 'border-amber-400', 'text-amber-200');
+                    tourBtn.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-amber-300 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="font-bold">Pause Tour</span>
+                    `;
+                }
+
+                let nextIdx = activeNodeIndex >= memories.length - 1 ? 0 : activeNodeIndex + 1;
+                visitNode(nextIdx, false);
+
+                tourInterval = setInterval(() => {
+                    const mems = getActiveMemories();
+                    if (mems.length === 0) { stopTour(); return; }
+                    let target = activeNodeIndex + 1;
+                    if (target >= mems.length) target = 0;
+                    visitNode(target, false);
+                }, 3800);
+            }
+
+            function stopTour() {
+                isTourActive = false;
+                if (tourInterval) {
+                    clearInterval(tourInterval);
+                    tourInterval = null;
+                }
+                const tourBtn = document.getElementById('btn-tour-journey');
+                if (tourBtn) {
+                    tourBtn.classList.remove('bg-amber-500/30', 'border-amber-400', 'text-amber-200');
+                    tourBtn.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Tour Nodes</span>
+                    `;
+                }
+            }
+
+            const tourJourneyBtn = document.getElementById('btn-tour-journey');
+            if (tourJourneyBtn) {
+                tourJourneyBtn.addEventListener('click', toggleTour);
+            }
+
+            // Lightbox Modal Controls
+            const modalLightbox = document.getElementById('modal-photo-lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            const btnCloseLightbox = document.getElementById('btn-close-lightbox');
+
+            function openPhotoLightbox(src, caption = '') {
+                if (!lightboxImg) return;
+                lightboxImg.src = src;
+                if (lightboxCaption) {
+                    if (caption && caption.trim()) {
+                        lightboxCaption.textContent = caption;
+                        lightboxCaption.classList.remove('hidden');
+                    } else {
+                        lightboxCaption.classList.add('hidden');
+                    }
+                }
+                modalLightbox.classList.add('active');
+                playSoftSound('click');
+            }
+
+            function closePhotoLightbox() {
+                if (modalLightbox) modalLightbox.classList.remove('active');
+            }
+
+            if (btnCloseLightbox) btnCloseLightbox.addEventListener('click', closePhotoLightbox);
+            if (modalLightbox) {
+                modalLightbox.addEventListener('click', (e) => {
+                    if (e.target === modalLightbox) closePhotoLightbox();
+                });
+            }
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closePhotoLightbox();
+            });
+
+            // Inspect Modal Open Logic
             const modalInspect = document.getElementById('modal-inspect-play');
 
-            document.getElementById('snippet-clickable-area').addEventListener('click', () => {
+            function openInspectModalForNode(index) {
                 const memories = getActiveMemories();
                 if (memories.length === 0) {
                     document.getElementById('btn-open-log-modal').click();
                     return;
                 }
+                if (index < 0) index = 0;
+                if (index >= memories.length) index = memories.length - 1;
+                activeNodeIndex = index;
 
                 const play = memories[activeNodeIndex];
-                document.getElementById('inspect-node-badge').textContent = `CHAPTER #${play.id || (activeNodeIndex + 1)}`;
+                document.getElementById('inspect-node-badge').textContent = `CHAPTER #${play.id || (activeNodeIndex + 1)} OF ${memories.length}`;
                 document.getElementById('inspect-date-badge').textContent = play.date;
                 document.getElementById('inspect-title').textContent = play.title;
                 document.getElementById('inspect-sentiment-badge').textContent = play.sentimentLabel || `Resonance: ${play.sentiment}%`;
-                document.getElementById('inspect-era-badge').textContent = play.era || (isLifeMode ? 'Life Sanctuary' : 'Pro Era');
+                document.getElementById('inspect-era-badge').textContent = play.era || (isLifeMode ? 'Life Sanctuary' : 'Career Era');
                 document.getElementById('inspect-tags-badge').textContent = (play.tags || []).join(' ') || '#Reflective';
                 document.getElementById('inspect-journal').textContent = `"${play.journal}"`;
-                document.getElementById('inspect-ai-quote').textContent = `"I remember writing down '${play.title}' on ${play.date}. Your resonance of '${play.sentimentLabel || play.sentiment + '%'}' reminds me how deeply this moment shaped our foundation."`;
+                document.getElementById('inspect-ai-quote').textContent = `"I remember preserving '${play.title}' on ${play.date}. Your resonance of '${play.sentimentLabel || play.sentiment + '%'}' reminds me how deeply this moment shaped our foundation."`;
 
                 const starEl = document.getElementById('inspect-landmark-star');
                 if (starEl) {
@@ -2659,21 +3614,94 @@
                 if (hasMeta) metaLine.classList.remove('hidden');
                 else metaLine.classList.add('hidden');
 
-                if (play.photo) {
-                    document.getElementById('inspect-photo-box').classList.remove('hidden');
-                    document.getElementById('inspect-img').src = play.photo;
-                    document.getElementById('inspect-photo-caption').textContent = play.caption ? `"${play.caption}"` : '';
+                // Multi-Photo Keepsakes Gallery
+                const photoBox = document.getElementById('inspect-photo-box');
+                const photosGrid = document.getElementById('inspect-photos-grid');
+                const photosCountBadge = document.getElementById('inspect-photos-count');
+                const photoCaptionEl = document.getElementById('inspect-photo-caption');
+
+                const nodePhotos = (Array.isArray(play.photos) && play.photos.length > 0)
+                    ? play.photos
+                    : (play.photo ? [{ url: play.photo, caption: play.caption || '' }] : []);
+
+                if (nodePhotos.length > 0) {
+                    photoBox.classList.remove('hidden');
+                    photosCountBadge.textContent = nodePhotos.length === 1 ? '1 Photo' : `${nodePhotos.length} Photos`;
+                    photosGrid.innerHTML = '';
+                    photoCaptionEl.textContent = '';
+
+                    nodePhotos.forEach((item) => {
+                        const thumbCard = document.createElement('div');
+                        thumbCard.className = 'group relative rounded-xl overflow-hidden border border-white/10 bg-black/40 cursor-pointer aspect-video hover:border-amber-400/60 transition shadow-md';
+                        thumbCard.innerHTML = `
+                            <img src="${item.url}" alt="${item.caption || play.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            ${item.caption ? `<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-1.5 text-[10px] text-stone-200 truncate font-mono">${item.caption}</div>` : ''}
+                            <div class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition w-6 h-6 rounded-md bg-black/70 text-white flex items-center justify-center text-[10px]">🔍</div>
+                        `;
+                        thumbCard.addEventListener('click', () => {
+                            openPhotoLightbox(item.url, item.caption || play.title);
+                        });
+                        photosGrid.appendChild(thumbCard);
+                    });
                 } else {
-                    document.getElementById('inspect-photo-box').classList.add('hidden');
+                    photoBox.classList.add('hidden');
+                    photosGrid.innerHTML = '';
                 }
 
                 modalInspect.classList.add('active');
                 playSoftSound('click');
+            }
+
+            document.getElementById('snippet-clickable-area').addEventListener('click', () => {
+                visitNode(activeNodeIndex, true);
             });
 
             document.getElementById('btn-close-inspect-modal').addEventListener('click', () => modalInspect.classList.remove('active'));
             document.getElementById('btn-close-inspect').addEventListener('click', () => modalInspect.classList.remove('active'));
 
+            // Prev / Next Node inside inspect drawer
+            const btnInspectPrev = document.getElementById('btn-inspect-prev-node');
+            const btnInspectNext = document.getElementById('btn-inspect-next-node');
+            if (btnInspectPrev) {
+                btnInspectPrev.addEventListener('click', () => {
+                    if (activeNodeIndex > 0) visitNode(activeNodeIndex - 1, true);
+                });
+            }
+            if (btnInspectNext) {
+                btnInspectNext.addEventListener('click', () => {
+                    const memories = getActiveMemories();
+                    if (activeNodeIndex < memories.length - 1) visitNode(activeNodeIndex + 1, true);
+                });
+            }
+
+            // "Add to this Node" button
+            const btnAddToThisNode = document.getElementById('btn-add-to-this-node');
+            if (btnAddToThisNode) {
+                btnAddToThisNode.addEventListener('click', () => {
+                    const memories = getActiveMemories();
+                    const currentMem = memories[activeNodeIndex];
+                    modalInspect.classList.remove('active');
+
+                    editingMemoryId = null;
+                    formLogPlay.reset();
+                    attachedPhotos = [];
+                    renderAttachedPhotosPreview();
+
+                    if (currentMem) {
+                        document.getElementById('log-input-date').value = currentMem.date || new Date().toISOString().split('T')[0];
+                        document.getElementById('log-input-era').value = currentMem.era || 'Youth & Formative Years (Age 13-18)';
+                        if (currentMem.location) document.getElementById('log-input-location').value = currentMem.location;
+                        if (currentMem.people) document.getElementById('log-input-people').value = currentMem.people;
+                    }
+
+                    document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Add Memory to Node' : 'Add Milestone to Node';
+                    modalLogPlay.classList.add('active');
+                    playSoftSound('click');
+                    document.getElementById('log-input-title').focus();
+                });
+            }
+
+            // Edit Memory
             const btnEditMemory = document.getElementById('btn-edit-memory');
             if (btnEditMemory) {
                 btnEditMemory.addEventListener('click', () => {
@@ -2689,14 +3717,12 @@
                     document.getElementById('log-input-people').value = mem.people || '';
                     document.getElementById('log-input-favorite').checked = Boolean(mem.isFavorite);
                     document.getElementById('log-input-journal').value = mem.journal || '';
-                    document.getElementById('log-input-caption').value = mem.caption || '';
                     document.getElementById('btn-submit-memory-text').textContent = 'Update Memory';
 
-                    if (mem.photo) {
-                        uploadedMediaUrl = mem.photo;
-                        logPreviewImg.src = mem.photo;
-                        logPreviewBox.classList.remove('hidden');
-                    }
+                    attachedPhotos = (Array.isArray(mem.photos) && mem.photos.length > 0)
+                        ? JSON.parse(JSON.stringify(mem.photos))
+                        : (mem.photo ? [{ url: mem.photo, caption: mem.caption || '' }] : []);
+                    renderAttachedPhotosPreview();
 
                     modalInspect.classList.remove('active');
                     modalLogPlay.classList.add('active');
@@ -2745,7 +3771,6 @@
                         const targetMem = memories[activeNodeIndex];
                         const memDbId = targetMem.Memory_ID;
                         memories.splice(activeNodeIndex, 1);
-                        memories.forEach((p, idx) => p.id = idx + 1);
                         saveMemoriesStore();
 
                         if (memDbId) {
@@ -2793,35 +3818,40 @@
                 const userName = getUserName();
                 if (memories.length === 0) {
                     return isLifeMode
-                        ? `I'm sitting under the quiet garden tree waiting for our pages to begin. You haven't recorded any memories yet. Write your first chapter above so we can reflect together.`
-                        : `I'm watching from the sideline bench. You haven't logged any milestone plays for ${currentSport.toUpperCase()} yet. Log your first moment so I can learn and reflect with you.`;
+                        ? `I'm sitting under the quiet garden tree waiting for our journey to begin. You haven't recorded any memories yet. Write your first chapter above so we can reflect together!`
+                        : `I'm watching from the sideline bench. You haven't logged any milestone plays for ${currentSport.toUpperCase()} yet. Log your first moment so I can learn and reflect with you!`;
                 }
 
                 const query = userPrompt.toLowerCase();
 
-                // 1. Struggle & Nostalgia Mode
+                // Motivational / Doubt / Struggle / Comeback query
                 if (
                     query.includes('burnout') || query.includes('exhausted') || query.includes('tired') || 
                     query.includes('giving up') || query.includes('hard') || query.includes('lost') ||
-                    query.includes('quit') || query.includes('doubt') || query.includes('heavy')
+                    query.includes('quit') || query.includes('doubt') || query.includes('heavy') ||
+                    query.includes('motivat') || query.includes('inspire') || query.includes('advice')
                 ) {
                     const peak = memories.reduce((max, m) => ((m.sentiment || 0) > (max.sentiment || 0) ? m : max), memories[0]);
-                    return `Take a quiet breath with me. I remember how heavy the path felt back when we were living through this. We had mornings where getting up felt impossible, but remember when we preserved '${peak.title}' on ${peak.date}? You wrote: "${peak.journal.slice(0, 95)}...". That resonance was real, and that courage is still beating in your chest right now. You don't have to carry everything all at once.`;
+                    const earliest = memories[0];
+                    const photoMem = memories.find(m => m.caption || m.photo || (m.photos && m.photos.length > 0));
+                    const photoRef = photoMem ? ` Looking back at our photo "${photoMem.caption || photoMem.title}", ` : ' ';
+
+                    return `Take a quiet breath with me, ${userName}. When we started on ${earliest.date} with "${earliest.title}", we had no idea how far this path would take us. We walked through tough days where the weight felt unbearable, but remember when we preserved "${peak.title}" on ${peak.date}? You wrote: "${peak.journal.slice(0, 110)}...". That courage didn't disappear—it's still beating in your chest right now.${photoRef}Every chapter we wrote proved that our grit always outlasted the doubt. Keep going; I believe in you.`;
                 }
 
-                // 2. Photo-Aware Sensory Mode
+                // Photo-Aware Sensory Mode
                 if (
                     query.includes('photo') || query.includes('picture') || query.includes('look at') ||
                     query.includes('image') || query.includes('camera') || query.includes('see')
                 ) {
-                    const photoMem = memories.find(m => m.caption || m.photo);
+                    const photoMem = memories.find(m => (m.photos && m.photos.length > 0) || m.caption || m.photo);
                     if (photoMem) {
-                        const capStr = photoMem.caption ? `"${photoMem.caption}"` : `'${photoMem.title}'`;
-                        return `I remember that exact moment in the picture. Looking at ${capStr} from ${photoMem.date}, I can still sense the light, the clothes we wore, and the quiet hesitation before smiling. In our journal you wrote: "${photoMem.journal.slice(0, 90)}...". What is the first feeling that comes back to you when you look at it today?`;
+                        const cap = (photoMem.photos && photoMem.photos[0]?.caption) || photoMem.caption || photoMem.title;
+                        return `I remember that exact moment in the picture! Looking at "${cap}" from ${photoMem.date}, I can still sense the atmosphere and how proud we felt. In our journal you wrote: "${photoMem.journal.slice(0, 100)}...". Every photo we preserved reminds me how every step built the person you are today.`;
                     }
                 }
 
-                // 3. Empathetic & Inquisitive Reflection Mode
+                // Node milestone matching
                 let matched = memories.find(m =>
                     m.title.toLowerCase().includes(query) ||
                     m.journal.toLowerCase().includes(query) ||
@@ -2833,12 +3863,12 @@
                 if (matched) {
                     const settingStr = matched.location ? ` at ${matched.location}` : '';
                     const peopleStr = matched.people ? ` with ${matched.people}` : '';
-                    return `Reading '${matched.title}' from ${matched.date}${settingStr}${peopleStr}, the memory feels so close. You wrote: "${matched.journal.slice(0, 110)}...". Looking back on that milestone now from where you stand today, what did that day teach you about who you've become?`;
+                    return `Reflecting on Node #${matched.id}: "${matched.title}" from ${matched.date}${settingStr}${peopleStr}... You wrote: "${matched.journal.slice(0, 110)}...". That milestone proved what we are capable of. What did that day teach you about the greatness ahead of us?`;
                 }
 
-                // Default warm reflective voice
+                // Default uplifting voice quoting active node
                 const active = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
-                return `Thinking back to '${active.title}' from our ${active.era}... You wrote: "${active.journal.slice(0, 85)}...". Every entry we write brings our story into clearer focus. What unspoken thought from that time lingers most in your memory?`;
+                return `Thinking back to Node #${active.id}: "${active.title}" (${active.date}) from our ${active.era}... You wrote: "${active.journal.slice(0, 95)}...". Our timeline now connects ${memories.length} chapters of heart and dedication. How can I support your next step today?`;
             }
 
             async function sendAIMessage(promptText) {
@@ -3175,7 +4205,7 @@
                         hitObj = hitObj.parent;
                     }
                     if (hitObj && hitObj.userData.nodeIndex !== undefined) {
-                        updateActiveNode(hitObj.userData.nodeIndex);
+                        visitNode(hitObj.userData.nodeIndex, true);
                     }
                 }
             });
