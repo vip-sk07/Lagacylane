@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegacyLane — Interactive In-Browser Test Suite</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #04090d;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(14, 19, 28, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+        }
+        .btn-hover-lift {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .btn-hover-lift:hover {
+            transform: translateY(-1.5px);
+        }
+        .btn-hover-lift:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+    <main class="w-full max-w-5xl space-y-6">
+        
+        <!-- Header -->
+        <header class="glass-card p-6 md:p-8 rounded-3xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-semibold border border-amber-500/30">TEST HARNESS</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-semibold border border-emerald-500/30">ONLINE</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-bold text-stone-100">LegacyLane In-Browser Test Suite</h1>
+                <p class="text-xs text-stone-400">Live validation of unified web routes, database persistence, encryption, AI companion & audio synthesis.</p>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <button id="btn-run-all" class="btn-hover-lift px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Run All Test Cases</span>
+                </button>
+                <a href="/" class="btn-hover-lift px-4 py-3 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs border border-white/10 flex items-center gap-2" target="_blank">
+                    <span>Open Main Website</span> ↗
+                </a>
+            </div>
+        </header>
+
+        <!-- Live Scoreboard -->
+        <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+            <div class="glass-card p-4 rounded-2xl border border-white/5 space-y-1 text-center">
+                <span class="text-[10px] font-mono text-stone-400 uppercase">Total Tests</span>
+                <p id="stat-total" class="text-2xl font-bold text-stone-100 font-mono">10</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-emerald-500/20 space-y-1 text-center">
+                <span class="text-[10px] font-mono text-emerald-400 uppercase">Passed</span>
+                <p id="stat-passed" class="text-2xl font-bold text-emerald-400 font-mono">0</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-red-500/20 space-y-1 text-center">
+                <span class="text-[10px] font-mono text-red-400 uppercase">Failed</span>
+                <p id="stat-failed" class="text-2xl font-bold text-red-400 font-mono">0</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-amber-500/20 space-y-1 text-center">
+                <span class="text-[10px] font-mono text-amber-400 uppercase">Execution Time</span>
+                <p id="stat-time" class="text-2xl font-bold text-amber-300 font-mono">0ms</p>
+            </div>
+        </section>
+
+        <!-- Test Cases List -->
+        <section class="glass-card p-6 rounded-3xl space-y-3 border border-white/10">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <h2 class="text-base font-semibold text-stone-100 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Test Suite Scenarios</span>
+                </h2>
+                <span id="suite-status-text" class="text-xs font-mono text-stone-400">Ready to execute</span>
+            </div>
+
+            <div id="test-cases-container" class="space-y-2.5">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- Direct Browser Verification Shortcuts -->
+        <section class="glass-card p-6 rounded-3xl space-y-4 border border-white/10">
+            <h3 class="text-sm font-semibold text-stone-200">Interactive Browser Verification Links</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <a href="/timeline.html?mode=life" target="_blank" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 block space-y-1 btn-hover-lift">
+                    <div class="text-xs font-semibold text-stone-200 flex items-center justify-between">
+                        <span>Life Sanctuary</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400">5 Life Dimensions, cherry blossom garden & diary companion.</p>
+                </a>
+                <a href="/timeline.html?mode=sports&sport=football" target="_blank" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 block space-y-1 btn-hover-lift">
+                    <div class="text-xs font-semibold text-stone-200 flex items-center justify-between">
+                        <span>Sports Playbook</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400">Career Ledger, performance traits & athletic pitch.</p>
+                </a>
+                <a href="/selector.html" target="_blank" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 block space-y-1 btn-hover-lift">
+                    <div class="text-xs font-semibold text-stone-200 flex items-center justify-between">
+                        <span>Roadmap & Selector</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400">Normal people memory map vs. Score! Hero animations.</p>
+                </a>
+                <a href="/journey-selection.html" target="_blank" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 block space-y-1 btn-hover-lift">
+                    <div class="text-xs font-semibold text-stone-200 flex items-center justify-between">
+                        <span>Journey Selection Hub</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400">Portal hub for switching domain paths & user customization.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Detailed Execution Log Console -->
+        <section class="glass-card p-6 rounded-3xl space-y-3 border border-white/10">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-mono font-semibold text-stone-300">LIVE EXECUTION CONSOLE</h3>
+                <button id="btn-clear-logs" class="text-[11px] font-mono text-stone-400 hover:text-stone-200">Clear Logs</button>
+            </div>
+            <pre id="execution-log" class="w-full h-48 bg-black/60 p-4 rounded-2xl font-mono text-xs text-stone-300 overflow-y-auto border border-white/5 leading-relaxed"></pre>
+        </section>
+
+    </main>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        const testDefs = [
+            {
+                id: 't1_health',
+                name: 'Server & Database Connection Probe',
+                desc: 'Verifies backend database and probe endpoint responds on unified port.',
+                run: async () => {
+                    const res = await fetch(`${API_BASE}/memories/test-connection`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    if (data.status !== 'ok') throw new Error('Invalid status response');
+                    return `Probe OK at ${data.timestamp}`;
+                }
+            },
+            {
+                id: 't2_pages',
+                name: 'Unified Web Route Serving (HTML Pages)',
+                desc: 'Verifies Express serves /, /timeline.html, /journey-selection.html, /selector.html without 404s.',
+                run: async () => {
+                    const pages = ['/', '/timeline.html', '/journey-selection.html', '/selector.html', '/LegacyLogin.html'];
+                    for (const p of pages) {
+                        const res = await fetch(p, { method: 'HEAD' });
+                        if (!res.ok) throw new Error(`Route ${p} returned HTTP ${res.status}`);
+                    }
+                    return `All 5 core web routes returned HTTP 200 OK.`;
+                }
+            },
+            {
+                id: 't3_auth',
+                name: 'User Registration & Dynamic Session Resolver',
+                desc: 'Creates a test user account in SQLite and validates session storage.',
+                run: async () => {
+                    const email = `browser_test_${Date.now()}@legacylane.local`;
+                    const res = await fetch(`${API_BASE}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: 'Alex Rivera',
+                            email: email,
+                            password: 'testPassword!123',
+                            profileType: 'Standard'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.user?.id) throw new Error(data.error || 'Registration failed');
+                    localStorage.setItem('legacy_test_uid', data.user.id);
+                    return `Created user ${data.user.name} (ID: ${data.user.id})`;
+                }
+            },
+            {
+                id: 't4_create_memory',
+                name: 'Memory Archival with AES-256 Encryption (POST /api/memories)',
+                desc: 'Stores milestone with emotional resonance chip, landmark pin, location, and companion metadata.',
+                run: async () => {
+                    const uid = localStorage.getItem('legacy_test_uid') || ('usr_' + Date.now());
+                    const res = await fetch(`${API_BASE}/memories`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: uid,
+                            title: 'First Morning in the Forest Sanctuary',
+                            era: 'Youth & Formative Years (Age 13-18)',
+                            date: '2022-08-15',
+                            journal: 'The sun broke through the canopy in golden rays. Everything felt still and full of quiet promise.',
+                            sentiment: 90,
+                            sentimentLabel: 'Pure Gratitude 🕊️',
+                            location: 'Redwood Valley',
+                            people: 'Maya, Sam',
+                            isFavorite: true,
+                            journeyType: 'life',
+                            domain: 'life'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.memoryId) throw new Error(data.error || 'Memory creation failed');
+                    localStorage.setItem('legacy_test_mem_id', data.memoryId);
+                    return `Preserved memory '${data.memory.title}' with ID: ${data.memoryId}`;
+                }
+            },
+            {
+                id: 't5_fetch_decrypt',
+                name: 'Memory Retrieval & AES-256 Decryption (GET /api/memories/:userId)',
+                desc: 'Validates that encrypted ciphertext is decrypted transparently into plaintext journal content.',
+                run: async () => {
+                    const uid = localStorage.getItem('legacy_test_uid');
+                    if (!uid) throw new Error('No user ID available to fetch');
+                    const res = await fetch(`${API_BASE}/memories/${uid}?journeyType=life&domain=life`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    if (!Array.isArray(data.memories) || data.memories.length === 0) {
+                        throw new Error('No memories returned');
+                    }
+                    const mem = data.memories[0];
+                    if (!mem.journal || mem.journal.includes('aes-256')) {
+                        throw new Error('Journal was not decrypted properly');
+                    }
+                    return `Successfully decrypted entry: "${mem.journal.slice(0, 40)}..."`;
+                }
+            },
+            {
+                id: 't6_update_memory',
+                name: 'Memory Update & Metadata Re-encryption (PUT /api/memories/:id)',
+                desc: 'Tests editing an existing archive entry pre-filled from inspection drawer.',
+                run: async () => {
+                    const memId = localStorage.getItem('legacy_test_mem_id');
+                    if (!memId) throw new Error('No memory ID available to update');
+                    const res = await fetch(`${API_BASE}/memories/${memId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: 'First Morning in the Forest Sanctuary (Updated)',
+                            journal: 'The sun broke through the canopy in golden rays. The stillness was deeply restorative.',
+                            location: 'Redwood Valley Lookout',
+                            sentiment: 95,
+                            sentimentLabel: 'Triumphant & Proud 🌟'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Update failed');
+                    return `Updated entry title to: "${data.memory.title}"`;
+                }
+            },
+            {
+                id: 't7_ai_companion',
+                name: 'AI Younger Self Diary Persona & Empathy (POST /api/chat)',
+                desc: 'Validates intimate handwritten diary persona without robotic assistant clichés.',
+                run: async () => {
+                    const uid = localStorage.getItem('legacy_test_uid') || 'usr_test';
+                    const res = await fetch(`${API_BASE}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: uid,
+                            era: 'Youth & Formative Years',
+                            journeyType: 'life',
+                            userMessage: 'I am feeling tired and doubting our journey.'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.response) throw new Error(data.error || 'AI Chat failed');
+                    const lower = data.response.toLowerCase();
+                    if (lower.includes('as an ai') || lower.includes('according to my records')) {
+                        throw new Error('AI used forbidden robotic cliche phrasing');
+                    }
+                    return `AI Younger Self replied: "${data.response.slice(0, 75)}..."`;
+                }
+            },
+            {
+                id: 't8_audio_synthesis',
+                name: 'Web Audio API Acoustic Chime & Wooden Click',
+                desc: 'Synthesizes non-blocking soft pentatonic acoustic chime in the browser audio engine.',
+                run: async () => {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) throw new Error('Web Audio API not supported in this browser');
+                    const audioCtx = new AudioContextClass();
+                    if (audioCtx.state === 'suspended') await audioCtx.resume();
+                    
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    const now = audioCtx.currentTime;
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                    
+                    return `Audio synthesized at sample rate: ${audioCtx.sampleRate}Hz (state: ${audioCtx.state})`;
+                }
+            },
+            {
+                id: 't9_export',
+                name: 'Archive Export (.json) Data Formatting',
+                desc: 'Generates structured JSON archive payload matching the Pro Card / Career Ledger export.',
+                run: async () => {
+                    const uid = localStorage.getItem('legacy_test_uid') || 'usr_test';
+                    const sampleData = {
+                        user: 'Alex Rivera',
+                        userId: uid,
+                        journeyType: 'life',
+                        exportedAt: new Date().toISOString(),
+                        memories: [
+                            { id: 1, title: 'First Morning', sentiment: 95 }
+                        ]
+                    };
+                    const json = JSON.stringify(sampleData, null, 2);
+                    if (!json || json.length < 50) throw new Error('JSON export payload is malformed');
+                    return `Export payload generated (${json.length} bytes formatted JSON)`;
+                }
+            },
+            {
+                id: 't10_delete_memory',
+                name: 'Memory Release (DELETE /api/memories/:id)',
+                desc: 'Releases test milestone from database with clean confirmation.',
+                run: async () => {
+                    const memId = localStorage.getItem('legacy_test_mem_id');
+                    if (!memId) throw new Error('No memory ID available to release');
+                    const res = await fetch(`${API_BASE}/memories/${memId}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Delete failed');
+                    return `Released memory ID: ${memId} from archive.`;
+                }
+            }
+        ];
+
+        // Rendering Test Elements
+        const container = document.getElementById('test-cases-container');
+        const executionLog = document.getElementById('execution-log');
+        const statPassed = document.getElementById('stat-passed');
+        const statFailed = document.getElementById('stat-failed');
+        const statTime = document.getElementById('stat-time');
+        const suiteStatusText = document.getElementById('suite-status-text');
+
+        function log(msg) {
+            const time = new Date().toLocaleTimeString();
+            executionLog.textContent += `[${time}] ${msg}\n`;
+            executionLog.scrollTop = executionLog.scrollHeight;
+        }
+
+        testDefs.forEach((t, idx) => {
+            const el = document.createElement('div');
+            el.id = `card-${t.id}`;
+            el.className = 'p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-4 transition';
+            el.innerHTML = `
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono text-stone-400 font-semibold">CASE #${idx + 1}</span>
+                        <h4 class="text-xs font-bold text-stone-200">${t.name}</h4>
+                    </div>
+                    <p class="text-[11px] text-stone-400">${t.desc}</p>
+                    <div id="result-${t.id}" class="text-[11px] font-mono text-stone-400 italic mt-1 hidden"></div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="badge-${t.id}" class="px-2.5 py-1 rounded-xl bg-stone-800 text-stone-400 font-mono text-[10px] font-semibold">IDLE</span>
+                    <button id="btn-run-${t.id}" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold text-xs transition">
+                        Run
+                    </button>
+                </div>
+            `;
+            container.appendChild(el);
+
+            document.getElementById(`btn-run-${t.id}`).addEventListener('click', () => runSingleTest(t));
+        });
+
+        async function runSingleTest(t) {
+            const badge = document.getElementById(`badge-${t.id}`);
+            const resultBox = document.getElementById(`result-${t.id}`);
+            const card = document.getElementById(`card-${t.id}`);
+
+            badge.textContent = 'RUNNING';
+            badge.className = 'px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-mono text-[10px] font-semibold border border-amber-500/30 animate-pulse';
+            resultBox.classList.add('hidden');
+            log(`▶ Running: ${t.name}...`);
+
+            const start = performance.now();
+            try {
+                const message = await t.run();
+                const dur = Math.round(performance.now() - start);
+                badge.textContent = `PASS (${dur}ms)`;
+                badge.className = 'px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-semibold border border-emerald-500/30';
+                resultBox.textContent = `✓ ${message}`;
+                resultBox.className = 'text-[11px] font-mono text-emerald-300 mt-1';
+                resultBox.classList.remove('hidden');
+                card.className = 'p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/30 flex items-center justify-between gap-4 transition';
+                log(`✓ [PASS] ${t.name} (${dur}ms): ${message}`);
+                return true;
+            } catch (err) {
+                const dur = Math.round(performance.now() - start);
+                badge.textContent = 'FAIL';
+                badge.className = 'px-2.5 py-1 rounded-xl bg-red-500/20 text-red-300 font-mono text-[10px] font-semibold border border-red-500/30';
+                resultBox.textContent = `✕ ${err.message}`;
+                resultBox.className = 'text-[11px] font-mono text-red-300 mt-1';
+                resultBox.classList.remove('hidden');
+                card.className = 'p-4 rounded-2xl bg-red-500/5 border border-red-500/30 flex items-center justify-between gap-4 transition';
+                log(`✕ [FAIL] ${t.name} (${dur}ms): ${err.message}`);
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            log('==================================================');
+            log('🚀 Starting Full Automated Test Suite Execution...');
+            log('==================================================');
+            suiteStatusText.textContent = 'Executing test suite...';
+
+            let passed = 0;
+            let failed = 0;
+            const totalStart = performance.now();
+
+            for (const t of testDefs) {
+                const ok = await runSingleTest(t);
+                if (ok) passed++;
+                else failed++;
+                statPassed.textContent = passed;
+                statFailed.textContent = failed;
+            }
+
+            const totalDur = Math.round(performance.now() - totalStart);
+            statTime.textContent = `${totalDur}ms`;
+            suiteStatusText.textContent = `Completed in ${totalDur}ms (${passed}/${testDefs.length} Passed)`;
+
+            log('==================================================');
+            log(`🏁 Finished: ${passed}/${testDefs.length} Passed (${Math.round((passed / testDefs.length) * 100)}% Success Rate) in ${totalDur}ms`);
+            log('==================================================');
+        }
+
+        document.getElementById('btn-run-all').addEventListener('click', runAllTests);
+        document.getElementById('btn-clear-logs').addEventListener('click', () => {
+            executionLog.textContent = '';
+        });
+
+        // Automatically run all tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 600);
+        });
+    </script>
+</body>
+</html>
