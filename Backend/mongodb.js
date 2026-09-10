@@ -75,6 +75,37 @@ export function getCollection(collectionName) {
         memoryFallback[collectionName].push(doc);
         return { insertedId: doc._id || Date.now().toString() };
       },
+      findOne: async (query = {}) => {
+        return memoryFallback[collectionName].find(item => {
+          if (query.Memory_ID && item.Memory_ID !== query.Memory_ID) return false;
+          if (query.User_ID && item.User_ID !== query.User_ID) return false;
+          return true;
+        }) || null;
+      },
+      updateOne: async (query = {}, update = {}) => {
+        const item = memoryFallback[collectionName].find(it => {
+          if (query.Memory_ID && it.Memory_ID !== query.Memory_ID) return false;
+          if (query.User_ID && it.User_ID !== query.User_ID) return false;
+          return true;
+        });
+        if (!item) return { matchedCount: 0, modifiedCount: 0 };
+        if (update.$set) {
+          Object.assign(item, update.$set);
+        } else {
+          Object.assign(item, update);
+        }
+        return { matchedCount: 1, modifiedCount: 1 };
+      },
+      deleteOne: async (query = {}) => {
+        const idx = memoryFallback[collectionName].findIndex(it => {
+          if (query.Memory_ID && it.Memory_ID !== query.Memory_ID) return false;
+          if (query.User_ID && it.User_ID !== query.User_ID) return false;
+          return true;
+        });
+        if (idx === -1) return { deletedCount: 0 };
+        memoryFallback[collectionName].splice(idx, 1);
+        return { deletedCount: 1 };
+      },
       deleteMany: async (query = {}) => {
         if (query.User_ID) {
           const initialLen = memoryFallback[collectionName].length;

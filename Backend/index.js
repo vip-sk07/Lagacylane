@@ -20,7 +20,7 @@ import {
   perceiveImage,
   getUserCognitiveProfile
 } from '../AI_Modules/index.js';
-import { encryptText } from '../AI_Modules/encryption.js';
+import { encryptText, decryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -334,7 +334,7 @@ app.get('/api/memories/search/:userId', async (req, res) => {
 app.get('/api/memories/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { journeyType, domain, page = 1, limit = 50 } = req.query;
+    const { journeyType, domain, page = 1, limit = 100 } = req.query;
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
     const collection = getCollection('MemoryLogs');
@@ -344,25 +344,45 @@ app.get('/api/memories/:userId', async (req, res) => {
 
     const rows = await collection.find(dbQuery).skip(skip).limit(parseInt(limit, 10)).toArray();
 
-    const memories = rows.map((r, idx) => ({
-      id: r.Memory_ID,
-      levelNumber: r.LevelNumber || skip + idx + 1,
-      title: r.Title,
-      era: r.Era || r.Tags?.era || 'Youth Era (2018-2020)',
-      journeyType: r.JourneyType || 'sports',
-      domain: r.Domain || 'football',
-      date: r.EntryDate,
-      stars: r.Stars || 3,
-      status: r.Status || 'completed',
-      matchDetails: r.MatchDetails,
-      content: r.TextEncrypted,  // encrypted — decrypt client-side or via /api/chat
-      victoryMessage: r.VictoryMessage || '',
-      sentiment: r.SentimentScore,
-      media: r.MediaAssets ? r.MediaAssets[0]?.url : null,
-      tags: r.Tags?.context || []
-    }));
+    const memories = rows.map((r, idx) => {
+      let plainContent = '';
+      if (r.TextEncrypted) {
+        try {
+          plainContent = decryptText(r.TextEncrypted);
+        } catch (e) {
+          plainContent = r.MatchDetails || '';
+        }
+      } else {
+        plainContent = r.MatchDetails || '';
+      }
 
-    res.json({ memories, page: parseInt(page, 10), limit: parseInt(limit, 10) });
+      return {
+        id: r.Memory_ID,
+        levelNumber: r.LevelNumber || skip + idx + 1,
+        title: r.Title,
+        era: r.Era || r.Tags?.era || 'Youth & Formative Years',
+        journeyType: r.JourneyType || 'life',
+        domain: r.Domain || 'life',
+        date: r.EntryDate,
+        stars: r.Stars || 3,
+        status: r.Status || 'completed',
+        matchDetails: r.MatchDetails || plainContent,
+        journal: plainContent,
+        content: plainContent,
+        victoryMessage: r.VictoryMessage || '',
+        sentiment: typeof r.SentimentScore === 'number' ? r.SentimentScore : 85,
+        sentimentLabel: r.SentimentLabel || '',
+        photo: r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].url : null,
+        media: r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].url : null,
+        caption: r.PhotoCaption || (r.MediaAssets && r.MediaAssets[0] ? r.MediaAssets[0].caption : ''),
+        location: r.Location || '',
+        people: r.People || '',
+        isFavorite: Boolean(r.IsFavorite),
+        tags: Array.isArray(r.Tags?.context) ? r.Tags.context : []
+      };
+    });
+
+    res.json({ memories, count: memories.length, page: parseInt(page, 10), limit: parseInt(limit, 10) });
   } catch (err) {
     console.error('Fetch Memories Error:', err);
     res.status(500).json({ error: 'Server error fetching memories.' });
@@ -372,25 +392,27 @@ app.get('/api/memories/:userId', async (req, res) => {
 app.post('/api/memories', async (req, res) => {
   try {
     const {
-      userId, title, era, date, matchDetails, content, victoryMessage,
-      stars, mediaUrl, tags,
-      journeyType = 'sports',  // Phase 5/6 domain-scoped fields
-      domain = 'football'
+      userId, title, era, date, matchDetails, content, journal, victoryMessage,
+      stars, mediaUrl, photo, caption, tags, location, people, isFavorite, sentimentLabel,
+      journeyType = 'life',
+      domain = 'life'
     } = req.body;
 
     if (!userId || !title) {
       return res.status(400).json({ error: 'userId and title are required.' });
     }
 
-    const memoryId = 'mem_' + Date.now();
+    const memoryId = 'mem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    const textContent = journal || content || matchDetails || '';
 
-    // Analyze sentiment dynamically using the AI module
-    const sentimentScore = analyzeSentiment(title, (content || '') + ' ' + (victoryMessage || ''));
+    // Analyze sentiment dynamically using the AI module or given score
+    let sentimentScore = typeof req.body.sentiment === 'number' ? req.body.sentiment : analyzeSentiment(title, textContent + ' ' + (victoryMessage || ''));
 
-    // Resolve local upload disk path if mediaUrl points to /uploads/
-    let resolvedImageSource = mediaUrl || null;
-    if (mediaUrl && typeof mediaUrl === 'string') {
-      const match = mediaUrl.match(/\/uploads\/([^/?#]+)/);
+    // Resolve media URL
+    const activePhotoUrl = photo || mediaUrl || null;
+    let resolvedImageSource = activePhotoUrl;
+    if (activePhotoUrl && typeof activePhotoUrl === 'string') {
+      const match = activePhotoUrl.match(/\/uploads\/([^/?#]+)/);
       if (match) {
         const candidatePath = path.join(uploadsDir, match[1]);
         if (fs.existsSync(candidatePath)) {
@@ -406,29 +428,29 @@ app.post('/api/memories', async (req, res) => {
         visualPerception = await perceiveImage({
           imageSource: resolvedImageSource,
           title,
-          description: content,
+          description: textContent,
           domain,
-          era: era || 'Youth Era (2018-2020)'
+          era: era || 'Youth & Formative Years'
         });
       } catch (visErr) {
         console.warn('Perceive image in memories warning:', visErr.message);
       }
     }
 
-    // AES-256-GCM encrypt the journal text before storage (SRS requirement)
-    const encryptedPayload = encryptText(content || '');
+    // AES-256-GCM encrypt the journal text before storage
+    const encryptedPayload = encryptText(textContent);
 
-    // Ingest into Vector Store & update continuous cognitive learning graph asynchronously
+    // Ingest into Vector Store asynchronously
     ingestMemoryPayload({
       userId,
       title,
-      description: content,
+      description: textContent,
       entryDate: date,
       era,
       emotionTags: tags,
       contextTags: tags,
       sentimentScore,
-      mediaUrl,
+      mediaUrl: activePhotoUrl,
       imageSource: resolvedImageSource,
       journeyType,
       domain
@@ -437,19 +459,24 @@ app.post('/api/memories', async (req, res) => {
     const doc = {
       Memory_ID: memoryId,
       User_ID: userId,
-      JourneyType: journeyType,  // domain-scoped
-      Domain: domain,            // domain-scoped
+      JourneyType: journeyType,
+      Domain: domain,
       EntryDate: date || new Date().toISOString().split('T')[0],
       Title: title,
-      Era: era || 'Youth Era (2018-2020)',
-      MatchDetails: matchDetails || title,
-      TextEncrypted: encryptedPayload.encoded,  // AES-256-GCM encrypted
+      Era: era || 'Youth & Formative Years',
+      MatchDetails: textContent,
+      TextEncrypted: encryptedPayload.encoded,
       VictoryMessage: victoryMessage || '',
       Stars: Number(stars) || 3,
       Status: 'completed',
       SentimentScore: sentimentScore,
-      Tags: { era: era || 'Youth Era (2018-2020)', context: tags || [] },
-      MediaAssets: mediaUrl ? [{ url: mediaUrl, type: 'image' }] : [],
+      SentimentLabel: sentimentLabel || '',
+      Location: location || '',
+      People: people || '',
+      IsFavorite: Boolean(isFavorite),
+      PhotoCaption: caption || '',
+      Tags: { era: era || 'Youth & Formative Years', context: tags || [] },
+      MediaAssets: activePhotoUrl ? [{ url: activePhotoUrl, type: 'image', caption: caption || '' }] : [],
       VisualPerception: visualPerception,
       CreatedAt: new Date()
     };
@@ -458,14 +485,119 @@ app.post('/api/memories', async (req, res) => {
     await collection.insertOne(doc);
 
     res.status(201).json({ 
-      message: 'Level node added to database, vector index updated & multimodal perception captured.', 
+      message: 'Memory successfully preserved in archive.', 
       memoryId, 
       sentimentScore,
+      memory: {
+        id: memoryId,
+        title,
+        date: doc.EntryDate,
+        era: doc.Era,
+        journal: textContent,
+        content: textContent,
+        sentiment: sentimentScore,
+        sentimentLabel: doc.SentimentLabel,
+        location: doc.Location,
+        people: doc.People,
+        isFavorite: doc.IsFavorite,
+        photo: activePhotoUrl,
+        caption: doc.PhotoCaption,
+        tags: doc.Tags.context,
+        journeyType,
+        domain
+      },
       visualPerception 
     });
   } catch (err) {
     console.error('Add Memory Error:', err);
     res.status(500).json({ error: 'Server error saving memory node.' });
+  }
+});
+
+// PUT /api/memories/:id (Update existing memory)
+app.put('/api/memories/:id', async (req, res) => {
+  try {
+    const memoryId = req.params.id;
+    const {
+      title, era, date, content, journal,
+      mediaUrl, photo, caption, tags, location, people, isFavorite, sentimentLabel, sentiment
+    } = req.body;
+
+    const collection = getCollection('MemoryLogs');
+    const existing = await collection.findOne({ Memory_ID: memoryId });
+    if (!existing) {
+      return res.status(404).json({ error: 'Memory not found.' });
+    }
+
+    const textContent = journal !== undefined ? journal : (content !== undefined ? content : (existing.MatchDetails || ''));
+    const encryptedPayload = encryptText(textContent);
+    const activePhoto = photo !== undefined ? photo : (mediaUrl !== undefined ? mediaUrl : (existing.MediaAssets && existing.MediaAssets[0]?.url));
+    const activeScore = typeof sentiment === 'number' ? sentiment : (existing.SentimentScore || 85);
+
+    const updateFields = {
+      Title: title || existing.Title,
+      Era: era || existing.Era,
+      EntryDate: date || existing.EntryDate,
+      MatchDetails: textContent,
+      TextEncrypted: encryptedPayload.encoded,
+      SentimentScore: activeScore,
+      SentimentLabel: sentimentLabel !== undefined ? sentimentLabel : existing.SentimentLabel,
+      Location: location !== undefined ? location : existing.Location,
+      People: people !== undefined ? people : existing.People,
+      IsFavorite: isFavorite !== undefined ? Boolean(isFavorite) : existing.IsFavorite,
+      PhotoCaption: caption !== undefined ? caption : existing.PhotoCaption,
+      UpdatedAt: new Date()
+    };
+
+    if (tags) {
+      updateFields.Tags = { era: updateFields.Era, context: tags };
+    }
+    if (activePhoto !== undefined) {
+      updateFields.MediaAssets = activePhoto ? [{ url: activePhoto, type: 'image', caption: updateFields.PhotoCaption }] : [];
+    }
+
+    await collection.updateOne({ Memory_ID: memoryId }, { $set: updateFields });
+
+    res.json({
+      message: 'Memory updated successfully.',
+      memory: {
+        id: memoryId,
+        title: updateFields.Title,
+        date: updateFields.EntryDate,
+        era: updateFields.Era,
+        journal: textContent,
+        content: textContent,
+        sentiment: activeScore,
+        sentimentLabel: updateFields.SentimentLabel,
+        location: updateFields.Location,
+        people: updateFields.People,
+        isFavorite: updateFields.IsFavorite,
+        photo: activePhoto,
+        caption: updateFields.PhotoCaption,
+        tags: tags || existing.Tags?.context || []
+      }
+    });
+  } catch (err) {
+    console.error('Update Memory Error:', err);
+    res.status(500).json({ error: 'Server error updating memory.' });
+  }
+});
+
+// DELETE /api/memories/:id (Delete single memory)
+app.delete('/api/memories/:id', async (req, res) => {
+  try {
+    const memoryId = req.params.id;
+    const collection = getCollection('MemoryLogs');
+    const result = await collection.deleteOne({ Memory_ID: memoryId });
+
+    if (result && result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Memory not found or already deleted.' });
+    }
+
+    res.json({ message: 'Memory successfully released from archive.', id: memoryId });
+  } catch (err) {
+    console.error('Delete Memory Error:', err);
+    res.status(500).json({ error: 'Server error deleting memory.' });
   }
 });
 
