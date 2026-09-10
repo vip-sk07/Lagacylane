@@ -232,7 +232,7 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span id="player-name-display" class="text-sm font-extrabold text-white tracking-wide">Marcus Vance #7</span>
+                        <span id="player-name-display" class="text-sm font-extrabold text-white tracking-wide cursor-pointer hover:text-emerald-300 transition" title="Click to customize your name">Athlete</span>
                         <span id="current-sport-badge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold border border-emerald-500/30">FOOTBALL</span>
                     </div>
                     <p id="plays-count-display" class="text-[10px] font-mono text-cyan-300 font-bold tracking-wider uppercase mt-0.5">0 LOGGED PLAYS • TACTICAL TIMELINE</p>
@@ -533,8 +533,8 @@
 
         <!-- Chat Messages -->
         <div id="ai-chat-box" class="flex-1 overflow-y-auto bg-black/60 rounded-2xl p-4 space-y-3 border border-white/10 mb-4 text-xs">
-            <div class="bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20">
-                ⚡ <b>Your Younger Self:</b> Hey Marcus! I'm watching every play from the sideline. Log your milestones and photos so I can learn and reflect with you!
+            <div class="bg-amber-900/30 text-amber-200 p-3 rounded-2xl border border-amber-500/20" id="ai-chat-welcome-bubble">
+                ⚡ <b>Your Younger Self:</b> <span id="ai-chat-welcome-msg">I'm watching from the sideline. Record your milestones and photos so I can learn and reflect with you!</span>
             </div>
         </div>
 
@@ -562,7 +562,7 @@
                                 92
                             </div>
                             <div>
-                                <h3 class="text-xl font-extrabold text-white">Marcus Vance #7</h3>
+                                <h3 id="pro-card-player-name" class="text-xl font-extrabold text-white">Athlete</h3>
                                 <p id="pro-card-sport" class="text-[10px] font-mono text-emerald-400 font-bold uppercase">PRO FOOTBALL ATHLETE</p>
                             </div>
                         </div>
@@ -673,6 +673,95 @@
             }
 
             /* ------------------------------------------------------------------
+               1B. DYNAMIC USER PROFILE RESOLVER (ZERO HARDCODES)
+               ------------------------------------------------------------------ */
+            function getUserName() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlName = urlParams.get('name') || urlParams.get('user');
+                if (urlName && urlName.trim()) {
+                    const clean = urlName.trim();
+                    localStorage.setItem('legacy_user', clean);
+                    localStorage.setItem('username', clean);
+                    return clean;
+                }
+                const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                if (athleteProfile && athleteProfile.name && athleteProfile.name.trim() && athleteProfile.name.trim() !== 'Marcus Vance') {
+                    return athleteProfile.name.trim();
+                }
+                const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
+                if (lifeProfile && lifeProfile.name && lifeProfile.name.trim() && lifeProfile.name.trim() !== 'Marcus Vance') {
+                    return lifeProfile.name.trim();
+                }
+                const stored = localStorage.getItem('legacy_user') || localStorage.getItem('username');
+                if (stored && stored.trim() && stored !== 'Marcus Vance') {
+                    return stored.trim();
+                }
+                return isLifeMode ? 'Life Chronicler' : 'Athlete';
+            }
+
+            function getJerseyNumber() {
+                const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                return athleteProfile.jerseyNumber || athleteProfile.jersey || '';
+            }
+
+            function getUserId() {
+                let id = localStorage.getItem('legacy_user_id');
+                if (!id || id === 'usr_marcus') {
+                    const cleanName = getUserName().toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    id = 'usr_' + (cleanName || 'user') + '_' + Math.random().toString(36).substring(2, 7);
+                    localStorage.setItem('legacy_user_id', id);
+                }
+                return id;
+            }
+
+            function updateDisplayedUserName() {
+                const userName = getUserName();
+                const jersey = getJerseyNumber();
+                const displayName = (!isLifeMode && jersey) ? `${userName} #${jersey}` : userName;
+
+                const playerDisplayEl = document.getElementById('player-name-display');
+                if (playerDisplayEl) {
+                    playerDisplayEl.textContent = displayName;
+                    playerDisplayEl.title = "Click to customize your name";
+                }
+
+                const proCardNameEl = document.getElementById('pro-card-player-name');
+                if (proCardNameEl) {
+                    proCardNameEl.textContent = displayName;
+                }
+
+                updateChatGreeting();
+            }
+
+            function updateChatGreeting() {
+                const userName = getUserName();
+                const welcomeMsg = document.getElementById('ai-chat-welcome-msg');
+                if (welcomeMsg) {
+                    welcomeMsg.textContent = isLifeMode
+                        ? `Hey ${userName}! I'm sitting by the garden path under the breeze tree. Record your reflections so I can preserve your journey!`
+                        : `Hey ${userName}! I'm watching from the sideline. Record your milestones and photos so I can learn and reflect with you!`;
+                }
+            }
+
+            // Click to customize name in real-time
+            const playerNameEl = document.getElementById('player-name-display');
+            if (playerNameEl) {
+                playerNameEl.addEventListener('click', () => {
+                    const currentName = getUserName();
+                    const newName = prompt("Enter your name to personalize your archive:", currentName === 'Athlete' || currentName === 'Life Chronicler' ? '' : currentName);
+                    if (newName && newName.trim()) {
+                        const clean = newName.trim();
+                        localStorage.setItem('legacy_user', clean);
+                        localStorage.setItem('username', clean);
+                        const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
+                        athleteProfile.name = clean;
+                        localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
+                        updateDisplayedUserName();
+                    }
+                });
+            }
+
+            /* ------------------------------------------------------------------
                2. DOMAIN SWITCHER RENDERING (STRICT ISOLATION)
                ------------------------------------------------------------------ */
             const domainSwitcherContainer = document.getElementById('domain-switcher-container');
@@ -691,7 +780,7 @@
                     `;
 
                     // Update UI labels to Life terms
-                    document.getElementById('player-name-display').textContent = 'Marcus Vance';
+                    updateDisplayedUserName();
                     document.getElementById('current-sport-badge').textContent = 'LIFE CHRONICLE';
                     document.getElementById('current-sport-badge').className = 'px-2.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/40';
                     document.getElementById('plays-count-display').textContent = '0 LOGGED MEMORIES • LIFE JOURNEY TIMELINE';
@@ -724,6 +813,7 @@
                         domainSwitcherContainer.appendChild(btn);
                     });
 
+                    updateDisplayedUserName();
                     document.getElementById('btn-open-log-label').textContent = 'LOG PLAY';
                     document.getElementById('pro-card-btn-label').textContent = 'PRO CARD';
                     document.getElementById('sub-bench-status-badge').textContent = '🪑 On Sub Bench (Ready)';
@@ -1538,9 +1628,10 @@
             function performRAGQuery(userPrompt) {
                 const memories = getActiveMemories();
                 if (memories.length === 0) {
+                    const userName = getUserName();
                     return isLifeMode
-                        ? `Hey Marcus! I'm sitting by the garden bench under the breeze tree. You haven't recorded any life memories yet! Click '+ ADD MEMORY' so I can learn from your story!`
-                        : `Hey Marcus! I'm sitting on the substitute bench watching the field. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
+                        ? `Hey ${userName}! I'm sitting by the garden path under the breeze tree. You haven't recorded any life memories yet! Click '+ ADD MEMORY' so I can learn from your story!`
+                        : `Hey ${userName}! I'm sitting on the sideline bench watching the field. You haven't logged any plays for ${currentSport.toUpperCase()} yet! Click '+ LOG PLAY' so I can learn your story!`;
                 }
 
                 const query = userPrompt.toLowerCase();
@@ -1636,7 +1727,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            userId: 'usr_marcus',
+                            userId: getUserId(),
                             era: activeMem?.era || (isLifeMode ? 'Life Journey' : 'Pro Athlete Era'),
                             journeyType: isLifeMode ? 'life' : 'sports',
                             domain: isLifeMode ? null : currentSport,

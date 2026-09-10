@@ -1405,6 +1405,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="athlete-name" class="form-label">Athlete Full Name</label>
+                    <input type="text" id="athlete-name" class="form-control" placeholder="e.g. Alex Rivera" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="athlete-jersey" class="form-label">Jersey / Uniform Number (Optional)</label>
+                    <input type="number" id="athlete-jersey" class="form-control" placeholder="e.g. 10" min="0" max="99" />
+                </div>
+
+                <div class="form-group">
                     <label for="position-role" class="form-label">Position / Role / Specialization</label>
                     <input type="text" id="position-role" class="form-control" placeholder="e.g. Forward, Point Guard, Fast Bowler, Sprinter" required />
                 </div>
@@ -1465,6 +1475,11 @@
                         <option value="Music & Culture">Music & Cultural Arts</option>
                         <option value="Other">Other Life Pursuits</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="life-name" class="form-label">Your Full Name</label>
+                    <input type="text" id="life-name" class="form-control life-form-control" placeholder="e.g. Maya Lin" required />
                 </div>
 
                 <div class="form-group">
@@ -1812,7 +1827,12 @@
                 const lifePhase = document.getElementById('life-phase').value;
                 const lifeMotto = document.getElementById('life-motto').value;
 
+                const enteredName = (document.getElementById('life-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Life Chronicler';
+                localStorage.setItem('legacy_user', enteredName);
+                localStorage.setItem('username', enteredName);
+
                 const lifeProfile = {
+                    name: enteredName,
                     focus: lifeFocus,
                     phase: lifePhase,
                     motto: lifeMotto,
@@ -1830,7 +1850,7 @@
                 document.getElementById('wipe-overlay').classList.add('active');
 
                 setTimeout(() => {
-                    window.location.href = 'timeline.html?mode=life&sport=life';
+                    window.location.href = `timeline.html?mode=life&sport=life&name=${encodeURIComponent(enteredName)}`;
                 }, 500);
             });
 
@@ -1867,8 +1887,23 @@
             });
 
             function openAthleteModal() {
+                const storedUser = localStorage.getItem('legacy_user');
+                const nameInput = document.getElementById('athlete-name');
+                if (nameInput && storedUser && storedUser !== 'Marcus Vance') {
+                    nameInput.value = storedUser;
+                }
                 athleteModal.classList.add('active');
                 playSynthSound(450, 'triangle', 0.3, 0.05);
+            }
+
+            function openLifeModal() {
+                const storedUser = localStorage.getItem('legacy_user');
+                const nameInput = document.getElementById('life-name');
+                if (nameInput && storedUser && storedUser !== 'Marcus Vance') {
+                    nameInput.value = storedUser;
+                }
+                lifeModal.classList.add('active');
+                playSynthSound(520, 'sine', 0.3, 0.06);
             }
 
             function closeAthleteModal() {
@@ -1891,7 +1926,12 @@
                 const positionRole = document.getElementById('position-role').value;
                 const teamHistory = document.getElementById('team-history').value;
 
+                const enteredName = (document.getElementById('athlete-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Athlete';
+                const enteredJersey = (document.getElementById('athlete-jersey')?.value || '').trim();
+
                 const athleteProfile = {
+                    name: enteredName,
+                    jerseyNumber: enteredJersey || '10',
                     sport: primarySport,
                     position: positionRole,
                     team: teamHistory,
@@ -1899,6 +1939,8 @@
                 };
 
                 const chosenSport = (primarySport || 'football').toLowerCase();
+                localStorage.setItem('legacy_user', enteredName);
+                localStorage.setItem('username', enteredName);
                 localStorage.setItem('legacy_journey_mode', 'SPORTS');
                 localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
                 localStorage.setItem('legacy_selected_sport', chosenSport);
@@ -1911,7 +1953,7 @@
                 document.getElementById('wipe-overlay').classList.add('active');
 
                 setTimeout(() => {
-                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}`;
+                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}&name=${encodeURIComponent(enteredName)}`;
                 }, 500);
             });
 

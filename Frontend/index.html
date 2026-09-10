@@ -485,11 +485,21 @@
             signInForm.classList.add('active');
         });
 
+        function formatNameFromEmail(email) {
+            if (!email) return '';
+            const prefix = email.split('@')[0];
+            return prefix.replace(/[._\-+]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+        }
+
         // Save visitor state upon form submission and redirect to journey selection
         signInForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const emailInput = signInForm.querySelector('input[type="email"]');
-            const userVal = (emailInput && emailInput.value) ? emailInput.value.split('@')[0] : 'Marcus Vance';
+            const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
+            const existingUser = localStorage.getItem('legacy_user');
+            const userVal = (existingUser && existingUser !== 'Marcus Vance')
+                ? existingUser
+                : (formatNameFromEmail(email) || 'Athlete');
             localStorage.setItem('legacylane_visited', 'true');
             localStorage.setItem('legacy_user', userVal);
             localStorage.setItem('username', userVal);
@@ -499,7 +509,7 @@
         signUpForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = signUpForm.querySelector('input[type="text"]');
-            const userVal = (nameInput && nameInput.value) ? nameInput.value : 'Marcus Vance';
+            const userVal = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Athlete';
             localStorage.setItem('legacylane_visited', 'true');
             localStorage.setItem('legacy_user', userVal);
             localStorage.setItem('username', userVal);
