@@ -491,28 +491,86 @@
             return prefix.replace(/[._\-+]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
         }
 
+        const API_BASE = (window.location.protocol.startsWith('http') && window.location.origin)
+            ? (window.location.port === '3000' ? 'http://localhost:5000/api' : `${window.location.origin}/api`)
+            : 'http://localhost:5000/api';
+
         // Save visitor state upon form submission and redirect to journey selection
-        signInForm.addEventListener('submit', (e) => {
+        signInForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = signInForm.querySelector('input[type="email"]');
+            const passInput = signInForm.querySelector('input[type="password"]');
             const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
-            const existingUser = localStorage.getItem('legacy_user');
-            const userVal = (existingUser && existingUser !== 'Marcus Vance')
-                ? existingUser
-                : (formatNameFromEmail(email) || 'Athlete');
+            const password = passInput && passInput.value ? passInput.value : '';
+
+            let userVal = formatNameFromEmail(email) || 'Athlete';
+            let userId = 'usr_' + Date.now();
+            let isZeroMemories = false;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user) {
+                        userVal = data.user.name || userVal;
+                        userId = data.user.id || userId;
+                        if (data.user.memoriesCount === 0) {
+                            isZeroMemories = true;
+                        }
+                    }
+                }
+            } catch (err) {}
+
             localStorage.setItem('legacylane_visited', 'true');
             localStorage.setItem('legacy_user', userVal);
             localStorage.setItem('username', userVal);
+            localStorage.setItem('legacy_user_id', userId);
+            if (isZeroMemories) {
+                localStorage.setItem('legacy_needs_onboarding', 'true');
+            }
             window.location.href = 'journey-selection.html';
         });
 
-        signUpForm.addEventListener('submit', (e) => {
+        signUpForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = signUpForm.querySelector('input[type="text"]');
+            const emailInput = signUpForm.querySelector('input[type="email"]');
+            const passInputs = signUpForm.querySelectorAll('input[type="password"]');
             const userVal = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Athlete';
+            const email = emailInput && emailInput.value ? emailInput.value.trim() : `${Date.now()}@example.com`;
+            const password = passInputs[0] ? passInputs[0].value : 'password123';
+
+            let userId = 'usr_' + Date.now();
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: userVal,
+                        email,
+                        password,
+                        profileType: 'Athlete',
+                        sportType: 'football'
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user && data.user.id) {
+                        userId = data.user.id;
+                    }
+                }
+            } catch (err) {}
+
             localStorage.setItem('legacylane_visited', 'true');
             localStorage.setItem('legacy_user', userVal);
             localStorage.setItem('username', userVal);
+            localStorage.setItem('legacy_user_id', userId);
+            // New register always triggers 3-step baseline onboarding!
+            localStorage.setItem('legacy_needs_onboarding', 'true');
             window.location.href = 'journey-selection.html';
         });
 

@@ -271,6 +271,12 @@
                     <span>Reflect with Younger Self</span>
                 </button>
 
+                <!-- Mental Wellness Insights Button (SRS 4.4) -->
+                <button id="btn-open-wellness-modal" class="btn-hover-lift px-3.5 py-2.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 font-semibold text-xs border border-emerald-500/30 flex items-center gap-2" title="Mental Wellness & Sentiment Analytics (SRS 4.4)">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    <span>Wellness Insights</span>
+                </button>
+
                 <!-- Personal Chronicle / Career Ledger Button -->
                 <button id="btn-open-pro-card" class="btn-hover-lift tactical-glass px-4 py-2.5 rounded-2xl hover:bg-white/10 text-stone-200 font-semibold text-xs border border-white/10 flex items-center gap-2">
                     <svg class="w-3.5 h-3.5 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -702,23 +708,60 @@
          MODAL 3: "YOUR YOUNGER SELF" COMPANION DRAWER
          ========================================================================== -->
     <div id="drawer-ai-companion" class="ai-drawer-card">
-        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-lg">
-                    <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <!-- Drawer Header & Era Selector (SRS 4.3) -->
+        <div class="border-b border-white/10 pb-3 mb-3">
+            <div class="flex items-center justify-between mb-2.5">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-base">
+                        <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-semibold text-stone-100">Younger Self</h3>
+                            <span id="ai-era-badge" class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] border border-amber-500/30">All Eras</span>
+                        </div>
+                        <p class="text-[10px] font-mono text-stone-400">Intimate Handwritten Reflection & RAG Memory</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-base font-semibold text-stone-100">Younger Self</h3>
-                    <p class="text-[10px] font-mono text-stone-400">Intimate Handwritten Reflection</p>
+                <div class="flex items-center gap-1.5">
+                    <button id="btn-clear-ai-chat" type="button" class="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 text-[11px] font-medium border border-white/5 transition" title="Clear Chat History (SRS 4.3.1)">
+                        Clear
+                    </button>
+                    <button id="btn-close-ai-drawer" type="button" class="w-7 h-7 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-xs">✕</button>
                 </div>
             </div>
-            <button id="btn-close-ai-drawer" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm">✕</button>
+
+            <!-- SRS 4.3.3 REQ-1: Era Selection Dropdown -->
+            <div class="space-y-1">
+                <div class="flex items-center justify-between text-[10px] font-mono text-stone-400 px-0.5">
+                    <span>CONVERSATION ERA / AGE:</span>
+                    <span id="ai-era-count" class="text-amber-300/90 font-medium">0 memories</span>
+                </div>
+                <select id="ai-era-select" class="w-full px-3 py-2 rounded-xl bg-stone-900/90 border border-amber-500/30 text-amber-200 text-xs font-medium focus:border-amber-400 focus:outline-none transition cursor-pointer">
+                    <option value="All Eras">✦ All Eras (Entire Living Journey)</option>
+                    <option value="Youth & Formative Years">🌱 Youth & Formative Years (Age ~10-14)</option>
+                    <option value="High School & Early Ambition">⚡ High School & Early Ambition (Age ~15-18)</option>
+                    <option value="Collegiate / Trial Era">🎓 Collegiate / Trial Era (Age ~18-22)</option>
+                    <option value="Championship & Breakthrough">🏆 Championship & Breakthrough</option>
+                    <option value="Comeback & Resilience Season">🔥 Comeback & Resilience Season</option>
+                    <option value="Mastery & Legacy Chapters">👑 Mastery & Legacy Chapters</option>
+                </select>
+            </div>
         </div>
 
-        <p class="text-xs text-stone-300 mb-3">Reflecting alongside your journey in real-time based on your preserved milestones & memories.</p>
+        <!-- SRS 4.3.3 REQ-1 Alt: Empty-Era Fallback Notice Banner -->
+        <div id="ai-era-empty-banner" class="hidden p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs mb-3 space-y-2">
+            <div class="flex items-start gap-2">
+                <span class="text-base leading-none">⚠️</span>
+                <p class="flex-1 leading-snug">You haven't logged any memories from this time yet. Responses will be limited.</p>
+            </div>
+            <button id="btn-log-for-era" type="button" class="w-full py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[11px] font-semibold border border-amber-500/40 transition">
+                + Log First Memory for this Era
+            </button>
+        </div>
 
         <!-- Quick Reply Chips -->
-        <div class="space-y-1.5 mb-4">
+        <div class="space-y-1.5 mb-3" id="ai-chips-wrapper">
             <p class="text-[10px] font-mono text-stone-400 font-medium">RECOMMENDED REFLECTION PROMPTS:</p>
             <div class="flex flex-wrap gap-1.5" id="ai-quick-chips-container">
                 <button class="ai-chip-btn px-2.5 py-1 rounded-xl bg-stone-800 hover:bg-amber-500/20 text-stone-300 hover:text-amber-200 text-[11px] font-medium border border-white/5 transition">"I'm feeling worn out and doubting myself"</button>
@@ -728,7 +771,7 @@
         </div>
 
         <!-- Chat Messages -->
-        <div id="ai-chat-box" class="flex-1 overflow-y-auto bg-black/40 rounded-2xl p-4 space-y-3 border border-white/5 mb-4 text-xs">
+        <div id="ai-chat-box" class="flex-1 overflow-y-auto bg-black/40 rounded-2xl p-4 space-y-3 border border-white/5 mb-3 text-xs">
             <div class="bg-amber-500/10 text-amber-200 p-3.5 rounded-2xl border border-amber-500/20" id="ai-chat-welcome-bubble">
                 <span id="ai-chat-welcome-msg">I'm sitting under the garden tree. Record your reflections so I can preserve your journey!</span>
             </div>
@@ -815,6 +858,154 @@
     </div>
 
     <!-- ==========================================================================
+         MODAL 6: MENTAL WELLNESS & SENTIMENT ANALYTICS (SRS SEC 4.4)
+         ========================================================================== -->
+    <div id="modal-wellness-insights" class="drawer-overlay">
+        <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto tactical-glass-card rounded-3xl p-6 border border-emerald-500/30 shadow-2xl space-y-5 pointer-events-auto">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
+                        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xl font-semibold text-stone-100">Mental Wellness Insights</h2>
+                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30">SRS 4.4</span>
+                        </div>
+                        <p class="text-xs text-stone-400">Emotional trajectory, resilience curve & comeback analytics</p>
+                    </div>
+                </div>
+                <button id="btn-close-wellness-modal" type="button" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition">✕</button>
+            </div>
+
+            <!-- Key Metric Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-0.5">
+                    <p class="text-[10px] font-mono text-stone-400">RESILIENCE SCORE</p>
+                    <p id="wellness-resilience-score" class="font-teko text-3xl font-bold text-emerald-300 leading-tight">--</p>
+                    <p id="wellness-resilience-tier" class="text-[10px] text-stone-400 truncate">Evaluating...</p>
+                </div>
+                <div class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-0.5">
+                    <p class="text-[10px] font-mono text-stone-400">COMEBACK SEQUENCES</p>
+                    <p id="wellness-recovery-count" class="font-teko text-3xl font-bold text-amber-300 leading-tight">--</p>
+                    <p class="text-[10px] text-stone-400">Hardship turnarounds</p>
+                </div>
+                <div class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-0.5">
+                    <p class="text-[10px] font-mono text-stone-400">BURNOUT RISK</p>
+                    <p id="wellness-burnout-risk" class="font-teko text-3xl font-bold text-cyan-300 leading-tight">--</p>
+                    <p class="text-[10px] text-stone-400">Cognitive fatigue level</p>
+                </div>
+                <div class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-0.5">
+                    <p class="text-[10px] font-mono text-stone-400">TOTAL MEMORIES</p>
+                    <p id="wellness-total-memories" class="font-teko text-3xl font-bold text-stone-200 leading-tight">--</p>
+                    <p class="text-[10px] text-stone-400">Preserved chapters</p>
+                </div>
+            </div>
+
+            <!-- SRS 4.4.3 REQ-1 Alt: Sparse State Card (< 3 memories) -->
+            <div id="wellness-sparse-state" class="hidden rounded-2xl bg-amber-500/10 border border-amber-500/30 p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-300 text-xl">
+                    📈
+                </div>
+                <h3 class="text-base font-semibold text-amber-200">Keep logging memories to unlock your wellness graph.</h3>
+                <p class="text-xs text-stone-300 max-w-md mx-auto">
+                    The AI emotional trajectory requires at least 3 chronological milestones to compute recovery curves, burnout detection, and emotional arcs.
+                </p>
+                <div class="max-w-xs mx-auto space-y-1">
+                    <div class="flex justify-between text-[11px] font-mono text-stone-400">
+                        <span>Milestone Progress</span>
+                        <span id="wellness-sparse-progress-text">0 / 3</span>
+                    </div>
+                    <div class="h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                        <div id="wellness-sparse-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <button id="btn-wellness-add-mem" type="button" class="btn-hover-lift px-5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-semibold text-xs border border-amber-500/40 inline-flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    <span>+ Log a New Milestone Now</span>
+                </button>
+            </div>
+
+            <!-- Interactive SVG Line Graph Container (SRS 4.4.3 REQ-1 & REQ-2) -->
+            <div id="wellness-graph-wrapper" class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2 font-mono text-stone-300">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="font-semibold text-stone-200">CHRONOLOGICAL EMOTIONAL TRAJECTORY</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px] text-stone-400 font-mono">
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400"></span> Peak (≥85%)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400 shadow-sm shadow-rose-400"></span> Valley (≤45%)</span>
+                    </div>
+                </div>
+
+                <!-- Relative container for SVG + dynamic hover tooltip -->
+                <div class="relative bg-black/60 rounded-2xl border border-white/10 p-3 sm:p-4 overflow-hidden" id="wellness-chart-box">
+                    <div class="w-full h-64" id="wellness-svg-canvas-container">
+                        <!-- SVG dynamically rendered here -->
+                    </div>
+
+                    <!-- SRS 4.4.3 REQ-2: Hover Tooltip Overlay -->
+                    <div id="wellness-chart-tooltip" class="absolute hidden pointer-events-none z-50 px-3.5 py-2.5 rounded-2xl bg-stone-900/95 border border-amber-400/50 text-stone-100 shadow-2xl text-xs space-y-1 backdrop-blur-md transition-all duration-150 transform -translate-x-1/2 -translate-y-full mb-2">
+                        <p id="tooltip-memory-date" class="text-[10px] font-mono text-amber-300"></p>
+                        <p id="tooltip-memory-title" class="font-semibold text-stone-100"></p>
+                        <div class="flex items-center gap-2 pt-0.5">
+                            <span id="tooltip-memory-score" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold"></span>
+                            <span id="tooltip-memory-label" class="text-[11px] text-stone-300"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SRS 4.4.2: "Improve Your Insights" Section -->
+            <div id="wellness-adjuster-panel" class="bg-black/40 rounded-2xl p-4 border border-white/5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-semibold text-stone-100 flex items-center gap-1.5">
+                            <span>🛠️ Improve Your Insights</span>
+                            <span class="text-[10px] font-mono text-stone-400 font-normal">(SRS 4.4.2 Manual Weight Adjuster)</span>
+                        </h4>
+                        <p class="text-[11px] text-stone-400">Select any past memory to fine-tune its emotional score if the AI miscategorized it.</p>
+                    </div>
+                </div>
+
+                <!-- Selector & Sliders -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-400 mb-1">SELECT MEMORY ENTRY:</label>
+                        <select id="wellness-adjust-select" class="w-full px-3 py-2.5 rounded-xl bg-stone-900 border border-white/15 text-stone-200 text-xs focus:border-amber-400 focus:outline-none cursor-pointer">
+                            <!-- Populated dynamically via JS -->
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[11px] font-mono text-stone-400">
+                            <span>SENTIMENT WEIGHT:</span>
+                            <span id="wellness-adjust-score-val" class="text-amber-300 font-bold">85%</span>
+                        </div>
+                        <input type="range" id="wellness-adjust-slider" min="10" max="100" value="85" step="5" class="w-full accent-amber-400 cursor-pointer">
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <button type="button" class="wellness-quick-score px-2 py-1 rounded-lg bg-stone-800 hover:bg-amber-500/20 text-[10px] text-stone-300 border border-white/5 transition" data-val="95" data-label="Triumphant & Proud 🌟">95% Triumphant 🌟</button>
+                            <button type="button" class="wellness-quick-score px-2 py-1 rounded-lg bg-stone-800 hover:bg-amber-500/20 text-[10px] text-stone-300 border border-white/5 transition" data-val="85" data-label="Tested & Resilient 💪">85% Resilient 💪</button>
+                            <button type="button" class="wellness-quick-score px-2 py-1 rounded-lg bg-stone-800 hover:bg-amber-500/20 text-[10px] text-stone-300 border border-white/5 transition" data-val="70" data-label="Bittersweet 🍂">70% Bittersweet 🍂</button>
+                            <button type="button" class="wellness-quick-score px-2 py-1 rounded-lg bg-stone-800 hover:bg-amber-500/20 text-[10px] text-stone-300 border border-white/5 transition" data-val="35" data-label="Difficult Lesson 🌧️">35% Lesson 🌧️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button id="btn-save-adjusted-sentiment" type="button" class="btn-hover-lift px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-semibold text-xs border border-emerald-500/40 transition flex items-center gap-1.5">
+                        <span>Save & Recalculate Trajectory</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================================================================
          MODAL 5: DELETE CONFIRMATION MODAL OVERLAY
          ========================================================================== -->
     <div id="modal-delete-confirm" class="drawer-overlay">
@@ -836,6 +1027,173 @@
                     Yes, Release
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 6: NEW USER BASELINE ONBOARDING (SRS SECTION 4.1)
+         ========================================================================== -->
+    <div id="modal-baseline-onboarding" class="drawer-overlay">
+        <div class="w-full max-w-xl tactical-glass-card rounded-3xl p-6 md:p-8 space-y-6 border border-amber-500/30 shadow-2xl relative overflow-hidden backdrop-blur-2xl">
+            
+            <!-- Ambient Glow Effect -->
+            <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
+
+            <!-- Header & Step Pills -->
+            <div class="space-y-3 relative z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 text-sm font-bold shadow-sm">
+                            ✦
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-stone-100 flex items-center gap-2">
+                                <span>Welcome to LegacyLane</span>
+                                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-semibold">SRS 4.1 Onboarding</span>
+                            </h3>
+                            <p class="text-xs text-stone-400">Anchor your journey's baseline eras so your AI Younger Self can reflect with you.</p>
+                        </div>
+                    </div>
+                    <button id="btn-skip-onboarding" type="button" class="text-stone-400 hover:text-stone-200 text-xs font-medium px-2.5 py-1 rounded-lg hover:bg-white/5 transition" title="Start with a blank timeline">
+                        Skip
+                    </button>
+                </div>
+
+                <!-- 3-Step Indicator Bar -->
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                    <div id="onboarding-pill-1" class="h-1.5 rounded-full bg-amber-400 transition-all duration-300 shadow-sm shadow-amber-400/50"></div>
+                    <div id="onboarding-pill-2" class="h-1.5 rounded-full bg-white/15 transition-all duration-300"></div>
+                    <div id="onboarding-pill-3" class="h-1.5 rounded-full bg-white/15 transition-all duration-300"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-stone-400">
+                    <span id="onboarding-step-label">Step 1 of 3: The Genesis</span>
+                    <span id="onboarding-step-percent" class="text-amber-300 font-bold">33%</span>
+                </div>
+            </div>
+
+            <!-- STEP 1 CONTAINER: When did you start your journey? (Sets Era 1) -->
+            <div id="onboarding-step-1" class="space-y-4 relative z-10 transition-all">
+                <div class="bg-black/35 rounded-2xl p-4 border border-white/5 space-y-1">
+                    <p class="text-[11px] font-mono text-amber-300 font-semibold tracking-wide uppercase">Genesis Milestone • Sets Era 1</p>
+                    <h4 class="text-sm font-semibold text-stone-100">When did you start your journey?</h4>
+                    <p class="text-xs text-stone-400">Define the earliest chapter where your passion began. Your AI Younger Self will anchor its youthful memories here.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">DATE OF GENESIS:</label>
+                            <input type="date" id="onboarding-date-1" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">ERA 1 NAME:</label>
+                            <input type="text" id="onboarding-era-1" value="Youth & Formative Years" placeholder="e.g. Youth & Formative Years" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">FIRST MILESTONE / TITLE:</label>
+                        <input type="text" id="onboarding-title-1" value="Day One: Lacing Up My First Pair of Cleats" placeholder="e.g. First Day at the Academy" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">EARLIEST REFLECTION / JOURNAL:</label>
+                        <textarea id="onboarding-journal-1" rows="2" placeholder="What emotions do you remember when you first took the field?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Full of raw passion and nervous excitement. I laced up my boots, looked across the empty ground, and promised myself I would see this journey through.</textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end pt-2">
+                    <button id="btn-onboarding-next-1" type="button" class="btn-hover-lift px-5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 font-semibold text-xs border border-amber-500/40 flex items-center gap-1.5 transition">
+                        <span>Continue to Step 2</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2 CONTAINER: What was your first big breakthrough or milestone? (Sets Era 2) -->
+            <div id="onboarding-step-2" class="space-y-4 relative z-10 hidden transition-all">
+                <div class="bg-black/35 rounded-2xl p-4 border border-white/5 space-y-1">
+                    <p class="text-[11px] font-mono text-emerald-300 font-semibold tracking-wide uppercase">Breakthrough Peak • Sets Era 2</p>
+                    <h4 class="text-sm font-semibold text-stone-100">What was your first big breakthrough or milestone?</h4>
+                    <p class="text-xs text-stone-400">The moment your training yielded its first undeniable triumph. This sets a resilience anchor in your wellness curve.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">DATE OF BREAKTHROUGH:</label>
+                            <input type="date" id="onboarding-date-2" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">ERA 2 NAME:</label>
+                            <input type="text" id="onboarding-era-2" value="Breakthrough & Championship Season" placeholder="e.g. Breakthrough Season" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">BREAKTHROUGH TITLE:</label>
+                        <input type="text" id="onboarding-title-2" value="Clutch Winning Goal in State Championship" placeholder="e.g. Regional Championship Final" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">HOW DID THAT TRIUMPH FEEL?:</label>
+                        <textarea id="onboarding-journal-2" rows="2" placeholder="Describe the feeling when you proved your ability." class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Down by 1 with five minutes on the clock. Everything slowed down. When the ball hit the net, all the early mornings and sacrifices made sense. That moment changed how I saw myself.</textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <button id="btn-onboarding-back-2" type="button" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition">
+                        ← Back to Step 1
+                    </button>
+                    <button id="btn-onboarding-next-2" type="button" class="btn-hover-lift px-5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 font-semibold text-xs border border-amber-500/40 flex items-center gap-1.5 transition">
+                        <span>Continue to Step 3</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3 CONTAINER: What is your current chapter or focus? (Sets Current Era) -->
+            <div id="onboarding-step-3" class="space-y-4 relative z-10 hidden transition-all">
+                <div class="bg-black/35 rounded-2xl p-4 border border-white/5 space-y-1">
+                    <p class="text-[11px] font-mono text-cyan-300 font-semibold tracking-wide uppercase">Active Frontier • Sets Current Era</p>
+                    <h4 class="text-sm font-semibold text-stone-100">What is your current chapter or focus?</h4>
+                    <p class="text-xs text-stone-400">Where you stand right now. Your AI Younger Self will converse with you from the past into this current focus.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">CURRENT DATE:</label>
+                            <input type="date" id="onboarding-date-3" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-stone-300 mb-1">CURRENT ERA NAME:</label>
+                            <input type="text" id="onboarding-era-3" value="Pro Athlete & Mastery Era" placeholder="e.g. Pro Mastery Era" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">CURRENT CHAPTER / FOCUS TITLE:</label>
+                        <input type="text" id="onboarding-title-3" value="Chasing National Consistency & Mentoring the Squad" placeholder="e.g. Mastery & Leadership" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-stone-300 mb-1">WHAT DRIVES YOU TODAY?:</label>
+                        <textarea id="onboarding-journal-3" rows="2" placeholder="What are your goals and thoughts right now?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Focusing on consistent excellence, staying injury-free, and elevating the younger teammates around me while writing the pinnacle of my career.</textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <button id="btn-onboarding-back-3" type="button" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition">
+                        ← Back to Step 2
+                    </button>
+                    <button id="btn-onboarding-finish" type="button" class="btn-hover-lift px-6 py-2.5 rounded-xl bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-200 font-semibold text-xs border border-emerald-500/40 flex items-center gap-2 shadow-lg shadow-emerald-950/50 transition">
+                        <span>Initialize Archive & Launch Timeline 🚀</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -3492,10 +3850,16 @@
                             rebuild3DSpline();
                             renderProCardTraits();
                             updateSubBenchWidget();
+                            if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
+                        } else {
+                            checkAndTriggerOnboarding();
                         }
                     }
                 } catch (err) {
                     console.warn('Backend fetch offline, using cached memories:', err.message);
+                    if (getActiveMemories().length === 0) {
+                        checkAndTriggerOnboarding();
+                    }
                 }
             }
 
@@ -3839,6 +4203,7 @@
                 modalLogPlay.classList.remove('active');
                 rebuild3DSpline();
                 renderProCardTraits();
+                if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
             });
 
             /* ------------------------------------------------------------------
@@ -4211,22 +4576,167 @@
                         playSoftSound('click');
                         rebuild3DSpline();
                         renderProCardTraits();
+                        if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
                     }
                 });
             }
 
             /* ------------------------------------------------------------------
-               14. INTIMATE DIARY AI COMPANION (YOUNGER SELF)
+               14. INTIMATE DIARY AI COMPANION (YOUNGER SELF) — SRS SEC 4.3
                ------------------------------------------------------------------ */
             const drawerAI = document.getElementById('drawer-ai-companion');
             const btnAICompanion = document.getElementById('btn-open-ai-companion');
             const btnCloseAIDrawer = document.getElementById('btn-close-ai-drawer');
+            const aiEraSelect = document.getElementById('ai-era-select');
+            const aiEraBadge = document.getElementById('ai-era-badge');
+            const aiEraCount = document.getElementById('ai-era-count');
+            const aiEraEmptyBanner = document.getElementById('ai-era-empty-banner');
+            const btnLogForEra = document.getElementById('btn-log-for-era');
+            const btnClearAIChat = document.getElementById('btn-clear-ai-chat');
             const aiChatBox = document.getElementById('ai-chat-box');
             const aiInputText = document.getElementById('ai-input-text');
             const btnSendAI = document.getElementById('btn-send-ai');
 
+            function getEstimatedEraAge(eraName) {
+                if (!eraName) return 'All Ages';
+                const lower = eraName.toLowerCase();
+                if (lower === 'all eras' || lower === 'all') return 'All Ages';
+                if (lower.includes('youth') || lower.includes('childhood') || lower.includes('formative')) return 'Age 10-14';
+                if (lower.includes('high school') || lower.includes('ambition')) return 'Age 15-18';
+                if (lower.includes('collegiate') || lower.includes('trial') || lower.includes('college')) return 'Age 18-22';
+                if (lower.includes('championship') || lower.includes('breakthrough')) return 'Age 20-24';
+                if (lower.includes('comeback') || lower.includes('resilience')) return 'Age 22-26';
+                if (lower.includes('mastery') || lower.includes('legacy')) return 'Age 25+';
+                const numMatch = eraName.match(/\b(19\d\d|20\d\d)\b/);
+                if (numMatch) return `${numMatch[1]} Era`;
+                return 'Youth Era';
+            }
+
+            function getMemoriesForEra(selectedEra) {
+                const memories = getActiveMemories();
+                if (!selectedEra || selectedEra === 'All Eras' || selectedEra.toLowerCase() === 'all') {
+                    return memories;
+                }
+                const qLower = selectedEra.toLowerCase();
+                return memories.filter(m => {
+                    const mEra = (m.era || '').toLowerCase();
+                    return mEra === qLower || mEra.includes(qLower) || qLower.includes(mEra);
+                });
+            }
+
+            function updateAIEraDisplay() {
+                if (!aiEraSelect) return;
+                const selectedEra = aiEraSelect.value;
+                const matchingMems = getMemoriesForEra(selectedEra);
+                const isAll = selectedEra === 'All Eras';
+
+                if (aiEraBadge) {
+                    aiEraBadge.textContent = getEstimatedEraAge(selectedEra);
+                }
+                if (aiEraCount) {
+                    aiEraCount.textContent = `${matchingMems.length} memor${matchingMems.length === 1 ? 'y' : 'ies'}`;
+                }
+
+                // SRS 4.3.3 REQ-1 Alt: show fallback alert banner if selected era has 0 memories
+                if (aiEraEmptyBanner) {
+                    if (!isAll && matchingMems.length === 0) {
+                        aiEraEmptyBanner.classList.remove('hidden');
+                    } else {
+                        aiEraEmptyBanner.classList.add('hidden');
+                    }
+                }
+            }
+
+            function populateAIEraSelect() {
+                if (!aiEraSelect) return;
+                const previousVal = aiEraSelect.value;
+                const memories = getActiveMemories();
+                
+                const standardEras = [
+                    { label: '✦ All Eras (Entire Living Journey)', value: 'All Eras' },
+                    { label: '🌱 Youth & Formative Years (Age ~10-14)', value: 'Youth & Formative Years' },
+                    { label: '⚡ High School & Early Ambition (Age ~15-18)', value: 'High School & Early Ambition' },
+                    { label: '🎓 Collegiate / Trial Era (Age ~18-22)', value: 'Collegiate / Trial Era' },
+                    { label: '🏆 Championship & Breakthrough', value: 'Championship & Breakthrough' },
+                    { label: '🔥 Comeback & Resilience Season', value: 'Comeback & Resilience Season' },
+                    { label: '👑 Mastery & Legacy Chapters', value: 'Mastery & Legacy Chapters' }
+                ];
+
+                const customEras = new Set();
+                memories.forEach(m => {
+                    if (m.era && !standardEras.some(s => s.value.toLowerCase() === m.era.toLowerCase())) {
+                        customEras.add(m.era);
+                    }
+                });
+
+                aiEraSelect.innerHTML = '';
+                standardEras.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.value;
+                    opt.textContent = e.label;
+                    aiEraSelect.appendChild(opt);
+                });
+
+                customEras.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = `✦ ${c}`;
+                    aiEraSelect.appendChild(opt);
+                });
+
+                if (previousVal && Array.from(aiEraSelect.options).some(o => o.value === previousVal)) {
+                    aiEraSelect.value = previousVal;
+                }
+
+                updateAIEraDisplay();
+            }
+
+            if (aiEraSelect) {
+                aiEraSelect.addEventListener('change', () => {
+                    updateAIEraDisplay();
+                    playSoftSound('click');
+                    const selectedEra = aiEraSelect.value;
+                    const userName = getUserName();
+                    const welcomeMsg = document.getElementById('ai-chat-welcome-msg');
+                    if (welcomeMsg) {
+                        welcomeMsg.textContent = selectedEra === 'All Eras'
+                            ? `Hey ${userName}! I'm reflecting across all chapters of our journey. Ask me anything about what we've overcome or learned!`
+                            : `Hey ${userName}! I'm your younger self from our "${selectedEra}" chapter (${getEstimatedEraAge(selectedEra)}). Ask me how I felt back then!`;
+                    }
+                });
+            }
+
+            if (btnLogForEra) {
+                btnLogForEra.addEventListener('click', () => {
+                    const selectedEra = aiEraSelect ? aiEraSelect.value : '';
+                    const eraInput = document.getElementById('log-input-era');
+                    if (eraInput && selectedEra && selectedEra !== 'All Eras') {
+                        eraInput.value = selectedEra;
+                    }
+                    document.getElementById('btn-open-log-modal').click();
+                });
+            }
+
+            if (btnClearAIChat) {
+                btnClearAIChat.addEventListener('click', () => {
+                    const userName = getUserName();
+                    const selectedEra = aiEraSelect ? aiEraSelect.value : 'All Eras';
+                    aiChatBox.innerHTML = `
+                        <div class="bg-amber-500/10 text-amber-200 p-3.5 rounded-2xl border border-amber-500/20 animate-fadeIn" id="ai-chat-welcome-bubble">
+                            <span id="ai-chat-welcome-msg">${
+                                selectedEra === 'All Eras'
+                                    ? `Hey ${userName}! Chat history cleared. What memory or advice would you like to explore?`
+                                    : `Hey ${userName}! Session reset for our "${selectedEra}" era. I'm ready!`
+                            }</span>
+                        </div>
+                    `;
+                    playSoftSound('click');
+                });
+            }
+
             btnAICompanion.addEventListener('click', () => {
                 drawerAI.classList.add('active');
+                populateAIEraSelect();
                 playSoftSound('click');
                 gsap.to(camera.position, { x: 13, y: 3.5, z: 4.5, duration: 1.5, ease: 'power2.inOut' });
                 gsap.to(controls.target, { x: 15, y: 0.8, z: 0, duration: 1.5, ease: 'power2.inOut' });
@@ -4238,10 +4748,15 @@
                 gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
-            function performRAGQuery(userPrompt) {
-                const memories = getActiveMemories();
+            function performRAGQuery(userPrompt, selectedEra = 'All Eras') {
+                const memories = getMemoriesForEra(selectedEra);
                 const userName = getUserName();
+                const isAll = selectedEra === 'All Eras';
+
                 if (memories.length === 0) {
+                    if (!isAll) {
+                        return `You haven't logged any memories from this time yet. Responses will be limited. Record your first milestone for "${selectedEra}" above so we can reflect together!`;
+                    }
                     return isLifeMode
                         ? `I'm sitting under the quiet garden tree waiting for our journey to begin. You haven't recorded any memories yet. Write your first chapter above so we can reflect together!`
                         : `I'm watching from the sideline bench. You haven't logged any milestone plays for ${currentSport.toUpperCase()} yet. Log your first moment so I can learn and reflect with you!`;
@@ -4261,7 +4776,7 @@
                     const photoMem = memories.find(m => m.caption || m.photo || (m.photos && m.photos.length > 0));
                     const photoRef = photoMem ? ` Looking back at our photo "${photoMem.caption || photoMem.title}", ` : ' ';
 
-                    return `Take a quiet breath with me, ${userName}. When we started on ${earliest.date} with "${earliest.title}", we had no idea how far this path would take us. We walked through tough days where the weight felt unbearable, but remember when we preserved "${peak.title}" on ${peak.date}? You wrote: "${peak.journal.slice(0, 110)}...". That courage didn't disappear—it's still beating in your chest right now.${photoRef}Every chapter we wrote proved that our grit always outlasted the doubt. Keep going; I believe in you.`;
+                    return `Take a quiet breath with me, ${userName}. In our ${selectedEra !== 'All Eras' ? selectedEra : 'journey'}, when we started on ${earliest.date} with "${earliest.title}", we had no idea how far this path would take us. We walked through tough days where the weight felt unbearable, but remember when we preserved "${peak.title}" on ${peak.date}? You wrote: "${peak.journal.slice(0, 110)}...". That courage didn't disappear—it's still beating in your chest right now.${photoRef}Every chapter we wrote proved that our grit always outlasted the doubt. Keep going; I believe in you.`;
                 }
 
                 // Photo-Aware Sensory Mode
@@ -4272,7 +4787,7 @@
                     const photoMem = memories.find(m => (m.photos && m.photos.length > 0) || m.caption || m.photo);
                     if (photoMem) {
                         const cap = (photoMem.photos && photoMem.photos[0]?.caption) || photoMem.caption || photoMem.title;
-                        return `I remember that exact moment in the picture! Looking at "${cap}" from ${photoMem.date}, I can still sense the atmosphere and how proud we felt. In our journal you wrote: "${photoMem.journal.slice(0, 100)}...". Every photo we preserved reminds me how every step built the person you are today.`;
+                        return `I remember that exact moment in the picture! Looking at "${cap}" from ${photoMem.date} (${photoMem.era || selectedEra}), I can still sense the atmosphere and how proud we felt. In our journal you wrote: "${photoMem.journal.slice(0, 100)}...". Every photo we preserved reminds me how every step built the person you are today.`;
                     }
                 }
 
@@ -4292,12 +4807,15 @@
                 }
 
                 // Default uplifting voice quoting active node
-                const active = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
-                return `Thinking back to Node #${active.id}: "${active.title}" (${active.date}) from our ${active.era}... You wrote: "${active.journal.slice(0, 95)}...". Our timeline now connects ${memories.length} chapters of heart and dedication. How can I support your next step today?`;
+                const active = memories[activeNodeIndex >= 0 && activeNodeIndex < memories.length ? activeNodeIndex : (memories.length - 1)];
+                return `Thinking back to Node #${active.id}: "${active.title}" (${active.date}) from our ${active.era || selectedEra}... You wrote: "${active.journal.slice(0, 95)}...". Our timeline now connects ${memories.length} chapters of heart and dedication. How can I support your next step today?`;
             }
 
             async function sendAIMessage(promptText) {
                 if (!promptText.trim()) return;
+
+                const selectedEra = aiEraSelect ? aiEraSelect.value : 'All Eras';
+                const eraMemories = getMemoriesForEra(selectedEra);
 
                 const userEl = document.createElement('div');
                 userEl.className = 'bg-stone-800 text-stone-200 p-2.5 rounded-2xl border border-white/10 text-right font-normal animate-fadeIn';
@@ -4309,12 +4827,9 @@
                 const typingEl = document.createElement('div');
                 typingEl.id = 'ai-typing-indicator';
                 typingEl.className = 'text-xs text-amber-300 italic flex items-center gap-1.5 p-2';
-                typingEl.innerHTML = `<span>Reflecting back into our pages...</span>`;
+                typingEl.innerHTML = `<span>Reflecting back into our ${selectedEra !== 'All Eras' ? selectedEra : 'journey'}...</span>`;
                 aiChatBox.appendChild(typingEl);
                 aiChatBox.scrollTop = aiChatBox.scrollHeight;
-
-                const memories = getActiveMemories();
-                const activeMem = memories[activeNodeIndex >= 0 ? activeNodeIndex : (memories.length - 1)];
 
                 let aiReply = '';
                 let photoToEmbed = null;
@@ -4326,11 +4841,11 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             userId: getUserId(),
-                            era: activeMem?.era || (isLifeMode ? 'Life Sanctuary' : 'Pro Athlete Era'),
+                            era: selectedEra,
                             journeyType: isLifeMode ? 'life' : 'sports',
                             domain: isLifeMode ? null : currentSport,
                             userMessage: promptText,
-                            clientMemories: memories
+                            clientMemories: eraMemories
                         })
                     });
                     if (res.ok) {
@@ -4340,16 +4855,16 @@
                 } catch (e) {}
 
                 if (!aiReply) {
-                    aiReply = performRAGQuery(promptText);
+                    aiReply = performRAGQuery(promptText, selectedEra);
                 }
 
                 const qLower = promptText.toLowerCase();
-                const matchedWithPhoto = memories.find(m => 
+                const matchedWithPhoto = eraMemories.find(m => 
                     m.photo && (
                         qLower.includes('photo') || qLower.includes('picture') || qLower.includes('pic') ||
                         qLower.includes(m.title.toLowerCase()) || (m.caption && qLower.includes(m.caption.toLowerCase()))
                     )
-                ) || (memories.find(m => m.photo) && (qLower.includes('look at') || qLower.includes('image')));
+                ) || (eraMemories.find(m => m.photo) && (qLower.includes('look at') || qLower.includes('image')));
 
                 if (matchedWithPhoto && matchedWithPhoto.photo) {
                     photoToEmbed = matchedWithPhoto.photo;
@@ -4371,7 +4886,79 @@
                     `;
                 }
 
-                aiEl.innerHTML = `<div><span class="text-amber-300 font-semibold">Younger Self:</span> ${aiReply}</div>${photoHtml}`;
+                // SRS 4.3.1: Save Insight / Pin to Timeline action bar
+                const currentAgeStr = getEstimatedEraAge(selectedEra);
+                aiEl.innerHTML = `
+                    <div><span class="text-amber-300 font-semibold">Younger Self:</span> ${aiReply}</div>
+                    ${photoHtml}
+                    <div class="flex items-center justify-between pt-2 mt-2 border-t border-amber-500/15">
+                        <span class="text-[10px] font-mono text-amber-300/60">${selectedEra} • ${currentAgeStr}</span>
+                        <button type="button" class="btn-save-ai-insight px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 text-[11px] font-medium border border-amber-500/30 transition flex items-center gap-1.5" title="Pin this quote to your timeline as a milestone">
+                            <span>📌 Save Insight</span>
+                        </button>
+                    </div>
+                `;
+
+                // Wire up Save Insight pinning
+                const btnSaveInsight = aiEl.querySelector('.btn-save-ai-insight');
+                if (btnSaveInsight) {
+                    btnSaveInsight.addEventListener('click', async () => {
+                        if (btnSaveInsight.disabled) return;
+                        btnSaveInsight.disabled = true;
+                        btnSaveInsight.innerHTML = '<span>⏳ Pinning...</span>';
+
+                        const cleanQuote = aiReply.replace(/^Younger Self:\s*/i, '').trim();
+                        const newMilestone = {
+                            id: getActiveMemories().length + 1,
+                            Memory_ID: 'mem_insight_' + Date.now(),
+                            title: `Younger Self Insight: ${selectedEra}`,
+                            date: new Date().toISOString().split('T')[0],
+                            era: selectedEra === 'All Eras' ? 'Youth & Formative Years' : selectedEra,
+                            journal: cleanQuote,
+                            sentiment: 95,
+                            sentimentLabel: 'Triumphant & Proud 🌟',
+                            tags: ['#AIInsight', '#YoungerSelf', '#Wisdom'],
+                            isFavorite: true,
+                            photo: photoToEmbed || null,
+                            caption: captionToEmbed || 'Younger Self Wisdom Preserved',
+                            domain: isLifeMode ? null : currentSport,
+                            journeyType: isLifeMode ? 'life' : 'sports'
+                        };
+
+                        if (!allMemoriesStore[currentSport]) allMemoriesStore[currentSport] = [];
+                        allMemoriesStore[currentSport].push(newMilestone);
+                        saveMemoriesStore();
+                        rebuild3DSpline();
+                        renderProCardTraits();
+                        populateAIEraSelect();
+
+                        // Sync to backend REST API
+                        try {
+                            await fetch(`${API_BASE}/memories`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: getUserId(),
+                                    title: newMilestone.title,
+                                    date: newMilestone.date,
+                                    era: newMilestone.era,
+                                    journalText: newMilestone.journal,
+                                    sentiment: newMilestone.sentiment,
+                                    sentimentLabel: newMilestone.sentimentLabel,
+                                    isFavorite: true,
+                                    tags: newMilestone.tags,
+                                    domain: currentSport,
+                                    journeyType: isLifeMode ? 'life' : 'sports'
+                                })
+                            });
+                        } catch (err) {}
+
+                        playSoftSound('chime');
+                        btnSaveInsight.className = 'px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-medium border border-emerald-500/30 flex items-center gap-1';
+                        btnSaveInsight.innerHTML = '<span>✓ Saved to Timeline!</span>';
+                    });
+                }
+
                 aiChatBox.appendChild(aiEl);
                 aiChatBox.scrollTop = aiChatBox.scrollHeight;
                 playSoftSound('chime');
@@ -4384,6 +4971,9 @@
             document.querySelectorAll('.ai-chip-btn').forEach(btn => {
                 btn.addEventListener('click', () => sendAIMessage(btn.textContent.replace(/"/g, '')));
             });
+
+            // Initialize era select on startup
+            populateAIEraSelect();
 
             /* ------------------------------------------------------------------
                15. PRO CARD (5 LIFE DIMENSIONS VS SPORTS) & ARCHIVE EXPORT
@@ -4630,6 +5220,629 @@
             document.getElementById('btn-flip-to-back').addEventListener('click', () => proCardInner.classList.add('flipped'));
             document.getElementById('btn-flip-to-front').addEventListener('click', () => proCardInner.classList.remove('flipped'));
 
+            /* ------------------------------------------------------------------
+               16. MENTAL WELLNESS & SENTIMENT ANALYTICS CONTROLLER (SRS SECTION 4.4)
+               ------------------------------------------------------------------ */
+            const modalWellness = document.getElementById('modal-wellness-insights');
+            const btnOpenWellness = document.getElementById('btn-open-wellness-modal');
+            const btnCloseWellness = document.getElementById('btn-close-wellness-modal');
+            const btnWellnessAddMem = document.getElementById('btn-wellness-add-mem');
+
+            if (btnOpenWellness && modalWellness) {
+                btnOpenWellness.addEventListener('click', () => {
+                    modalWellness.classList.add('active');
+                    playSoftSound('click');
+                    renderWellnessModal();
+                });
+            }
+
+            if (btnCloseWellness && modalWellness) {
+                btnCloseWellness.addEventListener('click', () => {
+                    modalWellness.classList.remove('active');
+                });
+            }
+
+            if (modalWellness) {
+                modalWellness.addEventListener('click', (e) => {
+                    if (e.target === modalWellness) {
+                        modalWellness.classList.remove('active');
+                    }
+                });
+            }
+
+            if (btnWellnessAddMem) {
+                btnWellnessAddMem.addEventListener('click', () => {
+                    if (modalWellness) modalWellness.classList.remove('active');
+                    const btnLog = document.getElementById('btn-open-log-modal');
+                    if (btnLog) btnLog.click();
+                });
+            }
+
+            async function renderWellnessModal() {
+                const memories = getActiveMemories();
+                const totalMemoriesEl = document.getElementById('wellness-total-memories');
+                const resilienceScoreEl = document.getElementById('wellness-resilience-score');
+                const resilienceTierEl = document.getElementById('wellness-resilience-tier');
+                const recoveryCountEl = document.getElementById('wellness-recovery-count');
+                const burnoutRiskEl = document.getElementById('wellness-burnout-risk');
+                const sparseStateEl = document.getElementById('wellness-sparse-state');
+                const graphWrapperEl = document.getElementById('wellness-graph-wrapper');
+                const sparseProgText = document.getElementById('wellness-sparse-progress-text');
+                const sparseProgBar = document.getElementById('wellness-sparse-progress-bar');
+
+                // Sort chronologically ascending
+                const sortedMemories = [...memories].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+                // Always populate adjuster select
+                populateWellnessAdjuster(sortedMemories);
+
+                // Check for backend enhanced analytics
+                let backendData = null;
+                try {
+                    const uid = getUserId();
+                    const jType = isLifeMode ? 'life' : 'sports';
+                    const res = await fetch(`${API_BASE}/analytics/${encodeURIComponent(uid)}?journeyType=${jType}&domain=${currentSport}`);
+                    if (res.ok) {
+                        backendData = await res.json();
+                    }
+                } catch (e) {}
+
+                if (totalMemoriesEl) totalMemoriesEl.textContent = sortedMemories.length;
+
+                // SRS 4.4.3 REQ-1 Alt: Sparse State Handling (< 3 memories)
+                if (sortedMemories.length < 3) {
+                    if (sparseStateEl) sparseStateEl.classList.remove('hidden');
+                    if (graphWrapperEl) graphWrapperEl.classList.add('hidden');
+                    if (sparseProgText) sparseProgText.textContent = `${sortedMemories.length} / 3`;
+                    if (sparseProgBar) sparseProgBar.style.width = `${Math.round((sortedMemories.length / 3) * 100)}%`;
+
+                    if (resilienceScoreEl) resilienceScoreEl.textContent = sortedMemories.length > 0 ? `${Math.round(sortedMemories.reduce((a, m) => a + (m.sentiment || 85), 0) / sortedMemories.length)}%` : '--';
+                    if (resilienceTierEl) resilienceTierEl.textContent = sortedMemories.length === 0 ? 'No Data Yet' : 'Building Baseline';
+                    if (recoveryCountEl) recoveryCountEl.textContent = '0';
+                    if (burnoutRiskEl) {
+                        burnoutRiskEl.textContent = 'Low';
+                        burnoutRiskEl.className = 'font-teko text-3xl font-bold text-emerald-300 leading-tight';
+                    }
+                    return;
+                }
+
+                // >= 3 memories: Render interactive graph
+                if (sparseStateEl) sparseStateEl.classList.add('hidden');
+                if (graphWrapperEl) graphWrapperEl.classList.remove('hidden');
+
+                // Compute resilience metrics
+                const avgScore = Math.round(sortedMemories.reduce((a, m) => a + (m.sentiment || 85), 0) / sortedMemories.length);
+
+                // Recovery Sequences: dips followed by positive rebounds
+                let recoveries = 0;
+                for (let i = 1; i < sortedMemories.length; i++) {
+                    const prev = sortedMemories[i - 1].sentiment || 85;
+                    const curr = sortedMemories[i].sentiment || 85;
+                    if (prev <= 50 && curr >= 70) recoveries++;
+                }
+                if (backendData && typeof backendData.recoverySequences === 'number') {
+                    recoveries = Math.max(recoveries, backendData.recoverySequences);
+                }
+
+                const resScore = backendData?.resilienceScore ? Math.round(backendData.resilienceScore) : Math.min(99, Math.max(50, avgScore + (recoveries * 4)));
+                const resTier = backendData?.resilienceTier || (resScore >= 85 ? 'Peak Transcendence 🌟' : resScore >= 70 ? 'Resilient & Focused 💪' : 'Rebuilding Strength 🌱');
+                const risk = backendData?.burnoutRisk || (avgScore < 45 ? 'High' : avgScore < 70 ? 'Moderate' : 'Low');
+
+                if (resilienceScoreEl) resilienceScoreEl.textContent = `${resScore}%`;
+                if (resilienceTierEl) resilienceTierEl.textContent = resTier;
+                if (recoveryCountEl) recoveryCountEl.textContent = recoveries;
+                if (burnoutRiskEl) {
+                    burnoutRiskEl.textContent = risk;
+                    burnoutRiskEl.className = `font-teko text-3xl font-bold leading-tight ${risk === 'High' ? 'text-rose-400' : risk === 'Moderate' ? 'text-amber-300' : 'text-cyan-300'}`;
+                }
+
+                // Render the SVG chart
+                renderWellnessSVGChart(sortedMemories);
+            }
+
+            function renderWellnessSVGChart(dataPoints) {
+                const container = document.getElementById('wellness-svg-canvas-container');
+                const tooltip = document.getElementById('wellness-chart-tooltip');
+                const ttDate = document.getElementById('tooltip-memory-date');
+                const ttTitle = document.getElementById('tooltip-memory-title');
+                const ttScore = document.getElementById('tooltip-memory-score');
+                const ttLabel = document.getElementById('tooltip-memory-label');
+                if (!container) return;
+
+                const width = 800;
+                const height = 240;
+                const padLeft = 60;
+                const padRight = 45;
+                const padTop = 30;
+                const padBottom = 45;
+                const chartW = width - padLeft - padRight;
+                const chartH = height - padTop - padBottom;
+
+                const n = dataPoints.length;
+                const stepX = chartW / Math.max(1, n - 1);
+
+                // Map points to (x, y)
+                const coords = dataPoints.map((m, idx) => {
+                    const rawScore = typeof m.sentiment === 'number' ? m.sentiment : 85;
+                    const clampedScore = Math.max(0, Math.min(100, rawScore));
+                    const x = padLeft + idx * stepX;
+                    const y = (padTop + chartH) - (chartH * (clampedScore / 100));
+                    return {
+                        x,
+                        y,
+                        score: clampedScore,
+                        memory: m,
+                        isPeak: clampedScore >= 85,
+                        isValley: clampedScore <= 45
+                    };
+                });
+
+                // Generate Smooth Cubic Spline Path
+                let splinePath = '';
+                if (coords.length > 0) {
+                    splinePath = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+                    for (let i = 0; i < coords.length - 1; i++) {
+                        const p0 = coords[i];
+                        const p1 = coords[i + 1];
+                        const cpx1 = (p0.x + (p1.x - p0.x) * 0.5).toFixed(1);
+                        const cpy1 = p0.y.toFixed(1);
+                        const cpx2 = (p0.x + (p1.x - p0.x) * 0.5).toFixed(1);
+                        const cpy2 = p1.y.toFixed(1);
+                        splinePath += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+                    }
+                }
+
+                // Area under curve path
+                const areaPath = coords.length > 0
+                    ? `${splinePath} L ${coords[coords.length - 1].x.toFixed(1)} ${(padTop + chartH).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padTop + chartH).toFixed(1)} Z`
+                    : '';
+
+                // Build Gridlines and Labels
+                const yLines = [
+                    { pct: 100, label: '100% (Peak)' },
+                    { pct: 75, label: '75%' },
+                    { pct: 50, label: '50% (Baseline)' },
+                    { pct: 25, label: '25%' },
+                    { pct: 0, label: '0% (Valley)' }
+                ];
+
+                let gridSvg = '';
+                yLines.forEach(yl => {
+                    const yPos = (padTop + chartH) - (chartH * (yl.pct / 100));
+                    const isMid = yl.pct === 50;
+                    gridSvg += `
+                        <line x1="${padLeft}" y1="${yPos}" x2="${width - padRight}" y2="${yPos}" 
+                              stroke="${isMid ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.06)'}" 
+                              stroke-dasharray="${isMid ? 'none' : '4,4'}" stroke-width="1" />
+                        <text x="${padLeft - 8}" y="${yPos + 3.5}" fill="rgba(255,255,255,0.4)" 
+                              font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="end">${yl.label}</text>
+                    `;
+                });
+
+                // X-axis date labels
+                let xLabelsSvg = '';
+                const maxLabels = Math.min(coords.length, 8);
+                const stride = Math.max(1, Math.floor(coords.length / maxLabels));
+                coords.forEach((pt, idx) => {
+                    if (idx % stride === 0 || idx === coords.length - 1) {
+                        const dStr = pt.memory.date ? pt.memory.date.substring(0, 7) : `#${idx + 1}`;
+                        xLabelsSvg += `
+                            <text x="${pt.x}" y="${padTop + chartH + 18}" fill="rgba(255,255,255,0.5)" 
+                                  font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">${dStr}</text>
+                        `;
+                    }
+                });
+
+                // Points & Rings
+                let nodesSvg = '';
+                coords.forEach((pt, idx) => {
+                    const nodeColor = pt.isPeak ? '#34d399' : (pt.isValley ? '#fb7185' : '#38bdf8');
+                    const haloColor = pt.isPeak ? 'rgba(52, 211, 153, 0.35)' : (pt.isValley ? 'rgba(251, 113, 133, 0.35)' : 'rgba(56, 189, 248, 0.25)');
+                    const radius = (pt.isPeak || pt.isValley) ? 6 : 4.5;
+
+                    nodesSvg += `
+                        <g class="wellness-point-node" data-idx="${idx}" style="cursor: pointer;">
+                            <circle cx="${pt.x}" cy="${pt.y}" r="${radius + 5}" fill="${haloColor}" class="transition-all" />
+                            <circle cx="${pt.x}" cy="${pt.y}" r="${radius}" fill="${nodeColor}" stroke="#0a1017" stroke-width="2" class="wellness-core-circle transition-all" />
+                            <circle cx="${pt.x}" cy="${pt.y}" r="16" fill="transparent" />
+                        </g>
+                    `;
+                });
+
+                // Complete SVG markup
+                container.innerHTML = `
+                    <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="wellnessAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#10b981" stop-opacity="0.38" />
+                                <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.18" />
+                                <stop offset="100%" stop-color="#04090d" stop-opacity="0.0" />
+                            </linearGradient>
+                            <linearGradient id="wellnessLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#06b6d4" />
+                                <stop offset="50%" stop-color="#10b981" />
+                                <stop offset="85%" stop-color="#fbbf24" />
+                                <stop offset="100%" stop-color="#34d399" />
+                            </linearGradient>
+                            <filter id="wellnessGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        ${gridSvg}
+                        ${xLabelsSvg}
+                        <path d="${areaPath}" fill="url(#wellnessAreaGrad)" />
+                        <path d="${splinePath}" fill="none" stroke="url(#wellnessLineGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#wellnessGlow)" />
+                        ${nodesSvg}
+                    </svg>
+                `;
+
+                // Wire up Interactive Peak/Valley Tooltips (SRS 4.4.3 REQ-2)
+                const chartBox = document.getElementById('wellness-chart-box');
+                const nodeEls = container.querySelectorAll('.wellness-point-node');
+
+                nodeEls.forEach(node => {
+                    const idx = parseInt(node.getAttribute('data-idx'), 10);
+                    const pt = coords[idx];
+                    const mem = pt.memory;
+
+                    node.addEventListener('mouseenter', () => {
+                        const coreCircle = node.querySelector('.wellness-core-circle');
+                        if (coreCircle) coreCircle.setAttribute('r', '8');
+
+                        if (tooltip && chartBox) {
+                            if (ttDate) ttDate.textContent = `${mem.date || 'Milestone'} • ${mem.era || (isLifeMode ? 'Life Sanctuary' : currentSport)}`;
+                            if (ttTitle) ttTitle.textContent = mem.title || 'Untitled Memory';
+                            if (ttScore) {
+                                ttScore.textContent = `${pt.score}%`;
+                                ttScore.className = `px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${pt.isPeak ? 'bg-emerald-500/20 text-emerald-300' : pt.isValley ? 'bg-rose-500/20 text-rose-300' : 'bg-cyan-500/20 text-cyan-300'}`;
+                            }
+                            if (ttLabel) {
+                                ttLabel.textContent = mem.sentimentLabel || (pt.isPeak ? 'Peak Euphoria 🌟' : pt.isValley ? 'Adversity & Grit 🌧️' : 'Steady Growth 🌱');
+                            }
+
+                            // Calculate position relative to container
+                            const pctX = (pt.x / width) * 100;
+                            const pctY = (pt.y / height) * 100;
+
+                            tooltip.style.left = `${pctX}%`;
+                            tooltip.style.top = `${pctY}%`;
+                            tooltip.classList.remove('hidden');
+                        }
+                    });
+
+                    node.addEventListener('mouseleave', () => {
+                        const coreCircle = node.querySelector('.wellness-core-circle');
+                        if (coreCircle) coreCircle.setAttribute('r', (pt.isPeak || pt.isValley) ? '6' : '4.5');
+                        if (tooltip) tooltip.classList.add('hidden');
+                    });
+
+                    // Clicking node selects it in the Adjuster Panel
+                    node.addEventListener('click', () => {
+                        const selectEl = document.getElementById('wellness-adjust-select');
+                        if (selectEl) {
+                            selectEl.value = mem.Memory_ID || mem.id;
+                            selectEl.dispatchEvent(new Event('change'));
+                            selectEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                });
+            }
+
+            // SRS 4.4.2: "Improve Your Insights" Weight Adjuster Controller
+            function populateWellnessAdjuster(sortedMemories) {
+                const selectEl = document.getElementById('wellness-adjust-select');
+                if (!selectEl) return;
+
+                selectEl.innerHTML = '';
+                if (sortedMemories.length === 0) {
+                    selectEl.innerHTML = `<option value="">No memories in archive</option>`;
+                    return;
+                }
+
+                sortedMemories.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.Memory_ID || m.id;
+                    opt.textContent = `${m.date || 'Undated'} — ${m.title} (${m.sentiment || 85}%)`;
+                    selectEl.appendChild(opt);
+                });
+
+                // Sync initial selection
+                syncAdjusterWithSelection();
+            }
+
+            function syncAdjusterWithSelection() {
+                const selectEl = document.getElementById('wellness-adjust-select');
+                const sliderEl = document.getElementById('wellness-adjust-slider');
+                const scoreValEl = document.getElementById('wellness-adjust-score-val');
+                if (!selectEl || !sliderEl || !scoreValEl) return;
+
+                const selectedId = selectEl.value;
+                const memories = getActiveMemories();
+                const mem = memories.find(m => String(m.Memory_ID || m.id) === String(selectedId));
+
+                if (mem) {
+                    const score = typeof mem.sentiment === 'number' ? mem.sentiment : 85;
+                    sliderEl.value = score;
+                    scoreValEl.textContent = `${score}%`;
+                }
+            }
+
+            // Adjuster event listeners
+            const wellnessSelect = document.getElementById('wellness-adjust-select');
+            const wellnessSlider = document.getElementById('wellness-adjust-slider');
+            const wellnessScoreVal = document.getElementById('wellness-adjust-score-val');
+            const btnSaveAdjusted = document.getElementById('btn-save-adjusted-sentiment');
+
+            if (wellnessSelect) {
+                wellnessSelect.addEventListener('change', syncAdjusterWithSelection);
+            }
+
+            if (wellnessSlider && wellnessScoreVal) {
+                wellnessSlider.addEventListener('input', (e) => {
+                    wellnessScoreVal.textContent = `${e.target.value}%`;
+                });
+            }
+
+            document.querySelectorAll('.wellness-quick-score').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const val = btn.getAttribute('data-val');
+                    if (val && wellnessSlider && wellnessScoreVal) {
+                        wellnessSlider.value = val;
+                        wellnessScoreVal.textContent = `${val}%`;
+                        playSoftSound('click');
+                    }
+                });
+            });
+
+            if (btnSaveAdjusted) {
+                btnSaveAdjusted.addEventListener('click', async () => {
+                    const selectEl = document.getElementById('wellness-adjust-select');
+                    const sliderEl = document.getElementById('wellness-adjust-slider');
+                    if (!selectEl || !sliderEl) return;
+
+                    const selectedId = selectEl.value;
+                    const newScore = parseInt(sliderEl.value, 10);
+                    if (!selectedId || isNaN(newScore)) return;
+
+                    const memories = allMemoriesStore[currentSport] || [];
+                    const targetMem = memories.find(m => String(m.Memory_ID || m.id) === String(selectedId));
+                    if (!targetMem) return;
+
+                    btnSaveAdjusted.disabled = true;
+                    btnSaveAdjusted.innerHTML = `<span>⏳ Recalculating...</span>`;
+
+                    // Update memory locally
+                    targetMem.sentiment = newScore;
+                    targetMem.sentimentLabel = newScore >= 85 ? 'Triumphant & Proud 🌟'
+                        : newScore >= 70 ? 'Tested & Resilient 💪'
+                        : newScore >= 50 ? 'Bittersweet 🍂'
+                        : 'Difficult Lesson 🌧️';
+
+                    saveMemoriesStore();
+                    rebuild3DSpline();
+                    renderProCardTraits();
+
+                    // Persist to backend REST API
+                    try {
+                        const memKey = targetMem.Memory_ID || targetMem.id;
+                        await fetch(`${API_BASE}/memories/${memKey}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                title: targetMem.title,
+                                sentiment: newScore,
+                                sentimentLabel: targetMem.sentimentLabel
+                            })
+                        });
+                    } catch (err) {
+                        console.warn('Backend sentiment update sync error:', err);
+                    }
+
+                    playSoftSound('chime');
+                    btnSaveAdjusted.innerHTML = `<span>✓ Trajectory Recalculated!</span>`;
+                    btnSaveAdjusted.className = 'btn-hover-lift px-4 py-2.5 rounded-xl bg-emerald-500/30 text-emerald-200 font-semibold text-xs border border-emerald-500/50 transition flex items-center gap-1.5';
+
+                    // Re-render modal graph and metrics
+                    await renderWellnessModal();
+
+                    setTimeout(() => {
+                        btnSaveAdjusted.disabled = false;
+                        btnSaveAdjusted.innerHTML = `<span>Save & Recalculate Trajectory</span>`;
+                        btnSaveAdjusted.className = 'btn-hover-lift px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-semibold text-xs border border-emerald-500/40 transition flex items-center gap-1.5';
+                    }, 2200);
+                });
+            }
+
+            /* ------------------------------------------------------------------
+               17. NEW USER BASELINE ONBOARDING CONTROLLER (SRS SECTION 4.1)
+               ------------------------------------------------------------------ */
+            const modalOnboarding = document.getElementById('modal-baseline-onboarding');
+            const btnSkipOnboarding = document.getElementById('btn-skip-onboarding');
+            const step1Container = document.getElementById('onboarding-step-1');
+            const step2Container = document.getElementById('onboarding-step-2');
+            const step3Container = document.getElementById('onboarding-step-3');
+            const pill1 = document.getElementById('onboarding-pill-1');
+            const pill2 = document.getElementById('onboarding-pill-2');
+            const pill3 = document.getElementById('onboarding-pill-3');
+            const stepLabel = document.getElementById('onboarding-step-label');
+            const stepPercent = document.getElementById('onboarding-step-percent');
+
+            // Set default dates if empty
+            const date1Input = document.getElementById('onboarding-date-1');
+            const date2Input = document.getElementById('onboarding-date-2');
+            const date3Input = document.getElementById('onboarding-date-3');
+
+            const nowOnb = new Date();
+            const dateStrToday = nowOnb.toISOString().split('T')[0];
+            const twoYearsAgo = new Date(nowOnb.getFullYear() - 2, nowOnb.getMonth(), nowOnb.getDate()).toISOString().split('T')[0];
+            const oneYearAgo = new Date(nowOnb.getFullYear() - 1, nowOnb.getMonth(), nowOnb.getDate()).toISOString().split('T')[0];
+
+            if (date1Input && !date1Input.value) date1Input.value = twoYearsAgo;
+            if (date2Input && !date2Input.value) date2Input.value = oneYearAgo;
+            if (date3Input && !date3Input.value) date3Input.value = dateStrToday;
+
+            function showOnboardingStep(stepNum) {
+                if (step1Container) step1Container.classList.toggle('hidden', stepNum !== 1);
+                if (step2Container) step2Container.classList.toggle('hidden', stepNum !== 2);
+                if (step3Container) step3Container.classList.toggle('hidden', stepNum !== 3);
+
+                if (pill1 && pill2 && pill3 && stepLabel && stepPercent) {
+                    if (stepNum === 1) {
+                        pill1.className = 'h-1.5 rounded-full bg-amber-400 transition-all duration-300 shadow-sm shadow-amber-400/50';
+                        pill2.className = 'h-1.5 rounded-full bg-white/15 transition-all duration-300';
+                        pill3.className = 'h-1.5 rounded-full bg-white/15 transition-all duration-300';
+                        stepLabel.textContent = 'Step 1 of 3: The Genesis';
+                        stepPercent.textContent = '33%';
+                    } else if (stepNum === 2) {
+                        pill1.className = 'h-1.5 rounded-full bg-emerald-400 transition-all duration-300';
+                        pill2.className = 'h-1.5 rounded-full bg-amber-400 transition-all duration-300 shadow-sm shadow-amber-400/50';
+                        pill3.className = 'h-1.5 rounded-full bg-white/15 transition-all duration-300';
+                        stepLabel.textContent = 'Step 2 of 3: First Big Breakthrough';
+                        stepPercent.textContent = '66%';
+                    } else if (stepNum === 3) {
+                        pill1.className = 'h-1.5 rounded-full bg-emerald-400 transition-all duration-300';
+                        pill2.className = 'h-1.5 rounded-full bg-emerald-400 transition-all duration-300';
+                        pill3.className = 'h-1.5 rounded-full bg-cyan-400 transition-all duration-300 shadow-sm shadow-cyan-400/50';
+                        stepLabel.textContent = 'Step 3 of 3: Current Focus & Frontier';
+                        stepPercent.textContent = '100%';
+                    }
+                }
+                playSoftSound('click');
+            }
+
+            document.getElementById('btn-onboarding-next-1')?.addEventListener('click', () => showOnboardingStep(2));
+            document.getElementById('btn-onboarding-back-2')?.addEventListener('click', () => showOnboardingStep(1));
+            document.getElementById('btn-onboarding-next-2')?.addEventListener('click', () => showOnboardingStep(3));
+            document.getElementById('btn-onboarding-back-3')?.addEventListener('click', () => showOnboardingStep(2));
+
+            btnSkipOnboarding?.addEventListener('click', () => {
+                if (modalOnboarding) modalOnboarding.classList.remove('active');
+                localStorage.removeItem('legacy_needs_onboarding');
+                localStorage.setItem('legacy_onboarding_dismissed_' + getUserId(), 'true');
+            });
+
+            // Finish Onboarding & Initialize Archive
+            document.getElementById('btn-onboarding-finish')?.addEventListener('click', async () => {
+                const btnFinish = document.getElementById('btn-onboarding-finish');
+                if (btnFinish) {
+                    btnFinish.disabled = true;
+                    btnFinish.innerHTML = `<span>⏳ Initializing 3-Era Memory Vault...</span>`;
+                }
+
+                const uid = getUserId();
+                const jType = isLifeMode ? 'life' : 'sports';
+                const dom = currentSport;
+
+                const anchors = [
+                    {
+                        era: document.getElementById('onboarding-era-1')?.value?.trim() || 'Youth & Formative Years',
+                        title: document.getElementById('onboarding-title-1')?.value?.trim() || 'Day One: Lacing Up My First Pair of Cleats',
+                        date: date1Input?.value || twoYearsAgo,
+                        journal: document.getElementById('onboarding-journal-1')?.value?.trim() || '',
+                        sentiment: 85,
+                        sentimentLabel: 'Pure Gratitude 🕊️',
+                        tags: ['#Beginning', '#Genesis', '#DayOne']
+                    },
+                    {
+                        era: document.getElementById('onboarding-era-2')?.value?.trim() || 'Breakthrough & Championship Season',
+                        title: document.getElementById('onboarding-title-2')?.value?.trim() || 'Clutch Winning Goal in State Championship',
+                        date: date2Input?.value || oneYearAgo,
+                        journal: document.getElementById('onboarding-journal-2')?.value?.trim() || '',
+                        sentiment: 98,
+                        sentimentLabel: 'Triumphant & Proud 🌟',
+                        isFavorite: true,
+                        tags: ['#Breakthrough', '#Victory', '#TurningPoint']
+                    },
+                    {
+                        era: document.getElementById('onboarding-era-3')?.value?.trim() || 'Pro Athlete & Mastery Era',
+                        title: document.getElementById('onboarding-title-3')?.value?.trim() || 'Chasing National Consistency & Mentoring the Squad',
+                        date: date3Input?.value || dateStrToday,
+                        journal: document.getElementById('onboarding-journal-3')?.value?.trim() || '',
+                        sentiment: 90,
+                        sentimentLabel: 'Tested & Resilient 💪',
+                        tags: ['#CurrentChapter', '#Mastery', '#Focus']
+                    }
+                ];
+
+                try {
+                    const res = await fetch(`${API_BASE}/onboarding/baseline`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: uid,
+                            journeyType: jType,
+                            domain: dom,
+                            baselineAnchors: anchors
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data.memories) && data.memories.length > 0) {
+                            allMemoriesStore[currentSport] = data.memories;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Onboarding backend sync warning, populating local store:', err);
+                    allMemoriesStore[currentSport] = anchors.map((a, idx) => ({
+                        id: idx + 1,
+                        Memory_ID: 'mem_base_' + Date.now() + '_' + (idx + 1),
+                        title: a.title,
+                        date: a.date,
+                        era: a.era,
+                        journal: a.journal,
+                        sentiment: a.sentiment,
+                        sentimentLabel: a.sentimentLabel,
+                        isFavorite: Boolean(a.isFavorite),
+                        tags: a.tags,
+                        domain: dom,
+                        journeyType: jType
+                    }));
+                }
+
+                saveMemoriesStore();
+                rebuild3DSpline();
+                renderProCardTraits();
+                updateSubBenchWidget();
+                if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
+
+                // Celebration Confetti
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 75,
+                        origin: { y: 0.6 }
+                    });
+                }
+                playSoftSound('chime');
+
+                localStorage.removeItem('legacy_needs_onboarding');
+                localStorage.setItem('legacy_onboarding_completed_' + uid, 'true');
+
+                if (modalOnboarding) modalOnboarding.classList.remove('active');
+            });
+
+            function checkAndTriggerOnboarding() {
+                const uid = getUserId();
+                const needsOnboarding = localStorage.getItem('legacy_needs_onboarding') === 'true';
+                const memories = getActiveMemories();
+                const dismissed = localStorage.getItem('legacy_onboarding_dismissed_' + uid);
+                const completed = localStorage.getItem('legacy_onboarding_completed_' + uid);
+
+                if (needsOnboarding || (memories.length === 0 && !dismissed && !completed)) {
+                    if (modalOnboarding) {
+                        setTimeout(() => {
+                            modalOnboarding.classList.add('active');
+                            showOnboardingStep(1);
+                        }, 600);
+                    }
+                }
+            }
+
             const btnExportArchive = document.getElementById('btn-export-archive');
             if (btnExportArchive) {
                 btnExportArchive.addEventListener('click', () => {
@@ -4687,6 +5900,7 @@
             rebuild3DSpline();
             updateSubBenchWidget();
             fetchMemoriesFromBackend();
+            checkAndTriggerOnboarding();
 
             // Cinematic Intro Camera Sweep
             gsap.to(camera.position, {

@@ -1,0 +1,24 @@
+{
+  "name": "legacylane-unified",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LegacyLane — The One Who Lives: 3D Interactive Memory Repository & AI Companion",
+  "type": "module",
+  "scripts": {
+    "start": "node Backend/index.js",
+    "server": "node Backend/index.js",
+    "dev": "node Backend/index.js",
+    "frontend:dev": "npm --prefix Frontend run dev",
+    "backend:test": "npm --prefix Backend test",
+    "test:ai": "node AI_Modules/test_full_integration.js"
+  },
+  "keywords": [
+    "legacylane",
+    "ai-companion",
+    "timeline",
+    "threejs",
+    "memory-vault"
+  ],
+  "author": "LegacyLane Team",
+  "license": "ISC"
+}
