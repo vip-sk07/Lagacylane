@@ -19,7 +19,8 @@ import {
   removeUserVectors,
   perceiveImage,
   getUserCognitiveProfile,
-  updateContinuousLearningGraph
+  updateContinuousLearningGraph,
+  computeEmotionalResilience
 } from '../AI_Modules/index.js';
 import { encryptText, decryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
@@ -138,7 +139,8 @@ app.post('/api/auth/register', async (req, res) => {
       sport: sportType || 'football',
       position: position || 'Player',
       team: teamHistory || 'Legacy Academy XI',
-      avatarUrl: avatarUrl || null
+      avatarUrl: avatarUrl || null,
+      memoriesCount: 0
     };
 
     res.status(201).json({ message: 'Account created successfully', user: newUser });
@@ -165,6 +167,14 @@ app.post('/api/auth/login', async (req, res) => {
 
     const athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userRow.User_ID);
 
+    // Count existing memories to inform onboarding state
+    let memoriesCount = 0;
+    try {
+      const memCollection = getCollection('MemoryLogs');
+      const existingMems = await memCollection.find({ User_ID: userRow.User_ID }).toArray();
+      memoriesCount = existingMems.length;
+    } catch (countErr) {}
+
     const userPayload = {
       id: userRow.User_ID,
       name: userRow.Name,
@@ -174,7 +184,8 @@ app.post('/api/auth/login', async (req, res) => {
       position: athleteRow ? athleteRow.Position : 'Player',
       team: athleteRow ? athleteRow.TeamHistory : 'Personal',
       jerseyNumber: athleteRow ? athleteRow.JerseyNumber : 10,
-      avatarUrl: userRow.AvatarURL
+      avatarUrl: userRow.AvatarURL,
+      memoriesCount
     };
 
     res.json({ message: 'Login successful', user: userPayload });
@@ -401,6 +412,9 @@ app.use((err, req, res, next) => {
 // ----------------------------------------------------
 
 // Health-check / test-connection probe used by Frontend
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 app.get('/api/memories/test-connection', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -671,6 +685,141 @@ app.post('/api/memories', async (req, res) => {
   }
 });
 
+// POST /api/onboarding/baseline (SRS Section 4.1: Save 2-3 Baseline Eras & Milestones)
+app.post('/api/onboarding/baseline', async (req, res) => {
+  try {
+    const { userId, journeyType = 'sports', domain = 'football', baselineAnchors } = req.body;
+
+    if (!userId || !Array.isArray(baselineAnchors) || baselineAnchors.length === 0) {
+      return res.status(400).json({ error: 'userId and baselineAnchors array are required.' });
+    }
+
+    const collection = getCollection('MemoryLogs');
+    const createdMemories = [];
+
+    for (let i = 0; i < baselineAnchors.length; i++) {
+      const anchor = baselineAnchors[i];
+      const memoryId = 'mem_base_' + Date.now() + '_' + (i + 1) + '_' + Math.random().toString(36).substr(2, 3);
+      const textContent = anchor.journal || anchor.content || anchor.description || '';
+      const score = typeof anchor.sentiment === 'number' ? anchor.sentiment : (i === 1 ? 95 : 85);
+      const label = anchor.sentimentLabel || (score >= 90 ? 'Triumphant & Proud 🌟' : 'Tested & Resilient 💪');
+      const entryDate = anchor.date || new Date(Date.now() - (baselineAnchors.length - 1 - i) * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const eraName = anchor.era || (i === 0 ? 'Youth & Formative Years' : i === 1 ? 'Breakthrough Season' : 'Pro Athlete Era');
+      const anchorTitle = anchor.title || `Milestone ${i + 1}`;
+      const tagsList = Array.isArray(anchor.tags) ? anchor.tags : ['#Baseline', '#Milestone', `#Era${i + 1}`];
+
+      // AES-256-GCM Encrypt text
+      const encryptedPayload = encryptText(textContent);
+
+      const doc = {
+        Memory_ID: memoryId,
+        User_ID: userId,
+        JourneyType: journeyType,
+        Domain: domain,
+        EntryDate: entryDate,
+        Title: anchorTitle,
+        Era: eraName,
+        MatchDetails: textContent,
+        TextEncrypted: encryptedPayload.encoded,
+        VictoryMessage: i === 1 ? 'First major breakthrough achieved!' : '',
+        Stars: i === 1 ? 5 : 4,
+        Status: 'completed',
+        SentimentScore: score,
+        SentimentLabel: label,
+        Location: anchor.location || '',
+        People: anchor.people || '',
+        IsFavorite: i === 1 || Boolean(anchor.isFavorite),
+        PhotoCaption: '',
+        Tags: { era: eraName, context: tagsList },
+        MediaAssets: [],
+        CreatedAt: new Date()
+      };
+
+      // 1. Save to MongoDB NoSQL Collection
+      await collection.insertOne(doc);
+
+      // 2. Save to SQLite Structured Table (database.js)
+      try {
+        db.prepare(`
+          INSERT INTO MemoryLogs (
+            Memory_ID, User_ID, EntryDate, Title, TextEncrypted, MatchDetails, 
+            VictoryMessage, Stars, SentimentScore, PrivacySetting, TagsJSON
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Public', ?)
+        `).run(
+          memoryId,
+          userId,
+          entryDate,
+          anchorTitle,
+          encryptedPayload.encoded,
+          textContent,
+          doc.VictoryMessage,
+          doc.Stars,
+          score,
+          JSON.stringify(doc.Tags)
+        );
+      } catch (sqlErr) {
+        console.warn('SQLite baseline anchor insert warning:', sqlErr.message);
+      }
+
+      // 3. Ingest into Vector Store asynchronously
+      ingestMemoryPayload({
+        userId,
+        title: anchorTitle,
+        description: textContent,
+        entryDate,
+        era: eraName,
+        emotionTags: tagsList,
+        contextTags: tagsList,
+        sentimentScore: score,
+        journeyType,
+        domain
+      }).catch(err => console.error('Vector ingest baseline warning:', err.message));
+
+      // 4. Update Continuous Cognitive Learning Graph
+      try {
+        updateContinuousLearningGraph({
+          userId,
+          memory: {
+            title: anchorTitle,
+            description: textContent,
+            journal: textContent,
+            entryDate,
+            era: eraName,
+            domain,
+            sentimentScore: score
+          }
+        });
+      } catch (learnErr) {
+        console.warn('Learning graph baseline update warning:', learnErr.message);
+      }
+
+      createdMemories.push({
+        id: i + 1,
+        Memory_ID: memoryId,
+        title: anchorTitle,
+        date: entryDate,
+        era: eraName,
+        journal: textContent,
+        content: textContent,
+        sentiment: score,
+        sentimentLabel: label,
+        isFavorite: doc.IsFavorite,
+        tags: tagsList,
+        domain,
+        journeyType
+      });
+    }
+
+    res.status(201).json({
+      message: 'Baseline onboarding anchors preserved successfully.',
+      memories: createdMemories
+    });
+  } catch (err) {
+    console.error('Onboarding Baseline Error:', err);
+    res.status(500).json({ error: 'Server error saving baseline onboarding anchors.' });
+  }
+});
+
 // PUT /api/memories/:id (Update existing memory)
 app.put('/api/memories/:id', async (req, res) => {
   try {
@@ -788,6 +937,9 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
+    const isAllEras = !era || era.toLowerCase() === 'all' || era.toLowerCase() === 'all eras';
+    const effectiveEra = isAllEras ? 'All Eras' : era;
+
     // Merge client-provided memories with database memories for maximal cognitive recall
     let allRelevantMemories = Array.isArray(clientMemories) ? [...clientMemories] : [];
     try {
@@ -796,7 +948,7 @@ app.post('/api/chat', async (req, res) => {
       if (userId && userId !== 'usr_default' && userId !== 'usr_anonymous') {
         query.User_ID = userId;
       }
-      if (era) query.Era = era;
+      if (!isAllEras && era) query.Era = era;
       if (journeyType) query.JourneyType = journeyType;
       if (domain) query.Domain = domain;
 
@@ -819,7 +971,7 @@ app.post('/api/chat', async (req, res) => {
       newPrompt: messageText,
       imageSource: resolvedImageSource,
       retrievedContext: retrievedContext || null,
-      selectedEra: era || 'Youth Era',
+      selectedEra: effectiveEra,
       userId: userId || 'usr_default',
       journeyType: journeyType || null,
       domain: domain || null,
@@ -831,7 +983,7 @@ app.post('/api/chat', async (req, res) => {
       const chatCollection = getCollection('ChatSessions');
       await chatCollection.insertOne({
         User_ID: userId || 'usr_default',
-        EraSelected: era || 'Youth Era',
+        EraSelected: effectiveEra,
         JourneyType: journeyType || 'sports',
         Domain: domain || 'football',
         StartTime: new Date(),
@@ -848,6 +1000,7 @@ app.post('/api/chat', async (req, res) => {
       response: orchestrationResult.response,
       crisisTriggered: orchestrationResult.crisisTriggered,
       isBurnout: orchestrationResult.isBurnout,
+      isSparse: orchestrationResult.isSparse || false,
       era: orchestrationResult.selectedEra,
       eraAge: orchestrationResult.eraAge,
       model: orchestrationResult.model,
@@ -948,22 +1101,58 @@ app.get('/api/ai/younger-self/insights', async (req, res) => {
 app.get('/api/analytics/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const { journeyType, domain } = req.query;
+
     const collection = getCollection('MemoryLogs');
-    const rows = await collection.find({ User_ID: userId }).toArray();
+    const query = { User_ID: userId };
+    if (journeyType) query.JourneyType = journeyType;
+    if (domain && domain !== 'all') query.Domain = domain;
 
-    const dataPoints = rows.map(r => ({
-      date: r.EntryDate ? r.EntryDate.substring(0, 7) : '2024-01',
-      score: r.SentimentScore || 0.8,
-      title: r.Title
-    }));
+    const rows = await collection.find(query).toArray();
 
-    const avgSentiment = dataPoints.length > 0
-      ? dataPoints.reduce((acc, p) => acc + p.score, 0) / dataPoints.length
-      : 0.85;
+    // Sort chronologically ascending
+    rows.sort((a, b) => new Date(a.EntryDate || 0) - new Date(b.EntryDate || 0));
+
+    const dataPoints = rows.map((r, idx) => {
+      // Normalize score to 0 - 100 range
+      let rawScore = typeof r.SentimentScore === 'number' ? r.SentimentScore : 85;
+      if (rawScore <= 1.0 && rawScore >= -1.0) {
+        rawScore = Math.round((rawScore + 1) * 50); // normalize -1..1 to 0..100
+      }
+      return {
+        id: r.Memory_ID || `mem_${idx + 1}`,
+        date: r.EntryDate ? r.EntryDate.substring(0, 7) : '2024-01',
+        fullDate: r.EntryDate || '2024-01-01',
+        title: r.Title || 'Milestone',
+        score: rawScore, // 0 to 100
+        normalizedValue: ((rawScore - 50) / 50).toFixed(2), // -1.00 to +1.00
+        sentimentLabel: r.SentimentLabel || (rawScore >= 80 ? 'Triumphant & Proud 🌟' : rawScore >= 60 ? 'Tested & Resilient 💪' : 'Difficult Lesson 🌧️'),
+        era: r.Era || 'Youth Era',
+        isPeak: rawScore >= 85,
+        isValley: rawScore <= 45
+      };
+    });
+
+    const avgScore = dataPoints.length > 0
+      ? Math.round(dataPoints.reduce((acc, p) => acc + p.score, 0) / dataPoints.length)
+      : 85;
+
+    // Run emotional resilience analysis
+    const resilience = computeEmotionalResilience(rows.map(r => ({
+      title: r.Title,
+      date: r.EntryDate,
+      sentiment: typeof r.SentimentScore === 'number' ? r.SentimentScore : 85,
+      journal: r.MatchDetails || ''
+    })));
 
     res.json({
       dataPoints,
-      burnoutRisk: avgSentiment > 0.6 ? 'Low' : avgSentiment > 0.2 ? 'Moderate' : 'High',
+      avgSentiment: avgScore,
+      burnoutRisk: avgScore < 45 ? 'High' : avgScore < 70 ? 'Moderate' : 'Low',
+      resilienceScore: resilience.resilienceScore || avgScore,
+      resilienceTier: resilience.resilienceTier || 'Resilient & Focused',
+      recoverySequences: resilience.recoverySequences || 0,
+      trajectorySummary: resilience.trajectorySummary || 'Steady emotional trajectory across chapters.',
       totalMemories: rows.length
     });
   } catch (err) {
