@@ -70,14 +70,17 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, jour
     return fallbackResponse;
   }
 
+  const isAllEras = !selectedEra || selectedEra.toLowerCase() === 'all' || selectedEra.toLowerCase() === 'all eras';
+
   // -------------------------------------------------------------
   // STAGE 1: Hard Metadata Filtering
-  // userId + era are always required.
+  // userId is always required.
+  // era is added unless 'All Eras' wildcard is selected.
   // journeyType + domain added when provided for cross-domain isolation.
   // -------------------------------------------------------------
   const stage1Filters = {
     userId: userId,
-    era: selectedEra,
+    ...(!isAllEras ? { era: selectedEra } : {}),
     ...(journeyType ? { journeyType } : {}),
     ...(domain      ? { domain }      : {})
   };
@@ -91,7 +94,9 @@ export async function retrieveEraContext({ userId, selectedEra, userPrompt, jour
   let candidatePool = await searchVectorStore(queryVector || new Array(768).fill(0), stage1Filters, 100);
 
   // Filter out any entries that do not strictly match selectedEra (hard boundary protection)
-  candidatePool = candidatePool.filter(mem => mem.era === selectedEra);
+  if (!isAllEras) {
+    candidatePool = candidatePool.filter(mem => mem.era === selectedEra || (mem.era && mem.era.toLowerCase().includes(selectedEra.toLowerCase())));
+  }
 
   // STAGE 3 CHECK: Fallback for Sparse Data
   if (!candidatePool || candidatePool.length === 0) {

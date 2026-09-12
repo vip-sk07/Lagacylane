@@ -77,12 +77,23 @@ export function detectBurnoutKeywords(text = '') {
  * @param {Array} rawMemories 
  * @returns {Array<object>} Parsed memories list
  */
-export function parseMemoriesFromContext(retrievedContext, formattedChunks = '', rawMemories = []) {
+export function parseMemoriesFromContext(retrievedContext, formattedChunks = '', rawMemories = [], selectedEra = '') {
   if (Array.isArray(rawMemories) && rawMemories.length > 0) {
-    return rawMemories.map(m => ({
+    let list = rawMemories;
+    const isAllEras = !selectedEra || selectedEra.toLowerCase() === 'all' || selectedEra.toLowerCase() === 'all eras';
+    if (!isAllEras) {
+      const eraLower = selectedEra.toLowerCase();
+      const filtered = list.filter(m => {
+        const memEra = (m.era || m.Era || '').toLowerCase();
+        return memEra === eraLower || memEra.includes(eraLower) || eraLower.includes(memEra);
+      });
+      // If specific era filtering matched memories, use strictly those; otherwise return empty list
+      list = filtered;
+    }
+    return list.map(m => ({
       title: m.title || m.Title || 'Milestone',
       date: m.entryDate || m.date || m.EntryDate || 'Recorded Moment',
-      era: m.era || m.Era || 'Youth Era',
+      era: m.era || m.Era || selectedEra || 'Youth Era',
       journal: m.journal || m.journalText || m.matchDetails || m.description || m.notes || m.content || m.TextEncrypted || '',
       sentiment: typeof m.sentiment === 'number' ? m.sentiment : (typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85),
       photo: m.photo || m.mediaUrl || m.media_url || null,
@@ -275,6 +286,10 @@ export async function generateYoungerSelfResponse(rawParams = {}) {
     clientOptions
   });
 
+  if (result && typeof result === 'object' && typeof result.isSparse === 'undefined') {
+    result.isSparse = (result.learnedMemoriesCount === 0);
+  }
+
   return wrapResult(result);
 }
 
@@ -323,7 +338,7 @@ async function _generateYoungerSelfResponseInternal({
   }
 
   // Parse structured memories for semantic reasoning in cognitive engines
-  const parsedMemories = parseMemoriesFromContext(resolvedRAGResult || retrievedContext, formattedContextChunks, rawMemories);
+  const parsedMemories = parseMemoriesFromContext(resolvedRAGResult || retrievedContext, formattedContextChunks, rawMemories, selectedEra);
 
   // If raw/client memories are available but RAG returned sparse notice or empty chunks,
   // regenerate rich formatted markdown context chunks so both LLM and cognitive engine are grounded in authentic memories
@@ -675,13 +690,14 @@ async function _generateYoungerSelfResponseInternal({
       userId
     });
   } else {
-    fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I'm sitting on the ${journeyType === 'life' ? 'garden path' : 'sideline'} ready to learn from your journey. Log your memories and photos above so I can reflect on everything with you!`;
+    fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were dreaming big every day. You haven't logged any memories from this time yet. Responses will be limited. I'm sitting on the ${journeyType === 'life' ? 'garden path' : 'sideline'} ready to learn from your journey. Log your first memory or photo for this era above so we can reflect on it together!`;
   }
 
   return {
     response: fallbackReply,
     crisisTriggered: false,
     isBurnout: false,
+    isSparse: parsedMemories.length === 0,
     selectedEra,
     eraAge,
     model: 'cognitive-younger-self-engine',
