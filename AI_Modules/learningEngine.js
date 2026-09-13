@@ -233,6 +233,7 @@ export function updateContinuousLearningGraph({ userId = 'usr_default', memory, 
 
   // Add to recent milestone record
   profile.recentLearnedMilestones.unshift({
+    id: memory.Memory_ID || memory.id || null,
     title: memory.title,
     era: memory.era,
     domain: memory.domain,
@@ -247,6 +248,70 @@ export function updateContinuousLearningGraph({ userId = 'usr_default', memory, 
   }
 
   // Update resilience and value traits
+  profile.resilienceTrajectory = computeEmotionalResilience(profile.recentLearnedMilestones);
+  profile.topValues = extractThematicValues(profile.recentLearnedMilestones);
+  profile.lastUpdated = new Date();
+
+  return profile;
+}
+
+/**
+ * Updates the sentiment score of a memory within the user's cognitive profile
+ * and recalculates their emotional resilience curve and trajectory on the fly.
+ * (SRS 4.4.2 Manual Weight Adjuster)
+ * 
+ * @param {object} params
+ * @param {string} params.userId
+ * @param {string} params.memoryId
+ * @param {string} [params.title]
+ * @param {number} params.newSentiment
+ * @param {string} [params.newLabel]
+ * @returns {object} Updated cognitive profile
+ */
+export function updateMemorySentimentInProfile({ userId = 'usr_default', memoryId, title, newSentiment, newLabel }) {
+  let profile = userCognitiveProfiles.get(userId);
+  if (!profile) {
+    profile = {
+      userId,
+      totalMemoriesIngested: 1,
+      visualMemoriesCount: 0,
+      archetypeCounts: {},
+      resilienceTrajectory: null,
+      topValues: [],
+      recentLearnedMilestones: [],
+      lastUpdated: new Date()
+    };
+    userCognitiveProfiles.set(userId, profile);
+  }
+
+  const scoreNum = Math.max(0, Math.min(100, Number(newSentiment) || 85));
+
+  // Find matching milestone by id or title
+  let matched = false;
+  if (profile.recentLearnedMilestones && profile.recentLearnedMilestones.length > 0) {
+    for (const item of profile.recentLearnedMilestones) {
+      if ((memoryId && item.id && String(item.id) === String(memoryId)) ||
+          (title && item.title && item.title.trim().toLowerCase() === title.trim().toLowerCase())) {
+        item.sentiment = scoreNum;
+        if (newLabel) item.sentimentLabel = newLabel;
+        matched = true;
+        break;
+      }
+    }
+  }
+
+  // If not yet in recentLearnedMilestones, add a representation
+  if (!matched && title) {
+    profile.recentLearnedMilestones.unshift({
+      id: memoryId || null,
+      title,
+      sentiment: scoreNum,
+      sentimentLabel: newLabel || '',
+      learnedAt: new Date().toISOString()
+    });
+  }
+
+  // Dynamically recompute resilience curve and thematic values
   profile.resilienceTrajectory = computeEmotionalResilience(profile.recentLearnedMilestones);
   profile.topValues = extractThematicValues(profile.recentLearnedMilestones);
   profile.lastUpdated = new Date();

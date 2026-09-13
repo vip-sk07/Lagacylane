@@ -1,0 +1,312 @@
+Software Requirements
+Specification
+for
+LegacyLane:The One Who Lives
+Table of Contents
+Table of Contents Revision History
+Introduction
+Purpose
+Intended Audience and Reading Suggestions
+Product Scope
+References
+Overall Description
+Product Perspective
+Product Functions
+User Classes and Characteristics
+Operating Environment
+Design and Implementation Constraints
+Assumptions and Dependencies
+External Interface Requirements
+User Interfaces
+Software Interfaces
+Communications Interfaces
+System Features
+User Accounts
+Dual Journey Selection
+Chronological Timeline & Memory Collection
+AI Younger Self Chat
+Mental Wellness Insights
+Other system features
+Other Nonfunctional Requirements
+Performance Requirements
+Safety Requirements
+Security Requirements
+Software Quality Attributes
+Business Rules
+Other Requirements Appendix A: Glossary
+Revision History
+Name
+Date
+Description
+Version
+Initial SRS
+July 2026
+The Starting phase of building an AI based Website to handle memories of people efficiently and act accordingly
+1.0
+Introduction
+Purpose
+The purpose of this Software Requirements Specification (SRS) is to provide a clear and comprehensive description of the functional and non-functional requirements for LegacyLane:The One Who Lives.
+This document outlines the design, features, and behavior of a web-based platform that enables users to build a chronological digital archive of their personal and sports memories. The core innovation of the system is the AI Younger Self Chat, which allows users to interact with an AI version of their younger self. This AI learns from the user’s uploaded memories of achievements, dreams, struggles, and important moments to provide emotional connection, motivation, and reflection.
+Intended Audience
+This SRS is intended for software developers, AI engineers, testers, project managers, academic evaluators, and potential recruiters.
+The document is structured to first present a high-level overview of the system, followed by detailed functional requirements, analysis models, and non-functional aspects. Readers are recommended to review sections sequentially for a complete understanding of the system’s scope and design.
+Product Scope
+LegacyLane: The One Who Lives is a cinematic, user-friendly web application that serves as a personal digital legacy platform. Users can create a chronological timeline of their life and sports memories. The standout feature is the AI Younger Self Chat, where users can converse with an AI representation of their younger self (e.g., 10, 15, or 20 years old).
+The AI draws insights from the user’s memories to:
+Remind them of past dreams and motivations
+Celebrate achievements from a youthful perspective
+Provide encouragement during current challenges
+Ask curious questions about their present life
+The system supports both sports-focused and general life memories, ensuring a rich and emotionally engaging experience while maintaining strong privacy and data security.
+References
+[1] Pressman, R. S. (2019). Software Engineering: A Practitioner’s Approach (8th ed.). McGraw-Hill Education.
+[2] Sommerville, I. (2015). Software Engineering (9th ed.). Pearson Education Limited.
+[3] Yin, P., et al. (2024). "Future You: An Interactive Digital Twin System for Self-Reflection." MIT Media Lab.
+[4] Schawbel, D. (2023). "The Power of Talking to Your Younger Self: Psychological Benefits of Temporal Self-Connection." Harvard Business Review.
+[5] Martin, R. C. (2013). Agile Software Development, Principles, Patterns and Practices. Pearson Education Limited.
+Overall Description
+Product Perspective
+LegacyLane: The One Who Lives is a modern, emotionally intelligent web platform that combines digital memory preservation with advanced AI. It serves as a personal digital legacy system where users can document their life journey and interact with an AI representation of their younger self. The system brings together sports memories and general life experiences in one unified, chronological experience. It aims to create a meaningful connection between the user’s past and present through reflective conversations.
+Product Functions
+Enlisted below are all the major functions supported by LegacyLane: The One Who Lives along with the user classes.
+General Functions:
+Register for new users
+Login for existing users
+Logout
+View and Edit Profile
+Dual Journey Selection (Sports Journey or Life Journey)
+Timeline & Memory Management:
+Create and manage chronological timeline
+Add new memory with date
+Upload photos, videos, documents, certificates, and medals
+Edit or delete existing memories
+Automatic chronological sorting of memories
+View memories in timeline format
+AI Younger Self Chat:
+Start conversation with AI Younger Self
+Select age of Younger Self (e.g., 10, 15, 20 years old)
+Receive responses based on user’s memories
+View chat history
+Search & Insights:
+Semantic search across all memories
+Receive mental wellness insights and reflections
+View sentiment analysis of memories
+Sharing & Privacy:
+Invite family members to view selected memories
+Share specific memories or timeline sections
+Privacy controls and memory vault (lock sensitive memories)
+User Classes and Characteristics
+Primary User — He/she is the main user of the system who wants to preserve their personal and sports memories. The user can register, login, create a chronological timeline, upload memories, chat with their AI Younger Self, receive wellness insights, and manage privacy settings. The Primary User is expected to be tech-savvy to some extent and motivated to document their life journey for personal reflection and future generations.
+Athlete User — A specialized user who primarily focuses on documenting sports achievements, training sessions, matches, and career milestones. This user class will heavily use the Sports Journey mode and expect deeper insights related to performance, discipline, and athletic growth.
+Family Member — Invited users who can view selected memories or contribute their perspective to shared memories. They have limited access based on the owner’s sharing settings and cannot modify the core timeline unless granted permission.
+Operating Environment
+It is a fully responsive web application designed to run on any modern web browser. The system can be accessed seamlessly across desktop, laptop, tablet, and mobile devices. It supports the latest versions of Google Chrome, Mozilla Firefox, Microsoft Edge, and Apple Safari. The application requires a stable internet connection for core functionalities such as memory uploads, AI Younger Self Chat, timeline synchronization, and real-time features. The platform is built using responsive design principles to ensure an optimal and consistent user experience across different screen sizes and operating systems.
+Design and Implementation Constraints
+The design and implementation of LegacyLane are shaped by several technical constraints, particularly regarding the AI Younger Self feature. The chat functionality is heavily constrained by the token limits of the underlying Large Language Model (LLM), requiring the system to employ smart data filtering, semantic search, or summarization to retrieve relevant past achievements without overloading API requests. Additionally, because users will upload media such as photos and videos to document their legacy, the system must implement strict file size limits and automatic media compression to manage cloud storage costs effectively. The platform must also be built with a mobile-first responsive web design to ensure users can seamlessly log memories or interact with the AI immediately after an event. Furthermore, given the highly personal nature of the journal entries and mental wellness insights, the implementation is constrained by strict privacy and security requirements, necessitating that database fields containing personal reflections be encrypted at rest.
+Assumptions and Dependencies
+The successful operation of LegacyLane relies on a few key assumptions and external technical dependencies. A primary assumption is that users will consistently input detailed entries into their chronological timelines; without sufficient data, the AI Younger Self will lack the contextual depth needed to form a distinct, personalized persona. Technically, the core chat functionality is entirely dependent on a third-party Natural Language Processing API, meaning any latency, rate-limiting, or downtime from this external provider will directly impact the user experience. The platform also depends on a reliable cloud hosting provider and a robust database backend to ensure the chronological integrity of memory logs without the risk of data loss. Finally, it is assumed that users will access the web application via modern web browsers capable of supporting dynamic UI rendering and real-time communication protocols.
+External Interface Requirements
+User Interfaces
+-> HomePage (Chronological Timeline): 
+● The home page of this LegacyLane system is designed to be a distraction-free, visually appealing digital archive. 
+● It includes a top navigation bar with a search bar, buttons like Sign in, Add Memory, AI Chat, Wellness Insights, Profile, and Settings. 
+● It displays a vertically scrolling timeline of the user’s life and sports memories. Each memory block shows the date, title, text preview, and thumbnails of any attached photos or videos. It also features a sidebar to filter memories by custom tags like 'Football', 'Academic', or 'Personal'.
+-> Sign in: 
+● This page allows users with an existing free account under the LegacyLane system to Sign in to their secure archive. The user can Sign in using their email id, phone number, or a one-click Google Sign-In.
+ ● If the user chooses Email, they enter their email and click continue. The system asks for the password, which if entered correctly, takes the user to the HomePage.
+ ● If the user chooses Phone Number, they enter their 10-digit mobile number. The system sends a free One-Time Password (OTP) via SMS. Upon entering the correct 6-digit OTP, the user is authenticated and taken to the HomePage without needing a password. 
+● If the user clicks 'Sign in with Google', a secure Google pop-up appears for authentication, seamlessly logging them in without requiring manual entry. 
+● If the entered email id or phone number is wrong, the system displays an error message saying ‘Incorrect email/phone number’ and ‘We cannot find an account with these details’.
+ ● If the OTP entered is incorrect or expired, the system displays ‘Invalid OTP, please request a new one’.
+ ● There is also a ‘Keep me signed in’ checkbox which is optional. The sign in page also has a ‘Create Your Free Account’ button for new users, taking them to the Create Account page.
+-> Create Account:
+ ● This page allows users to create a new LegacyLane account entirely free of charge. The user can register manually or use frictionless social sign-up.
+ ● For manual registration, the user is asked to provide their Name, Email id (or Phone Number), and password. The constraint on the password field is that it must contain at least 6 characters. The user is asked to re-enter the password to confirm. 
+● Alternatively, the user can click ‘Continue with Google’ to instantly create a free account pulling their basic name and email data securely from their Google profile.
+ ● If registering with a Phone Number, the user must verify their device by entering a free OTP sent via SMS before the account creation is finalized.
+ ● Upon successful creation, an onboarding modal appears asking the user to define 2-3 major life milestones (e.g., "Started College", "First State Level Match") to help establish baseline eras for the AI to understand. 
+● There is a sign-in field on this page for users who already have an account, redirecting them back to the Sign in page.
+-> Add Memory Modal: 
+● This interface allows the user to log new life events or training milestones into their timeline. It opens as a clean overlay on the HomePage.
+ ● It provides fields for 'Date' (defaulting to the current day), 'Title', and a rich-text 'Description' box for journal entries. 
+● Below the text box, users can attach media. By clicking 'Upload Media' or dragging and dropping files, users can add match photos or short video clips. The system automatically compresses these files for efficient, free cloud storage. 
+● The user can select 'Emotion Tags' (e.g., Victorious, Burnout, Reflective) and 'Context Tags' (e.g., Sports, Family) from a drop-down menu to categorize the entry. 
+● The user clicks 'Save Memory' to publish the entry to their chronological timeline.
+-> AI Younger Self Chat: 
+● This page allows the user to have a real-time conversation with a context-aware AI representing a past version of themselves. 
+● At the top of the interface, a drop-down menu allows the user to select the specific 'Era' they wish to speak with (e.g., "2023 - High School Era" or "2025 - College Freshman").
+ ● The chat window resembles a modern messaging app. When the user types and sends a message, a typing indicator appears. The backend securely retrieves journal entries and sports milestones strictly from the selected era to generate a highly personalized, first-person response.
+ ● The page includes options to 'Clear Chat History' or 'Save Insight', which pins a particularly motivating quote from the AI to the user's main timeline.
+-> Wellness Insights: 
+● This page provides the user with visual data regarding their emotional trends over time, derived automatically from their memory logs.
+ ● It displays an interactive line graph. The X-axis represents the timeline (Months/Years), and the Y-axis represents emotional states based on sentiment analysis of their journal entries.
+ ● Users can hover over peaks or valleys on the graph, which prompts a small tool-tip displaying the specific memory or sports event logged on that date. 
+● There is an 'Improve your insights' section where users can manually adjust the sentiment weight of past memories if the system categorized an event incorrectly.
+-> Search Bar: 
+● The users can use the Search Bar to conduct a memory search and find specific past events, match results, or journal entries quickly and easily. It is present in the top navigation bar. 
+● Typing a keyword (e.g., "Finals" or "DBSCAN project") instantly filters the timeline to show only memories containing those exact words or tags.
+Software Interfaces
+● All the web pages of this LegacyLane system are majorly built using modern web development tools and frameworks like HTML5, CSS3, JavaScript (such as React.js or Vue.js for dynamic UI rendering), Bootstrap/Tailwind for responsive design, and WebSockets/AJAX for real-time chat interactions. 
+● This LegacyLane system is a responsive web-based platform accessible through the internet on any standard web browser across operating systems like Unix, Linux, Mac, Windows, iOS, and Android. 
+● This system stores highly personal user profile data, chronological memory entries, and historical AI chat logs securely in robust databases. The types of databases mainly include PostgreSQL (for structured user relationships) and MongoDB or DynamoDB (for flexible storage of journal entries and chat metadata). All highly personal text entries are encrypted at rest. 
+● The LegacyLane system shall communicate with an external Natural Language Processing (NLP) / Large Language Model (LLM) API to power the "AI Younger Self" feature. The system passes strictly sanitized, era-specific timeline data from the database to the NLP engine as context, allowing the AI to generate personalized, historically accurate responses. 
+● The system shall communicate with a Cloud Object Storage service (such as AWS S3, Google Cloud Storage, or a free-tier equivalent) to manage user-uploaded media. When a user logs a memory with photos or videos, the system communicates with the storage API to compress, upload, and retrieve these artifacts efficiently without bloating the primary database. 
+● The system shall communicate with external Authentication Providers (like Google Identity Services) to validate and process frictionless "Sign in with Google" requests. The data shared is strictly limited to the user's basic profile (name and email) to create their free account. 
+● The system shall communicate with a third-party SMS Gateway (such as Twilio or Firebase Auth) for mobile verification and secure login. When a user requests to sign in via their phone number, the system communicates with the gateway to generate and deliver a free 6-digit One-Time Password (OTP) to the user's mobile device.
+Communications Interfaces
+ ● The primary communication between the user's client device (web browser or mobile) and the LegacyLane backend server shall occur strictly over HTTPS (Hypertext Transfer Protocol Secure). All transmitted data, especially deeply personal journal entries and mental wellness insights, must be heavily encrypted in transit using modern TLS (Transport Layer Security) protocols to ensure absolute privacy. 
+● The frontend client application and the backend server shall communicate primarily through secure RESTful APIs. These APIs will handle all standard CRUD (Create, Read, Update, Delete) operations—such as fetching the chronological timeline, saving new memories, and updating profile settings—utilizing standard JSON (JavaScript Object Notation) format for lightweight data exchange. 
+● For the flagship "AI Younger Self" chat feature, the system shall establish communication using WebSockets (or Server-Sent Events). This creates a persistent, bi-directional communication channel, allowing the AI's generated text to stream to the user's screen token-by-token in real-time. This guarantees a fluid, lag-free conversational experience without the need for constant page refreshing. 
+● The LegacyLane backend shall communicate with the external Natural Language Processing (LLM) engine via secure, authenticated server-to-server HTTP POST requests. The backend will transmit the sanitized, era-specific memory context and receive the AI-generated persona responses. All API keys and authentication tokens for this external engine will be strictly managed on the server side and never exposed to the client browser. 
+● The system shall communicate with the Cloud Object Storage service using secure API endpoints for managing user media. To keep server costs entirely free and efficient, the backend will generate secure, time-limited "Pre-signed URLs." This allows the user's browser to communicate directly with the cloud bucket to upload their compressed photos or videos securely, bypassing the main server to prevent bottlenecks. 
+● The system shall utilize SMTP (Simple Mail Transfer Protocol) or a secure third-party email API to communicate system-generated transactional messages to the user. This includes delivering free account verification links, password reset tokens, and optional weekly mental wellness summary reports.
+ ● For users utilizing mobile authentication, the system shall communicate with an external SMS Gateway API. The backend will transmit the user's registered phone number and a dynamically generated OTP payload via a secure API call, prompting the gateway to dispatch a free SMS text message to the user for frictionless sign-in.
+System Features
+4.1 User Accounts
+4.1.1 Description and Priority 
+Users must have an account to log personal memories, upload media, and utilize the AI chat features on the LegacyLane system. Users without system accounts will only have access to the landing page and cannot view or input any data. Accounts hold information about the user's name, email id or phone number, password, and baseline life milestones. Users can view, log in to, and edit their completely free accounts at any time. Priority level: High
+4.1.2 Stimulus/Response Sequences 
+In the landing page, users can select the sign-up or login button and type in their credentials for registration or login respectively. Upon matching the required criteria, the free account is created and the user is logged in, displaying the main chronological timeline (home page). To edit or view account details, the user clicks the profile settings button. To edit details, the user types the new information and clicks save changes. Upon validation, the system successfully updates the profile.
+4.1.3 Functional Requirements
+REQ-1: Register
+User: Registered Users
+Input: In sign up page
+User enters name, email-id/phone number, and password (minimum 6 characters).
+Output: Successfully registered, an onboarding modal appears to set baseline eras, followed by the home page.
+Alternative flow(s):
+In case of a repeated/invalid email id or phone number, ask the user to re-enter a valid choice.
+REQ-2: Login
+User: Registered Users
+Input: In login page
+User enters registered email-id/phone number and password (or verifies via OTP).
+Output: Successfully logged in, the home page timeline is displayed.
+Alternative flow(s):
+In case of an invalid email/phone number or a mismatch between user id and password, ask the user to re-enter valid credentials.
+REQ-3: Edit Account Details
+User: Registered Users
+Input: In settings page
+Click button to edit account details.
+Select the detail whose value has to be edited.
+Enter the new details and click on save changes.
+Output: Details successfully updated in the database.
+Alternative flow(s):
+In case of invalid data formats, ask the user to re-enter valid information.
+4.2 Chronological Timeline & Memory Collection
+4.2.1 Description and Priority 
+The core feature of LegacyLane is allowing the user to securely log and view their past sports achievements and life memories in a vertically scrolling timeline. Users can attach photos or videos to text entries and tag them with specific emotions and contexts. Priority: High
+4.2.2 Stimulus/Response Sequences 
+To add a memory, the user clicks the "Add Memory" button on the home page. A modal appears where the user enters the date, title, text description, attaches media, and selects tags. Clicking "Save Memory" uploads the compressed media and saves the text securely to the database. To view memories, the user simply scrolls the home page. To find a specific event, the user types a keyword into the search bar or clicks a filter tag, which instantly updates the timeline to show only relevant entries.
+4.2.3 Functional Requirements
+REQ-1: Add Memory
+User: Registered Users
+Input: In Add Memory modal
+Enter date, title, description.
+Upload media (optional).
+Select tags.
+Click 'Save Memory'.
+Output: Memory is securely saved and immediately rendered on the user's timeline.
+Alternative flow(s):
+If mandatory fields (Date, Title) are missing, display "Please fill out required fields."
+REQ-2: View Timeline
+User: Registered Users
+Input: Scroll on the home page.
+Output: The system dynamically loads chronological memory blocks, including text previews and media thumbnails.
+Alternative flow(s): None.
+REQ-3: Search and Filter Memories
+User: Registered Users
+Input: In home page navigation bar
+Type keyword into the search bar OR click a sidebar tag (e.g., 'Football').
+Output: The timeline filters to display only memories matching the keyword or selected tag.
+Alternative flow(s):
+Displays "No memories found for this search term" if no matches exist.
+4.3 AI Younger Self Chat
+4.3.1 Description and Priority 
+This feature allows the user to engage in a real-time conversation with an AI persona representing a past version of themselves. The AI draws strictly from the memories logged during the selected era to generate contextually accurate, personalized responses. Priority: High
+4.3.2 Stimulus/Response Sequences
+ The user navigates to the AI Chat page and selects a specific "Era" from a drop-down menu (e.g., "2023"). The user types a message in the chat box and hits send. The system retrieves memories strictly from 2023, feeds them to the NLP engine, and streams the AI's first-person response back to the chat interface. The user can continue the conversation or click "Clear History" to reset the session.
+4.3.3 Functional Requirements
+REQ-1: Select Era
+User: Registered Users
+Input: In AI Chat interface
+Click the Era drop-down and select a time period.
+Output: The chat session initializes with context locked to that specific timeframe.
+Alternative flow(s):
+If no memories exist for that era, the system displays: "You haven't logged any memories from this time yet. Responses will be limited."
+REQ-2: Send Message
+User: Registered Users
+Input: In AI Chat interface
+Type message text and click 'Send' icon.
+Output: Message appears in the chat window; a "typing..." indicator appears while the backend processes the API request.
+Alternative flow(s):
+If message fails to send due to network error, display "Failed to send, tap to retry."
+REQ-3: Receive AI Response
+User: Registered Users
+Input: Automatic system response after REQ-2.
+Output: The AI-generated text streams into the chat window, replying from the perspective of the user's past self.
+Alternative flow(s): None.
+4.4 Mental Wellness Insights
+4.4.1 Description and Priority 
+The system automatically tracks emotional trends by analyzing the sentiment of the user's journal entries. It visually plots these trends on a dashboard graph to help users identify periods of burnout, high performance, or personal growth. Priority: Medium
+4.4.2 Stimulus/Response Sequences
+ The user clicks on the "Wellness Insights" button in the navigation bar. The system generates and displays an interactive line graph based on past sentiment scores. The user can hover their mouse over specific points on the graph. The system responds by displaying a tooltip containing the title and date of the memory responsible for that specific emotional peak or valley.
+4.4.3 Functional Requirements
+REQ-1: View Insight Graph
+User: Registered Users
+Input: Click 'Wellness Insights' from the navigation bar.
+Output: Displays an interactive line chart tracking emotional state over time.
+Alternative flow(s):
+If the user has fewer than 3 logged memories, display "Keep logging memories to unlock your wellness graph."
+REQ-2: View Memory Tooltip
+User: Registered Users
+Input: In Wellness Insights page
+Hover cursor over a data point on the graph.
+Output: A small overlay displays the date and title of the specific memory entry logged at that time.
+Alternative flow(s): None.
+Other Nonfunctional Requirements
+Performance Requirements
+Response Time: The system shall load the initial chronological timeline and user dashboard within 2 seconds on a standard broadband or 4G connection.
+AI Latency: The AI Younger Self chat feature should begin streaming its text response within 3 seconds of the user sending a message, ensuring a fluid conversational experience (subject to external LLM API uptime).
+Media Optimization: To maintain a 100% free hosting model, the system must automatically compress user-uploaded images and videos on the client or server side, capping individual file sizes at a maximum of 5MB before cloud storage.
+Database Querying: As a user's timeline grows, the system must utilize pagination or infinite scrolling (fetching 15-20 memories per request) to prevent database overload and ensure smooth browser performance.
+5.2 Safety & Privacy Requirements
+Data Confidentiality: Because the platform acts as a digital diary and mental wellness tracker, all user entries are classified as highly sensitive. The system must ensure this data is completely hidden from public search engines and unauthenticated users.
+AI Data Privacy: When sending memory context to the external Natural Language Processing (NLP) API, the system must utilize an API tier or provider that explicitly guarantees user prompts and data are not used to train public AI models.
+Right to be Forgotten: The system must provide a clear, one-click "Delete Account" option in the settings. Triggering this must permanently wipe the user's profile, database text entries, and cloud media files without retention.
+5.3 Security Requirements
+Encryption at Rest and in Transit: All communication between the user’s device and the server must be encrypted via HTTPS/TLS. Highly personal database fields (like journal text and chat logs) should be encrypted at rest.
+Password Hashing: The system shall never store passwords in plain text. All user passwords must be hashed and salted using industry-standard cryptographic algorithms (e.g., bcrypt or Argon2).
+Vulnerability Protection: The application must sanitize all user inputs in the memory logging and chat fields to prevent Cross-Site Scripting (XSS) attacks. Database queries must use parameterized statements or an ORM to eliminate the risk of SQL Injection.
+API Key Management: All authentication tokens and API keys for the third-party LLM and cloud storage must be securely stored in backend environment variables (.env) and never exposed to the frontend client.
+5.4 Software Quality Attributes
+Usability: The interface must be completely distraction-free and intuitive. It must be built with a "mobile-first" approach, ensuring athletes can easily log memories or chat on their smartphones immediately after a match or training session.
+Availability: The web platform shall aim for 99.9% uptime, utilizing reliable cloud hosting (like AWS, Vercel, or Heroku) so users can access their digital archive at any time of day.
+Maintainability: The source code must be cleanly separated (e.g., MVC architecture), heavily commented, and version-controlled via Git to allow for seamless future updates, bug fixes, and feature expansions.
+5.5 Business Rules
+Zero-Cost Model: The LegacyLane platform shall remain strictly 100% free of charge. There will be no paywalls, premium tiers, locked features, or credit card requirements for any user.
+Data Ownership: Users retain complete and exclusive ownership of their uploaded media, timeline text, and generated AI chat logs. The platform claims no copyright or ownership over user-generated legacy content.
+Other Requirements
+This section details additional non-functional expectations and regulatory standards required for LegacyLane. It addresses user accessibility, internationalization, time zone handling, and legal compliance frameworks necessary to ensure an inclusive, globally usable, and legally compliant web application.
+6.1 Accessibility Requirements
+WCAG 2.1 AA Compliance: The LegacyLane interface must be accessible to users with disabilities. This includes high-contrast text modes, aria-labels for all buttons and media thumbnails, and full keyboard navigability for the timeline and chat interfaces.
+Screen Reader Optimization: The chronological timeline and AI chat responses must be formatted semantically so that screen readers can parse the date, title, and conversational text in a logical order without confusing UI elements.
+6.2 Internationalization and Localization
+Unicode Support: The database and UI must fully support UTF-8 encoding. Users must be able to write journal entries and chat with the AI Younger Self using any language, special characters, or emojis.
+Time Zone Handling: All memories and chat timestamps must be stored in the database in UTC (Coordinated Universal Time) and dynamically converted to the user's local time zone on the client side to maintain chronological accuracy.
+6.3 Legal and Compliance
+Data Protection (GDPR/CCPA): Even as a free platform, LegacyLane must provide users with an automated way to export their complete digital archive (Timeline text, Media, and Chat logs) into a standard format (e.g., JSON or CSV) upon request.
+Terms of Service & Privacy Policy: The registration page must include mandatory checkboxes confirming the user agrees to the privacy policy, explicitly stating that their journal entries will be processed by a third-party AI strictly for generating chat responses and not for model training.
+Appendix A: Glossary
+User subsystem: A subsystem within the LegacyLane system support for registered users logging their personal and athletic journeys
+AI subsystem: A subsystem within the LegacyLane system support for the NLP engine processing context and generating chat responses
+Sentiment score: An emotional weight metric applicable to all text-based memory entries
+OTP: One-Time Password used for secure, frictionless mobile authentication
+Memory logging: Users will add their life events, journal entries, and media to the system timeline
+Timeline volume: Net amount of memories and media generated and stored by the system
+Avg response time: Average time taken to respond to a user chat request with an AI-generated message
+API failure rate: Frequency of failure or timeout of the external Large Language Model (LLM) component
+Data exposure liability: Amount of security vulnerabilities or encryption defects that hold the system liable regarding highly personal user journals
+Retrieval rate: Ratio that measures the number of times past memories are fetched and consumed by the RAG system in a given chat session
+Storage optimization cost: The cloud cost of compressing, hosting, and retrieving a user's uploaded media
+Context awareness: Natural language processing term that describes the degree of the AI's recognition of the user's specific past events and milestones
+Inference cost: Costs associated with receiving prompt context along with processing and generating AI tokens from handling to delivery
+User retention growth: Growth strategies and wellness insights designed to broaden user engagement and daily timeline logging

@@ -20,6 +20,7 @@ import {
   perceiveImage,
   getUserCognitiveProfile,
   updateContinuousLearningGraph,
+  updateMemorySentimentInProfile,
   computeEmotionalResilience
 } from '../AI_Modules/index.js';
 import { encryptText, decryptText } from '../AI_Modules/encryption.js';
@@ -512,6 +513,8 @@ app.get('/api/memories/:userId', async (req, res) => {
         location: r.Location || '',
         people: r.People || '',
         isFavorite: Boolean(r.IsFavorite),
+        isInsight: Boolean(r.IsInsight || (Array.isArray(r.Tags?.context) && r.Tags.context.includes('#AIInsight'))),
+        isVaultLocked: Boolean(r.IsVaultLocked || r.PrivacySetting === 'Vault'),
         tags: Array.isArray(r.Tags?.context) ? r.Tags.context : []
       };
     });
@@ -622,6 +625,9 @@ app.post('/api/memories', async (req, res) => {
       Location: location || '',
       People: people || '',
       IsFavorite: Boolean(isFavorite),
+      IsInsight: Boolean(req.body.isInsight || (Array.isArray(tags) && tags.includes('#AIInsight'))),
+      IsVaultLocked: Boolean(req.body.isVaultLocked || req.body.isLocked || req.body.privacySetting === 'Vault'),
+      PrivacySetting: (req.body.isVaultLocked || req.body.isLocked || req.body.privacySetting === 'Vault') ? 'Vault' : 'Public',
       PhotoCaption: caption || '',
       Tags: { era: era || 'Youth & Formative Years', context: tags || [] },
       MediaAssets: mediaAssetsList,
@@ -669,6 +675,8 @@ app.post('/api/memories', async (req, res) => {
         location: doc.Location,
         people: doc.People,
         isFavorite: doc.IsFavorite,
+        isInsight: doc.IsInsight,
+        isVaultLocked: doc.IsVaultLocked,
         photo: activePhotoUrl,
         photos: mediaAssetsList.map(m => m.url),
         mediaAssets: mediaAssetsList,
@@ -864,6 +872,20 @@ app.put('/api/memories/:id', async (req, res) => {
 
     await collection.updateOne({ Memory_ID: memoryId }, { $set: updateFields });
 
+    // Synchronize cognitive profile & recalculate emotional resilience trajectory (SRS 4.4.2)
+    let updatedProfile = null;
+    try {
+      updatedProfile = updateMemorySentimentInProfile({
+        userId: existing.User_ID || 'usr_default',
+        memoryId,
+        title: updateFields.Title,
+        newSentiment: activeScore,
+        newLabel: updateFields.SentimentLabel
+      });
+    } catch (profileErr) {
+      console.warn('Could not sync memory sentiment to cognitive profile:', profileErr.message);
+    }
+
     res.json({
       message: 'Memory updated successfully.',
       memory: {
@@ -881,7 +903,9 @@ app.put('/api/memories/:id', async (req, res) => {
         photo: activePhoto,
         caption: updateFields.PhotoCaption,
         tags: tags || existing.Tags?.context || []
-      }
+      },
+      resilienceTrajectory: updatedProfile?.resilienceTrajectory || null,
+      resilienceScore: updatedProfile?.resilienceTrajectory?.resilienceScore || 85
     });
   } catch (err) {
     console.error('Update Memory Error:', err);
@@ -1218,16 +1242,201 @@ app.get('/api/vault/:ownerId', async (req, res) => {
   }
 });
 
-app.post('/api/vault/grant', (req, res) => {
-  const { ownerId, familyUserId, permissionLevel } = req.body;
-  const grantId = 'grant_' + Date.now();
+// Toggle Vault Lock status on a memory (AES-256 Vault)
+app.put('/api/memories/:id/vault', async (req, res) => {
+  try {
+    const memoryId = req.params.id;
+    const { isVaultLocked } = req.body;
+    const lockedBool = Boolean(isVaultLocked);
 
-  db.prepare(`
-    INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, PermissionLevel, Status)
-    VALUES (?, ?, ?, ?, 'active')
-  `).run(grantId, ownerId, familyUserId, permissionLevel || 'Viewer');
+    const collection = getCollection('MemoryLogs');
+    await collection.updateOne(
+      { Memory_ID: memoryId },
+      { $set: { IsVaultLocked: lockedBool, PrivacySetting: lockedBool ? 'Vault' : 'Public', UpdatedAt: new Date() } }
+    );
 
-  res.status(201).json({ message: 'Vault access granted', grantId });
+    try {
+      db.prepare('UPDATE MemoryLogs SET IsVaultLocked = ?, PrivacySetting = ? WHERE Memory_ID = ?')
+        .run(lockedBool ? 1 : 0, lockedBool ? 'Vault' : 'Public', memoryId);
+    } catch (dbErr) {}
+
+    res.json({
+      message: lockedBool ? 'Memory secured in AES-256 Vault.' : 'Memory unlocked from Vault.',
+      memoryId,
+      isVaultLocked: lockedBool
+    });
+  } catch (err) {
+    console.error('Vault Toggle Error:', err);
+    res.status(500).json({ error: 'Server error updating vault status.' });
+  }
+});
+
+// Verify or initialize user's 4-digit numeric Vault PIN
+app.post('/api/vault/verify-pin', async (req, res) => {
+  try {
+    const { userId, pin } = req.body;
+    if (!pin || String(pin).length < 4) {
+      return res.status(400).json({ error: 'A 4-digit numeric PIN is required.' });
+    }
+
+    let user = db.prepare('SELECT User_ID, VaultPIN FROM Users WHERE User_ID = ?').get(userId);
+    if (!user) {
+      db.prepare(`
+        INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, VaultPIN)
+        VALUES (?, 'Athlete', ?, 'session_local', 'Standard', ?)
+      `).run(userId, `${userId}@legacylane.local`, String(pin));
+      return res.json({ valid: true, initialized: true, message: 'Vault PIN successfully established.' });
+    }
+
+    if (!user.VaultPIN) {
+      // User is setting their initial Vault PIN
+      db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(String(pin), userId);
+      return res.json({ valid: true, initialized: true, message: 'Vault PIN successfully established.' });
+    }
+
+    if (user.VaultPIN === String(pin)) {
+      return res.json({ valid: true, message: 'Vault PIN verified. Access granted.' });
+    } else {
+      return res.status(401).json({ valid: false, error: 'Incorrect Vault PIN. Please try again.' });
+    }
+  } catch (err) {
+    console.error('PIN Verification Error:', err);
+    res.status(500).json({ error: 'Server error verifying PIN.' });
+  }
+});
+
+// Retrieve active family circle members and access grants
+app.get('/api/family-circle/:ownerId', (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    const members = db.prepare(`
+      SELECT Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, GrantedAt
+      FROM FamilyAccessControl
+      WHERE Owner_User_ID = ? AND Status = 'active'
+      ORDER BY GrantedAt DESC
+    `).all(ownerId);
+
+    res.json({ ownerId, members });
+  } catch (err) {
+    console.error('Fetch Family Circle Error:', err);
+    res.status(500).json({ error: 'Server error fetching family circle.' });
+  }
+});
+
+// Grant access to a family member or teammate
+app.post('/api/family-circle/grant', (req, res) => {
+  try {
+    const { ownerId, familyUserId, inviteeName, inviteeEmail, relationship, permissionLevel } = req.body;
+    if (!ownerId) {
+      return res.status(400).json({ error: 'ownerId is required.' });
+    }
+
+    // Ensure owner user exists in Users table to satisfy FK constraint
+    db.prepare(`
+      INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
+      VALUES (?, 'Athlete Owner', ?, 'owner_hash', 'Standard')
+    `).run(ownerId, `${ownerId}@legacylane.local`);
+
+    const grantId = 'grant_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    let targetUserId = familyUserId;
+
+    if (!targetUserId) {
+      if (inviteeEmail) {
+        const existing = db.prepare('SELECT User_ID FROM Users WHERE Email = ?').get(inviteeEmail);
+        if (existing) targetUserId = existing.User_ID;
+      }
+      if (!targetUserId) {
+        targetUserId = 'usr_guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        const guestEmail = inviteeEmail || `${targetUserId}@invited.legacylane.internal`;
+        db.prepare(`
+          INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
+          VALUES (?, ?, ?, 'invited_external', 'Standard')
+        `).run(targetUserId, inviteeName || 'Family Guest', guestEmail);
+      }
+    }
+
+    db.prepare(`
+      INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+    `).run(
+      grantId,
+      ownerId,
+      targetUserId,
+      inviteeName || 'Family Member',
+      inviteeEmail || '',
+      relationship || 'Family',
+      permissionLevel || 'Viewer'
+    );
+
+    res.status(201).json({
+      message: 'Access granted successfully.',
+      grant: {
+        grantId,
+        ownerId,
+        familyUserId: targetUserId,
+        inviteeName: inviteeName || 'Family Member',
+        inviteeEmail: inviteeEmail || '',
+        relationship: relationship || 'Family',
+        permissionLevel: permissionLevel || 'Viewer',
+        status: 'active',
+        grantedAt: new Date().toISOString()
+      }
+    });
+  } catch (err) {
+    console.error('Grant Family Access Error:', err);
+    res.status(500).json({ error: 'Server error granting access.' });
+  }
+});
+
+// Revoke access from a family member or teammate
+app.delete('/api/family-circle/:grantId', (req, res) => {
+  try {
+    const { grantId } = req.params;
+    db.prepare(`UPDATE FamilyAccessControl SET Status = 'revoked' WHERE Grant_ID = ?`).run(grantId);
+    res.json({ message: 'Access grant revoked.', grantId });
+  } catch (err) {
+    console.error('Revoke Family Access Error:', err);
+    res.status(500).json({ error: 'Server error revoking access.' });
+  }
+});
+
+// Public / Shareable Keepsake Card endpoint (SRS 4.1 & 71)
+app.get('/api/share/keepsake/:memoryId', async (req, res) => {
+  try {
+    const { memoryId } = req.params;
+    const collection = getCollection('MemoryLogs');
+    const doc = await collection.findOne({ Memory_ID: memoryId });
+    if (!doc) {
+      return res.status(404).json({ error: 'Keepsake not found or removed.' });
+    }
+
+    let plainText = '';
+    if (doc.TextEncrypted) {
+      try { plainText = decryptText(doc.TextEncrypted); } catch (e) { plainText = doc.MatchDetails || ''; }
+    } else {
+      plainText = doc.MatchDetails || '';
+    }
+
+    const activePhoto = (doc.MediaAssets && doc.MediaAssets[0]?.url) || null;
+
+    res.json({
+      id: doc.Memory_ID,
+      title: doc.Title,
+      date: doc.EntryDate,
+      era: doc.Era || 'Youth & Formative Years',
+      quote: plainText,
+      photo: activePhoto,
+      caption: doc.PhotoCaption || '',
+      sentiment: doc.SentimentScore || 85,
+      sentimentLabel: doc.SentimentLabel || 'Triumphant & Proud 🌟',
+      stars: doc.Stars || 3,
+      isInsight: Boolean(doc.IsInsight),
+      domain: doc.Domain || 'life'
+    });
+  } catch (err) {
+    console.error('Share Keepsake Error:', err);
+    res.status(500).json({ error: 'Server error fetching keepsake.' });
+  }
 });
 
 // ----------------------------------------------------

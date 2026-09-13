@@ -27,6 +27,7 @@ export {
   computeEmotionalResilience, 
   extractThematicValues, 
   updateContinuousLearningGraph, 
+  updateMemorySentimentInProfile,
   getUserCognitiveProfile, 
   synthesizeLearnedInsights,
   generateMotivationalWisdom,

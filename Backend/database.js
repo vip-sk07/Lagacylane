@@ -115,6 +115,13 @@ db.exec(`
   );
 `);
 
+// Safe column migrations
+try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteeName TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteeEmail TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN Relationship TEXT DEFAULT 'Family';"); } catch (e) {}
+try { db.exec("ALTER TABLE Users ADD COLUMN VaultPIN TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN IsVaultLocked INTEGER DEFAULT 0;"); } catch (e) {}
+
 console.log('✅ LegacyLane SQLite Database Initialized Successfully at', dbPath);
 
 export default db;

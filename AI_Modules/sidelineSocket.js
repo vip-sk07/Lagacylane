@@ -333,7 +333,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
           ws.send(JSON.stringify({
             event: 'done',
             fullResponse,
-            insightQuote: extractInsightQuote(fullResponse)
+            insightQuote: extractInsightQuote(fullResponse),
+            visualPerception: chatImagePerception || null
           }));
         }
         return;
@@ -392,7 +393,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
             ws.send(JSON.stringify({
               event: 'done',
               fullResponse,
-              insightQuote: extractInsightQuote(fullResponse)
+              insightQuote: extractInsightQuote(fullResponse),
+              visualPerception: chatImagePerception || null
             }));
           }
           return;
@@ -442,7 +444,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     ws.send(JSON.stringify({
       event: 'done',
       fullResponse,
-      insightQuote: extractInsightQuote(fullResponse)
+      insightQuote: extractInsightQuote(fullResponse),
+      visualPerception: chatImagePerception || null
     }));
   }
 }
