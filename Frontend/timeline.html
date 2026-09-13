@@ -405,7 +405,7 @@
         <!-- Write Memory -->
         <button id="btn-open-log-modal" class="sidebar-nav-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            <span class="sidebar-nav-label">Write Memory</span>
+            <span id="btn-open-log-label" class="sidebar-nav-label">Write Memory</span>
         </button>
 
         <!-- Reflect with Younger Self -->
@@ -4347,13 +4347,8 @@
             function updateAudioToggleUI() {
                 const unmutedIcon = document.getElementById('audio-icon-unmuted');
                 const mutedIcon = document.getElementById('audio-icon-muted');
-                if (isAudioMuted) {
-                    unmutedIcon?.classList.add('hidden');
-                    mutedIcon?.classList.remove('hidden');
-                } else {
-                    unmutedIcon?.classList.remove('hidden');
-                    mutedIcon?.classList.add('hidden');
-                }
+                if (unmutedIcon) unmutedIcon.style.display = isAudioMuted ? 'none' : 'block';
+                if (mutedIcon) mutedIcon.style.display = isAudioMuted ? 'block' : 'none';
             }
             updateAudioToggleUI();
 
