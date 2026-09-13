@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { retrieveEraContext } from './ragEngine.js';
 import { perceiveImage, normalizeImageSource } from './multimodalPerception.js';
 import { synthesizeLearnedInsights, getUserCognitiveProfile, generateMotivationalWisdom } from './learningEngine.js';
+import { decryptText } from './encryption.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 
@@ -90,18 +91,31 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
       // If specific era filtering matched memories, use strictly those; otherwise return empty list
       list = filtered;
     }
-    return list.map(m => ({
-      title: m.title || m.Title || 'Milestone',
-      date: m.entryDate || m.date || m.EntryDate || 'Recorded Moment',
-      era: m.era || m.Era || selectedEra || 'Youth Era',
-      journal: m.journal || m.journalText || m.matchDetails || m.description || m.notes || m.content || m.TextEncrypted || '',
-      sentiment: typeof m.sentiment === 'number' ? m.sentiment : (typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85),
-      photo: m.photo || m.mediaUrl || m.media_url || null,
-      caption: m.caption || m.photoCaption || null,
-      tags: Array.isArray(m.tags) ? m.tags : (Array.isArray(m.emotionTags) ? m.emotionTags : (Array.isArray(m.emotion_tags) ? m.emotion_tags : [])),
-      domain: m.domain || m.Domain || null,
-      journeyType: m.journeyType || m.JourneyType || null
-    }));
+    return list.map(m => {
+      let plainJournal = m.journal || m.journalText || m.MatchDetails || m.matchDetails || m.description || m.notes || m.content || '';
+      if (!plainJournal && m.TextEncrypted) {
+        try {
+          plainJournal = decryptText(m.TextEncrypted);
+        } catch (_) {}
+      } else if (plainJournal && typeof plainJournal === 'string' && plainJournal.includes(':') && plainJournal.length > 50) {
+        try {
+          const attempt = decryptText(plainJournal);
+          if (attempt) plainJournal = attempt;
+        } catch (_) {}
+      }
+      return {
+        title: m.title || m.Title || 'Milestone',
+        date: m.entryDate || m.date || m.EntryDate || 'Recorded Moment',
+        era: m.era || m.Era || selectedEra || 'Youth Era',
+        journal: plainJournal,
+        sentiment: typeof m.sentiment === 'number' ? m.sentiment : (typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85),
+        photo: m.photo || m.mediaUrl || m.media_url || null,
+        caption: m.caption || m.photoCaption || null,
+        tags: Array.isArray(m.tags) ? m.tags : (Array.isArray(m.emotionTags) ? m.emotionTags : (Array.isArray(m.emotion_tags) ? m.emotion_tags : [])),
+        domain: m.domain || m.Domain || null,
+        journeyType: m.journeyType || m.JourneyType || null
+      };
+    });
   }
 
   if (retrievedContext && Array.isArray(retrievedContext.memories) && retrievedContext.memories.length > 0) {

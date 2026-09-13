@@ -981,7 +981,16 @@ app.post('/api/chat', async (req, res) => {
         const existingIds = new Set(allRelevantMemories.map(m => m.id || m.Memory_ID || m.title));
         dbMemories.forEach(dm => {
           if (!existingIds.has(dm.Memory_ID) && !existingIds.has(dm.Title)) {
-            allRelevantMemories.push(dm);
+            let plainContent = dm.MatchDetails || '';
+            if (dm.TextEncrypted) {
+              try { plainContent = decryptText(dm.TextEncrypted); } catch (e) {}
+            }
+            allRelevantMemories.push({
+              ...dm,
+              journal: plainContent,
+              content: plainContent,
+              matchDetails: plainContent
+            });
           }
         });
       }
