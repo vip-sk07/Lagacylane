@@ -7101,6 +7101,65 @@
             document.getElementById('btn-flip-to-back').addEventListener('click', () => proCardInner.classList.add('flipped'));
             document.getElementById('btn-flip-to-front').addEventListener('click', () => proCardInner.classList.remove('flipped'));
 
+            // Export Archive (.json) Button — SRS Section 4.1: Exportable Memory Archive
+            const btnExportArchive = document.getElementById('btn-export-archive');
+            if (btnExportArchive) {
+                btnExportArchive.addEventListener('click', () => {
+                    const memories = getActiveMemories();
+                    if (memories.length === 0) {
+                        alert('No memories to export yet. Log your first milestone!');
+                        return;
+                    }
+
+                    const userName = localStorage.getItem('legacy_user') || localStorage.getItem('username') || 'Athlete';
+                    const exportData = {
+                        exportedAt: new Date().toISOString(),
+                        exportedBy: userName,
+                        journeyType: isLifeMode ? 'life' : 'sports',
+                        domain: currentSport,
+                        totalMemories: memories.length,
+                        keepsakes: JSON.parse(localStorage.getItem('legacylane_keepsakes') || '[]'),
+                        memories: memories.map(m => ({
+                            title: m.title,
+                            date: m.date,
+                            era: m.era,
+                            journal: m.isVaultLocked && !isSessionVaultUnlocked ? '[Vault Encrypted — PIN Required]' : m.journal,
+                            sentiment: m.sentiment,
+                            sentimentLabel: m.sentimentLabel,
+                            location: m.location || '',
+                            people: m.people || '',
+                            isFavorite: m.isFavorite,
+                            isVaultLocked: m.isVaultLocked,
+                            tags: m.tags || [],
+                            photos: (m.photos || []).map(p => ({ caption: p.caption || '' })),
+                            domain: m.domain,
+                            journeyType: m.journeyType
+                        }))
+                    };
+
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    const dateStamp = new Date().toISOString().split('T')[0];
+                    link.download = `LegacyLane_Archive_${userName.replace(/\s+/g, '_')}_${dateStamp}.json`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    playSoftSound('harmonic');
+
+                    // Briefly animate the export button for feedback
+                    const originalHtml = btnExportArchive.innerHTML;
+                    btnExportArchive.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg><span>Archive Exported ✓</span>`;
+                    btnExportArchive.classList.add('bg-emerald-500/20', 'border-emerald-500/40', 'text-emerald-200');
+                    setTimeout(() => {
+                        btnExportArchive.innerHTML = originalHtml;
+                        btnExportArchive.classList.remove('bg-emerald-500/20', 'border-emerald-500/40', 'text-emerald-200');
+                    }, 2500);
+                });
+            }
+
             /* ------------------------------------------------------------------
                16. MENTAL WELLNESS & SENTIMENT ANALYTICS CONTROLLER (SRS SECTION 4.4)
                ------------------------------------------------------------------ */
@@ -7741,31 +7800,7 @@
                 }
             }
 
-            const btnExportArchive = document.getElementById('btn-export-archive');
-            if (btnExportArchive) {
-                btnExportArchive.addEventListener('click', () => {
-                    playSoftSound('chime');
-                    const uid = getUserId();
-                    const memories = getActiveMemories();
-                    const exportData = {
-                        user: getUserName(),
-                        userId: uid,
-                        journeyType: isLifeMode ? 'life' : 'sports',
-                        domain: currentSport,
-                        exportedAt: new Date().toISOString(),
-                        memories: memories
-                    };
-                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `LegacyLane_${isLifeMode ? 'LifeArchive' : currentSport}_${uid}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                });
-            }
+
 
             // Live Search
             document.getElementById('live-search-input').addEventListener('input', (e) => {
