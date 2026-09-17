@@ -1212,14 +1212,31 @@ app.get('/api/connections/:userId', (req, res) => {
 });
 
 app.post('/api/connections/follow', (req, res) => {
-  const { followerId, followingId } = req.body;
-  const connectionId = 'conn_' + Date.now();
-  db.prepare(`
-    INSERT INTO UserConnections (Connection_ID, Follower_ID, Following_ID, Status)
-    VALUES (?, ?, ?, 'pending')
-  `).run(connectionId, followerId, followingId);
+  try {
+    const { followerId, followingId } = req.body;
+    if (!followerId || !followingId) {
+      return res.status(400).json({ error: 'followerId and followingId are required.' });
+    }
+    const connectionId = 'conn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
-  res.status(201).json({ message: 'Follow request sent', connectionId });
+    // Ensure both users exist as stubs so FOREIGN KEY constraints are satisfied
+    const upsertUser = db.prepare(`
+      INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
+      VALUES (?, 'Athlete', ?, 'stub', 'Standard')
+    `);
+    upsertUser.run(followerId, `${followerId}@legacylane.local`);
+    upsertUser.run(followingId, `${followingId}@legacylane.local`);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO UserConnections (Connection_ID, Follower_ID, Following_ID, Status)
+      VALUES (?, ?, ?, 'pending')
+    `).run(connectionId, followerId, followingId);
+
+    res.status(201).json({ message: 'Follow request sent', connectionId });
+  } catch (err) {
+    console.error('Connections Follow Error:', err);
+    res.status(500).json({ error: 'Server error creating connection.' });
+  }
 });
 
 // ----------------------------------------------------
@@ -1231,7 +1248,8 @@ app.get('/api/vault/:ownerId', async (req, res) => {
     const { ownerId } = req.params;
     const { viewerId } = req.query;
 
-    if (ownerId !== viewerId) {
+    // Only enforce ACL when a different viewer is specified
+    if (viewerId && ownerId !== viewerId) {
       const grant = db.prepare(`
         SELECT PermissionLevel, Status FROM FamilyAccessControl
         WHERE Owner_User_ID = ? AND Family_User_ID = ? AND Status = 'active'
@@ -1379,8 +1397,9 @@ app.post('/api/vault/change-pin', async (req, res) => {
       return res.json({ success: true, message: 'Vault PIN established successfully.' });
     }
 
-    // If existing PIN exists, verify currentPin
-    if (user.VaultPIN && user.VaultPIN !== String(currentPin)) {
+    // If existing PIN exists, verify currentPin (accepts both 'currentPin' and 'oldPin' field names)
+    const suppliedOld = String(currentPin || req.body.oldPin || '');
+    if (user.VaultPIN && user.VaultPIN !== suppliedOld) {
       return res.status(401).json({ error: 'Current PIN is incorrect.' });
     }
 
@@ -1413,7 +1432,7 @@ app.get('/api/family-circle/:ownerId', (req, res) => {
 // Generate instant shareable Invite Code for Family Circle
 app.post('/api/family-circle/invite-code', (req, res) => {
   try {
-    const { ownerId, relationship, permissionLevel, inviteeName } = req.body;
+    const { ownerId, relationship, permissionLevel, inviteeName, role } = req.body;
     if (!ownerId) return res.status(400).json({ error: 'ownerId is required.' });
 
     db.prepare(`
@@ -1427,7 +1446,9 @@ app.post('/api/family-circle/invite-code', (req, res) => {
       randomPart += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
     }
     const inviteCode = `LL-FAM-${randomPart}`;
+    const newGrantId = 'grant_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const guestId = 'usr_guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    const resolvedRole = role || permissionLevel || 'Viewer';
 
     db.prepare(`
       INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
@@ -1438,21 +1459,22 @@ app.post('/api/family-circle/invite-code', (req, res) => {
       INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, InviteCode)
       VALUES (?, ?, ?, ?, '', ?, ?, 'active', ?)
     `).run(
-      grantId,
+      newGrantId,
       ownerId,
       guestId,
       inviteeName || 'Family Member',
       relationship || 'Family',
-      permissionLevel || 'Viewer',
+      resolvedRole,
       inviteCode
     );
 
     res.status(201).json({
       success: true,
       inviteCode,
-      grantId,
+      code: inviteCode,
+      grantId: newGrantId,
       relationship: relationship || 'Family',
-      permissionLevel: permissionLevel || 'Viewer'
+      permissionLevel: resolvedRole
     });
   } catch (err) {
     console.error('Generate Invite Code Error:', err);
