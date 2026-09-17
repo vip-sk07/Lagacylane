@@ -1314,12 +1314,90 @@ app.post('/api/vault/verify-pin', async (req, res) => {
   }
 });
 
+// Retrieve Vault summary, cipher info, and privacy metrics (SRS 4.1 & 71)
+app.get('/api/vault/summary/:ownerId', async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    let user = db.prepare('SELECT User_ID, VaultPIN FROM Users WHERE User_ID = ?').get(ownerId);
+    const hasPin = Boolean(user && user.VaultPIN);
+
+    let totalMemories = 0;
+    let lockedMemories = 0;
+    let publicMemories = 0;
+    let familyMemories = 0;
+
+    try {
+      const collection = getCollection('MemoryLogs');
+      const memories = await collection.find({ User_ID: ownerId }).toArray();
+      totalMemories = memories.length;
+      lockedMemories = memories.filter(m => m.IsVaultLocked).length;
+      familyMemories = memories.filter(m => m.PrivacySetting === 'Family').length;
+      publicMemories = totalMemories - lockedMemories - familyMemories;
+    } catch (e) {
+      // Fallback to SQLite
+      try {
+        const rows = db.prepare('SELECT IsVaultLocked, PrivacySetting FROM MemoryLogs WHERE User_ID = ?').all(ownerId);
+        totalMemories = rows.length;
+        lockedMemories = rows.filter(r => r.IsVaultLocked === 1 || r.IsVaultLocked === true).length;
+        familyMemories = rows.filter(r => r.PrivacySetting === 'Family').length;
+        publicMemories = totalMemories - lockedMemories - familyMemories;
+      } catch (dbErr) {}
+    }
+
+    res.json({
+      ownerId,
+      hasPin,
+      totalMemories,
+      lockedMemories,
+      publicMemories,
+      familyMemories,
+      cipher: 'AES-256-GCM',
+      keyLength: 256,
+      authTagSupport: true,
+      vaultStatus: lockedMemories > 0 ? 'active_protection' : 'ready'
+    });
+  } catch (err) {
+    console.error('Vault Summary Error:', err);
+    res.status(500).json({ error: 'Server error retrieving vault summary.' });
+  }
+});
+
+// Change or update user's 4-digit numeric Vault PIN
+app.post('/api/vault/change-pin', async (req, res) => {
+  try {
+    const { userId, currentPin, newPin } = req.body;
+    if (!newPin || String(newPin).length !== 4 || !/^\d{4}$/.test(String(newPin))) {
+      return res.status(400).json({ error: 'New PIN must be exactly 4 numeric digits.' });
+    }
+
+    let user = db.prepare('SELECT User_ID, VaultPIN FROM Users WHERE User_ID = ?').get(userId);
+    if (!user) {
+      db.prepare(`
+        INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, VaultPIN)
+        VALUES (?, 'Athlete', ?, 'session_local', 'Standard', ?)
+      `).run(userId, `${userId}@legacylane.local`, String(newPin));
+      return res.json({ success: true, message: 'Vault PIN established successfully.' });
+    }
+
+    // If existing PIN exists, verify currentPin
+    if (user.VaultPIN && user.VaultPIN !== String(currentPin)) {
+      return res.status(401).json({ error: 'Current PIN is incorrect.' });
+    }
+
+    db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(String(newPin), userId);
+    res.json({ success: true, message: 'Vault PIN successfully updated.' });
+  } catch (err) {
+    console.error('Change PIN Error:', err);
+    res.status(500).json({ error: 'Server error updating PIN.' });
+  }
+});
+
 // Retrieve active family circle members and access grants
 app.get('/api/family-circle/:ownerId', (req, res) => {
   try {
     const { ownerId } = req.params;
     const members = db.prepare(`
-      SELECT Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, GrantedAt
+      SELECT Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, InviteCode, GrantedAt
       FROM FamilyAccessControl
       WHERE Owner_User_ID = ? AND Status = 'active'
       ORDER BY GrantedAt DESC
@@ -1329,6 +1407,89 @@ app.get('/api/family-circle/:ownerId', (req, res) => {
   } catch (err) {
     console.error('Fetch Family Circle Error:', err);
     res.status(500).json({ error: 'Server error fetching family circle.' });
+  }
+});
+
+// Generate instant shareable Invite Code for Family Circle
+app.post('/api/family-circle/invite-code', (req, res) => {
+  try {
+    const { ownerId, relationship, permissionLevel, inviteeName } = req.body;
+    if (!ownerId) return res.status(400).json({ error: 'ownerId is required.' });
+
+    db.prepare(`
+      INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
+      VALUES (?, 'Athlete Owner', ?, 'owner_hash', 'Standard')
+    `).run(ownerId, `${ownerId}@legacylane.local`);
+
+    const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let randomPart = '';
+    for (let i = 0; i < 4; i++) {
+      randomPart += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+    }
+    const inviteCode = `LL-FAM-${randomPart}`;
+    const guestId = 'usr_guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType)
+      VALUES (?, ?, ?, 'invited_code', 'Standard')
+    `).run(guestId, inviteeName || 'Family Member', `${guestId}@invited.legacylane.internal`);
+
+    db.prepare(`
+      INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, InviteCode)
+      VALUES (?, ?, ?, ?, '', ?, ?, 'active', ?)
+    `).run(
+      grantId,
+      ownerId,
+      guestId,
+      inviteeName || 'Family Member',
+      relationship || 'Family',
+      permissionLevel || 'Viewer',
+      inviteCode
+    );
+
+    res.status(201).json({
+      success: true,
+      inviteCode,
+      grantId,
+      relationship: relationship || 'Family',
+      permissionLevel: permissionLevel || 'Viewer'
+    });
+  } catch (err) {
+    console.error('Generate Invite Code Error:', err);
+    res.status(500).json({ error: 'Server error generating invite code.' });
+  }
+});
+
+// Redeem an Invite Code by a family member/guest
+app.post('/api/family-circle/redeem', (req, res) => {
+  try {
+    const { inviteCode, familyUserId, familyUserName } = req.body;
+    if (!inviteCode) return res.status(400).json({ error: 'Invite code is required.' });
+
+    const cleanCode = String(inviteCode).trim().toUpperCase();
+    const grant = db.prepare('SELECT * FROM FamilyAccessControl WHERE InviteCode = ? AND Status = ?').get(cleanCode, 'active');
+    if (!grant) {
+      return res.status(404).json({ error: 'Invalid or expired invite code.' });
+    }
+
+    if (familyUserId) {
+      db.prepare(`
+        UPDATE FamilyAccessControl 
+        SET Family_User_ID = ?, InviteeName = COALESCE(?, InviteeName)
+        WHERE Grant_ID = ?
+      `).run(familyUserId, familyUserName || null, grant.Grant_ID);
+    }
+
+    res.json({
+      success: true,
+      message: 'Invite code redeemed successfully. Welcome to the Family Circle!',
+      ownerId: grant.Owner_User_ID,
+      permissionLevel: grant.PermissionLevel,
+      relationship: grant.Relationship
+    });
+  } catch (err) {
+    console.error('Redeem Invite Code Error:', err);
+    res.status(500).json({ error: 'Server error redeeming invite code.' });
   }
 });
 
@@ -1364,9 +1525,17 @@ app.post('/api/family-circle/grant', (req, res) => {
       }
     }
 
+    // Generate readable invite code for this grant
+    const codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let randomPart = '';
+    for (let i = 0; i < 4; i++) {
+      randomPart += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+    }
+    const inviteCode = `LL-FAM-${randomPart}`;
+
     db.prepare(`
-      INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO FamilyAccessControl (Grant_ID, Owner_User_ID, Family_User_ID, InviteeName, InviteeEmail, Relationship, PermissionLevel, Status, InviteCode)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?)
     `).run(
       grantId,
       ownerId,
@@ -1374,7 +1543,8 @@ app.post('/api/family-circle/grant', (req, res) => {
       inviteeName || 'Family Member',
       inviteeEmail || '',
       relationship || 'Family',
-      permissionLevel || 'Viewer'
+      permissionLevel || 'Viewer',
+      inviteCode
     );
 
     res.status(201).json({
@@ -1387,6 +1557,7 @@ app.post('/api/family-circle/grant', (req, res) => {
         inviteeEmail: inviteeEmail || '',
         relationship: relationship || 'Family',
         permissionLevel: permissionLevel || 'Viewer',
+        inviteCode,
         status: 'active',
         grantedAt: new Date().toISOString()
       }

@@ -119,6 +119,7 @@ db.exec(`
 try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteeName TEXT;"); } catch (e) {}
 try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteeEmail TEXT;"); } catch (e) {}
 try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN Relationship TEXT DEFAULT 'Family';"); } catch (e) {}
+try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteCode TEXT;"); } catch (e) {}
 try { db.exec("ALTER TABLE Users ADD COLUMN VaultPIN TEXT;"); } catch (e) {}
 try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN IsVaultLocked INTEGER DEFAULT 0;"); } catch (e) {}
 

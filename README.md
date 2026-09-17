@@ -231,7 +231,7 @@ npm run build
 - [x] **Zero Plaintext Persistence**: Full AES-256-GCM encryption at rest on all journal entries.
 - [x] **Domain-Scoped RAG Isolation**: Era-filtered retrieval with strict discipline isolation.
 - [ ] **🚧 Supabase pgvector Cloud Migration**: Transitioning local vector store to persistent cloud pgvector tables.
-- [ ] **🚧 Family Vault UI Dashboard**: Full visual interface for managing family access grants and view permissions.
+- [x] **Family Vault UI Dashboard**: Full visual interface for managing family access grants and view permissions.
 - [ ] **🚧 Voice Synthesis (TTS / STT)**: Auditory dialogue mode allowing athletes to hear their Younger Self speak.
 - [ ] **🚧 Vintage Trophy & Certificate Scanner**: Optical character recognition (OCR) pipeline for digitizing legacy newspaper clippings and paper medals.
 
