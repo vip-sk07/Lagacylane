@@ -6985,7 +6985,7 @@
                 const dot = aiWsStatusBadge.querySelector('.w-1\\.5');
                 if (status === 'connected') {
                     aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] border border-emerald-500/40 flex items-center gap-1';
-                    aiWsStatusBadge.title = 'Real-Time WebSocket Sideline AI Stream Active (ws://localhost:5000/ws/sideline-ai)';
+                    aiWsStatusBadge.title = 'Real-Time WebSocket Sideline AI Stream Active';
                     aiWsStatusText.textContent = text || 'LIVE STREAMING';
                     if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
                 } else if (status === 'connecting') {
@@ -7006,7 +7006,8 @@
                     return;
                 }
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const host = (window.location.port === '3000' || !window.location.port) ? 'localhost:5000' : window.location.host;
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const host = isLocal ? (window.location.port === '3000' ? 'localhost:5000' : window.location.host) : window.location.host;
                 const currentEra = aiEraSelect ? aiEraSelect.value : 'All Eras';
                 const wsUrl = `${protocol}//${host}/ws/sideline-ai?userId=${encodeURIComponent(getUserId())}&era=${encodeURIComponent(currentEra)}`;
 

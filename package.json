@@ -5,6 +5,8 @@
   "description": "LegacyLane — The One Who Lives: 3D Interactive Memory Repository & AI Companion",
   "type": "module",
   "scripts": {
+    "postinstall": "npm --prefix Backend install && npm --prefix AI_Modules install && npm --prefix Frontend install",
+    "build": "npm --prefix Frontend run build",
     "start": "node Backend/index.js",
     "server": "node Backend/index.js",
     "dev": "node Backend/index.js",

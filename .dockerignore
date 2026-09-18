@@ -1,0 +1,17 @@
+node_modules
+Frontend/node_modules
+Backend/node_modules
+AI_Modules/node_modules
+Frontend/dist
+Backend/uploads/*
+!Backend/uploads/.gitkeep
+Backend/legacylane.db
+Backend/legacylane.db-wal
+Backend/legacylane.db-shm
+.git
+.github
+*.log
+.env
+Backend/.env
+AI_Modules/.env
+Frontend/.env
