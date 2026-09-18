@@ -449,7 +449,7 @@ async function _generateYoungerSelfResponseInternal({
       contents.push({ role: 'user', parts: userParts });
 
       const response = await ai.models.generateContent({
-        model: clientOptions.model || 'gemini-1.5-flash',
+        model: clientOptions.model || 'gemini-3.5-flash-lite',
         contents: contents,
         config: {
           systemInstruction: systemPrompt,

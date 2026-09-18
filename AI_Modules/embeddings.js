@@ -83,22 +83,22 @@ export async function generateEmbedding(textOrPayload, options = {}) {
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.embedContent({
-        model: 'text-embedding-004',
+        model: 'gemini-embedding-001',
         contents: text,
       });
 
-      if (response && response.embedding && response.embedding.values) {
-        let embeddingValues = response.embedding.values;
+      const rawValues = response.embedding?.values || response.embeddings?.[0]?.values;
+      if (rawValues) {
+        let embeddingValues = rawValues;
 
         // Ensure 768 dimensions
         if (embeddingValues.length !== EMBEDDING_DIMENSION) {
-          console.warn(`Gemini returned ${embeddingValues.length}-dim vector, adjusting to ${EMBEDDING_DIMENSION}`);
           embeddingValues = adjustVectorDimension(embeddingValues, EMBEDDING_DIMENSION);
         }
 
         return {
           embedding: embeddingValues,
-          provider: 'google-gemini (text-embedding-004)',
+          provider: 'google-gemini (gemini-embedding-001)',
           dimension: EMBEDDING_DIMENSION,
           zeroTrainingGuarantee: true // Google API Commercial terms: Customer data is not used for model training
         };
