@@ -302,6 +302,7 @@
         }
         #left-sidebar.collapsed #live-search-input { opacity: 0; width: 0; pointer-events: none; }
         #left-sidebar.collapsed #search-count-badge { display: none; }
+        #left-sidebar.collapsed #sidebar-filter-chips-wrapper { display: none; }
         #search-count-badge {
             padding: 2px 6px; border-radius: 999px;
             background: rgba(28,24,22,0.85); color: #78716c;
@@ -369,6 +370,25 @@
             opacity: 0; max-height: 0; padding: 0;
             border-color: transparent; pointer-events: none;
         }
+
+        /* Mobile Touch & Viewport Optimization */
+        @media (max-width: 640px) {
+            .ai-drawer-card {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                padding: 16px 12px !important;
+            }
+            .tactical-glass-card {
+                padding: 18px 14px !important;
+                border-radius: 20px !important;
+            }
+            #wellness-svg-canvas-container {
+                height: 190px !important;
+            }
+            button, a, select, input {
+                touch-action: manipulation;
+            }
+        }
     </style>
 </head>
 <body>
@@ -393,11 +413,19 @@
             <span class="sidebar-logo-text">LEGACYLANE</span>
         </div>
 
-        <!-- Search -->
+        <!-- Search & Filter Chips -->
         <div class="sidebar-search-row">
             <svg style="width:14px;height:14px;flex-shrink:0;color:#78716c" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
             <input type="text" id="live-search-input" placeholder="Search memories&hellip;">
             <span id="search-count-badge">ALL</span>
+        </div>
+
+        <!-- Tag & Category Filter Chips (SRS 4.1 & 71) -->
+        <div id="sidebar-filter-chips-wrapper" class="flex flex-wrap gap-1 px-1 py-1 overflow-x-auto" style="scrollbar-width:none">
+            <button class="filter-chip active px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition" data-filter="all">All</button>
+            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="favorite">★ Landmark</button>
+            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="insight">💎 Keepsake</button>
+            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="vault">🔒 Vault</button>
         </div>
 
         <div class="sidebar-divider"></div>
@@ -438,11 +466,17 @@
             <span class="sidebar-nav-label">Journey Hub</span>
         </a>
 
-        <!-- Account -->
-        <a href="LegacyLogin.html" class="sidebar-nav-item">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span class="sidebar-nav-label">Account</span>
-        </a>
+        <!-- Settings & Privacy -->
+        <button id="btn-open-settings-modal" type="button" class="sidebar-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="sidebar-nav-label">Settings & Privacy</span>
+        </button>
+
+        <!-- Sign Out -->
+        <button id="btn-global-sign-out" type="button" class="sidebar-nav-item hover:text-rose-300">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span class="sidebar-nav-label">Sign Out</span>
+        </button>
 
         <div class="sidebar-divider"></div>
 
@@ -576,54 +610,118 @@
          MODAL 0: "EDIT 3D PLAYER PROFILE & DOSSIER" MODAL
          ========================================================================== -->
     <div id="modal-edit-profile" class="drawer-overlay">
-        <div class="w-full max-w-md tactical-glass-card rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/10">
+        <div class="w-full max-w-lg tactical-glass-card rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/10">
             <div class="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                    <span id="modal-edit-profile-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-medium border border-cyan-500/30">3D PLAYER DOSSIER</span>
-                    <h2 id="modal-edit-profile-title" class="text-xl font-semibold text-stone-100 mt-1">Customize Athlete Profile</h2>
+                    <span id="modal-edit-profile-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-semibold border border-cyan-500/30">PROFILE & PRIVACY</span>
+                    <h2 id="modal-edit-profile-title" class="text-xl font-semibold text-stone-100 mt-1">Account & Privacy Settings</h2>
                 </div>
                 <button id="btn-close-edit-profile" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition">✕</button>
             </div>
 
-            <form id="form-edit-profile" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-stone-300 mb-1">Display Name *</label>
-                    <input type="text" id="edit-profile-name" required class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
-                </div>
+            <!-- Settings Tabs -->
+            <div class="flex border-b border-white/10 gap-2 pb-2">
+                <button id="tab-btn-profile-info" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-stone-100 border border-white/10 transition">
+                    Profile & Focus
+                </button>
+                <button id="tab-btn-security-privacy" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-stone-400 hover:text-stone-200 border border-transparent transition">
+                    Security & GDPR Privacy
+                </button>
+            </div>
 
-                <div id="edit-profile-sports-fields" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-stone-300 mb-1">Jersey Number *</label>
-                            <input type="number" id="edit-profile-jersey" min="0" max="99" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+            <!-- Tab 1: Profile & Focus -->
+            <div id="tab-content-profile-info" class="space-y-4">
+                <form id="form-edit-profile" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Display Name *</label>
+                        <input type="text" id="edit-profile-name" required class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                    </div>
+
+                    <div id="edit-profile-sports-fields" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-stone-300 mb-1">Jersey Number *</label>
+                                <input type="number" id="edit-profile-jersey" min="0" max="99" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-stone-300 mb-1">Tactical Position</label>
+                                <input type="text" id="edit-profile-position" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-stone-300 mb-1">Tactical Position</label>
-                            <input type="text" id="edit-profile-position" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+                            <label class="block text-xs font-medium text-stone-300 mb-1">Team / Club / Academy</label>
+                            <input type="text" id="edit-profile-team" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-stone-300 mb-1">Team / Club / Academy</label>
-                        <input type="text" id="edit-profile-team" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-cyan-400 focus:outline-none">
+
+                    <div id="edit-profile-life-fields" class="space-y-3 hidden">
+                        <div>
+                            <label class="block text-xs font-medium text-stone-300 mb-1">Focus Domain / Craft</label>
+                            <input type="text" id="edit-profile-domain" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-stone-300 mb-1">Life Motto / Core Philosophy</label>
+                            <input type="text" id="edit-profile-motto" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        </div>
                     </div>
+
+                    <div class="pt-2 flex gap-2">
+                        <button type="button" id="btn-cancel-edit-profile" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 text-xs font-medium transition">Cancel</button>
+                        <button type="submit" id="btn-save-edit-profile" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-stone-950 font-bold text-xs shadow-lg transition">Save Profile Changes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab 2: Security & GDPR Privacy -->
+            <div id="tab-content-security-privacy" class="space-y-5 hidden">
+                <!-- Change Vault PIN -->
+                <div class="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">🔒</span>
+                        <h4 class="text-xs font-semibold text-purple-200 uppercase tracking-wide">Change Personal Vault PIN</h4>
+                    </div>
+                    <p class="text-[11px] text-stone-400 leading-snug">Protect your sensitive journal memories behind a 4-digit passcode.</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] text-stone-400 mb-1">Current PIN</label>
+                            <input type="password" id="settings-current-pin" maxlength="4" placeholder="••••" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/10 text-stone-100 text-xs text-center tracking-widest focus:border-purple-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-stone-400 mb-1">New 4-Digit PIN</label>
+                            <input type="password" id="settings-new-pin" maxlength="4" placeholder="••••" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/10 text-stone-100 text-xs text-center tracking-widest focus:border-purple-400 focus:outline-none">
+                        </div>
+                    </div>
+                    <button id="btn-settings-update-pin" type="button" class="w-full py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-semibold transition">
+                        Update Vault PIN
+                    </button>
+                    <p id="settings-pin-msg" class="text-[10px] text-center hidden"></p>
                 </div>
 
-                <div id="edit-profile-life-fields" class="space-y-3 hidden">
-                    <div>
-                        <label class="block text-xs font-medium text-stone-300 mb-1">Focus Domain / Craft</label>
-                        <input type="text" id="edit-profile-domain" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                <!-- GDPR Personal Archive Export -->
+                <div class="p-4 rounded-2xl bg-stone-900/60 border border-white/10 space-y-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">📦</span>
+                        <h4 class="text-xs font-semibold text-stone-200 uppercase tracking-wide">GDPR Data Export</h4>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-stone-300 mb-1">Life Motto / Core Philosophy</label>
-                        <input type="text" id="edit-profile-motto" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
-                    </div>
+                    <p class="text-[11px] text-stone-400 leading-snug">Download a complete, portable copy of all your memories, timeline milestones, and reflections in standard JSON format.</p>
+                    <button id="btn-settings-export-archive" type="button" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-200 border border-white/10 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Download Complete Personal Archive (.json)</span>
+                    </button>
                 </div>
 
-                <div class="pt-2 flex gap-2">
-                    <button type="button" id="btn-cancel-edit-profile" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 text-xs font-medium transition">Cancel</button>
-                    <button type="submit" id="btn-save-edit-profile" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-stone-950 font-bold text-xs shadow-lg transition">Save & Sync 3D Player</button>
+                <!-- Danger Zone: Account Deletion -->
+                <div class="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/20 space-y-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">⚠️</span>
+                        <h4 class="text-xs font-semibold text-rose-300 uppercase tracking-wide">Danger Zone</h4>
+                    </div>
+                    <p class="text-[11px] text-stone-400 leading-snug">Permanently erase your account, memories, photos, and AI chat history. This action is irreversible.</p>
+                    <button id="btn-settings-delete-account" type="button" class="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-200 border border-rose-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                        <span>Permanently Delete Account & Wipe All Memories</span>
+                    </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -849,7 +947,7 @@
                     <p class="text-[10px] font-mono text-stone-400 font-medium tracking-wide">PERSONAL JOURNAL ENTRY</p>
                     <span id="inspect-vault-crypto-indicator" class="hidden text-[10px] font-mono text-purple-300 flex items-center gap-1.5 bg-purple-950/40 px-2 py-0.5 rounded-lg border border-purple-500/30">
                         <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-                        AES-256 Vault Encrypted
+                        Personal Vault • Private & Locked
                     </span>
                 </div>
                 <div id="inspect-journal-container" class="relative min-h-[50px]">
@@ -937,12 +1035,12 @@
                         <div class="flex items-center gap-2">
                             <h3 class="text-sm font-semibold text-stone-100">Younger Self</h3>
                             <span id="ai-era-badge" class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] border border-amber-500/30">All Eras</span>
-                            <span id="ai-ws-status-badge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] border border-emerald-500/40 flex items-center gap-1" title="Real-Time WebSocket Sideline AI Stream">
+                            <span id="ai-ws-status-badge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-medium border border-emerald-500/40 flex items-center gap-1" title="Real-time conversational link">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span id="ai-ws-status-text">LIVE STREAMING</span>
+                                <span id="ai-ws-status-text">READY TO TALK</span>
                             </span>
                         </div>
-                        <p class="text-[10px] font-mono text-stone-400">Intimate Handwritten Reflection & RAG Memory</p>
+                        <p class="text-[11px] text-stone-400">Intimate Diary Reflection & Living Memory</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -1193,13 +1291,15 @@
                     </div>
 
                     <!-- SRS 4.4.3 REQ-2: Hover Tooltip Overlay -->
-                    <div id="wellness-chart-tooltip" class="absolute hidden pointer-events-none z-50 px-3.5 py-2.5 rounded-2xl bg-stone-900/95 border border-amber-400/50 text-stone-100 shadow-2xl text-xs space-y-1 backdrop-blur-md transition-all duration-150 transform -translate-x-1/2 -translate-y-full mb-2">
-                        <p id="tooltip-memory-date" class="text-[10px] font-mono text-amber-300"></p>
-                        <p id="tooltip-memory-title" class="font-semibold text-stone-100"></p>
-                        <div class="flex items-center gap-2 pt-0.5">
+                    <div id="wellness-chart-tooltip" class="absolute hidden pointer-events-none z-50 w-64 max-w-[90vw] p-3 rounded-2xl bg-stone-900/95 border border-amber-400/50 text-stone-100 shadow-2xl text-xs space-y-1.5 backdrop-blur-md transition-all duration-150 transform -translate-x-1/2 -translate-y-full mb-3">
+                        <div class="flex items-center justify-between">
+                            <span id="tooltip-memory-date" class="text-[10px] font-mono text-amber-300"></span>
                             <span id="tooltip-memory-score" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold"></span>
-                            <span id="tooltip-memory-label" class="text-[11px] text-stone-300"></span>
                         </div>
+                        <p id="tooltip-memory-title" class="font-semibold text-stone-100 text-xs leading-snug"></p>
+                        <p id="tooltip-memory-label" class="text-[10px] text-amber-200/80 italic"></p>
+                        <p id="tooltip-memory-snippet" class="text-[11px] text-stone-300 line-clamp-2 leading-tight bg-white/5 p-1.5 rounded-xl"></p>
+                        <div id="tooltip-memory-tags" class="flex flex-wrap gap-1 pt-0.5"></div>
                     </div>
                 </div>
             </div>
@@ -1924,6 +2024,16 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             /* ------------------------------------------------------------------
+               0. GLOBAL NETWORKING & API CONFIGURATION
+               ------------------------------------------------------------------ */
+            const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_BASE = (window.location.protocol.startsWith('http') && window.location.origin)
+                ? (isLocalHost && (window.location.port === '3000' || window.location.port === '5500' || !window.location.port)
+                    ? 'http://localhost:5000/api'
+                    : `${window.location.origin}/api`)
+                : 'http://localhost:5000/api';
+
+            /* ------------------------------------------------------------------
                1. URL ROUTING & STRICT DOMAIN ISOLATION
                ------------------------------------------------------------------ */
             const urlParams = new URLSearchParams(window.location.search);
@@ -2083,7 +2193,7 @@
             async function syncProfileFromBackend() {
                 const userId = getUserId();
                 try {
-                    const res = await fetch('/api/profile/' + encodeURIComponent(userId));
+                    const res = await fetch(`${API_BASE}/profile/${encodeURIComponent(userId)}`);
                     if (res.ok) {
                         const data = await res.json();
                         if (data.athleteProfile) {
@@ -4232,6 +4342,9 @@
                7. DYNAMIC CHRONOLOGICAL SPLINE & CHECKPOINT ENGINE
                ------------------------------------------------------------------ */
             let splineTubeMesh = null;
+            let elevatedRibbonMesh = null;
+            let elevatedConnectorLines = [];
+            let activeMemoryOrbs = [];
             let checkpointRings = [];
             let activeInsightCrystals = [];
             let activeVaultMeshes = [];
@@ -4241,6 +4354,10 @@
 
             function rebuild3DSpline() {
                 if (splineTubeMesh) scene.remove(splineTubeMesh);
+                if (elevatedRibbonMesh) scene.remove(elevatedRibbonMesh);
+                elevatedConnectorLines.forEach(l => scene.remove(l));
+                elevatedConnectorLines = [];
+                activeMemoryOrbs = [];
                 checkpointRings.forEach(r => scene.remove(r.group));
                 checkpointRings = [];
                 activeInsightCrystals = [];
@@ -4274,6 +4391,41 @@
                     });
                     splineTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
                     scene.add(splineTubeMesh);
+
+                    // Elevated Constellation Ribbon connecting memory nodes at eye level (y = 1.6)
+                    const elevatedPoints = points.map(p => new THREE.Vector3(p.x, 1.6, p.z));
+                    const elevatedCurve = new THREE.CatmullRomCurve3(elevatedPoints);
+                    const elevatedTubeGeo = new THREE.TubeGeometry(elevatedCurve, 120, 0.05, 8, false);
+                    const elevatedTubeMat = new THREE.MeshStandardMaterial({
+                        color: isLifeMode ? 0x38bdf8 : 0x34d399,
+                        emissive: isLifeMode ? 0x0ea5e9 : 0x10b981,
+                        emissiveIntensity: 1.1,
+                        transparent: true,
+                        opacity: 0.82,
+                        roughness: 0.2
+                    });
+                    elevatedRibbonMesh = new THREE.Mesh(elevatedTubeGeo, elevatedTubeMat);
+                    scene.add(elevatedRibbonMesh);
+
+                    // Visual Dashed Memory Bridges between consecutive nodes
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = elevatedPoints[i];
+                        const p2 = elevatedPoints[i + 1];
+                        const lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+                        const lineMat = new THREE.LineDashedMaterial({
+                            color: isLifeMode ? 0x7dd3fc : 0x6ee7b7,
+                            linewidth: 2,
+                            scale: 1,
+                            dashSize: 0.5,
+                            gapSize: 0.25,
+                            transparent: true,
+                            opacity: 0.65
+                        });
+                        const bridgeLine = new THREE.Line(lineGeo, lineMat);
+                        bridgeLine.computeLineDistances();
+                        elevatedConnectorLines.push(bridgeLine);
+                        scene.add(bridgeLine);
+                    }
                 } else {
                     splineCurve = null;
                 }
@@ -4375,27 +4527,91 @@
                         starHaloMesh.position.y = 0.08;
                         ringGroup.add(starHaloMesh);
 
-                        const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.2, 16, 1, true);
-                        const beamMat = new THREE.MeshBasicMaterial({
-                            color: themeColor,
+                        // Floating Landmark Memory Orb
+                        const orbGeo = new THREE.SphereGeometry(0.48, 24, 24);
+                        const orbMat = new THREE.MeshStandardMaterial({
+                            color: 0xffd166,
+                            emissive: 0xf59e0b,
+                            emissiveIntensity: 1.1,
+                            metalness: 0.6,
+                            roughness: 0.2
+                        });
+                        const orbMesh = new THREE.Mesh(orbGeo, orbMat);
+                        orbMesh.position.y = 1.6;
+                        ringGroup.add(orbMesh);
+
+                        const orbRingGeo = new THREE.TorusGeometry(0.78, 0.03, 12, 24);
+                        const orbRingMat = new THREE.MeshBasicMaterial({
+                            color: 0xfde68a,
                             transparent: true,
-                            opacity: 0.18,
+                            opacity: 0.9
+                        });
+                        const orbRingMesh = new THREE.Mesh(orbRingGeo, orbRingMat);
+                        orbRingMesh.position.y = 1.6;
+                        orbRingMesh.rotation.x = Math.PI / 3;
+                        ringGroup.add(orbRingMesh);
+
+                        const beamGeo = new THREE.CylinderGeometry(0.08, 0.25, 2.8, 16, 1, true);
+                        const beamMat = new THREE.MeshBasicMaterial({
+                            color: 0xf59e0b,
+                            transparent: true,
+                            opacity: 0.28,
                             side: THREE.DoubleSide
                         });
                         const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                        beamMesh.position.y = 1.6;
+                        beamMesh.position.y = 1.4;
                         ringGroup.add(beamMesh);
+
+                        activeMemoryOrbs.push({
+                            orb: orbMesh,
+                            ring: orbRingMesh,
+                            baseY: 1.6,
+                            phase: idx * 1.3
+                        });
                     } else {
-                        const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.2, 16, 1, true);
+                        // Standard Memory Node: Floating luminous memory core
+                        const orbGeo = new THREE.SphereGeometry(0.42, 24, 24);
+                        const orbMat = new THREE.MeshStandardMaterial({
+                            color: themeColor,
+                            emissive: themeColor,
+                            emissiveIntensity: 0.9,
+                            metalness: 0.3,
+                            roughness: 0.2
+                        });
+                        const orbMesh = new THREE.Mesh(orbGeo, orbMat);
+                        orbMesh.position.y = 1.6;
+                        ringGroup.add(orbMesh);
+
+                        // Orbiting starlight ring
+                        const orbRingGeo = new THREE.TorusGeometry(0.68, 0.025, 12, 24);
+                        const orbRingMat = new THREE.MeshBasicMaterial({
+                            color: isLifeMode ? 0x7dd3fc : 0x86efac,
+                            transparent: true,
+                            opacity: 0.85
+                        });
+                        const orbRingMesh = new THREE.Mesh(orbRingGeo, orbRingMat);
+                        orbRingMesh.position.y = 1.6;
+                        orbRingMesh.rotation.x = Math.PI / 3;
+                        ringGroup.add(orbRingMesh);
+
+                        // Luminous vertical light tether
+                        const beamGeo = new THREE.CylinderGeometry(0.06, 0.2, 2.6, 16, 1, true);
                         const beamMat = new THREE.MeshBasicMaterial({
                             color: themeColor,
                             transparent: true,
-                            opacity: 0.18,
+                            opacity: 0.3,
                             side: THREE.DoubleSide
                         });
                         const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                        beamMesh.position.y = 1.6;
+                        beamMesh.position.y = 1.3;
                         ringGroup.add(beamMesh);
+
+                        activeMemoryOrbs.push({
+                            orb: orbMesh,
+                            ring: orbRingMesh,
+                            baseY: 1.6,
+                            phase: idx * 1.3
+                        });
                     }
 
                     // Check if node is secured in Encrypted Vault (SRS 4.1 & 71)
@@ -4588,18 +4804,20 @@
                 const speechEl = document.getElementById('sub-bench-speech-bubble');
 
                 if (countEl) {
-                    countEl.textContent = `${memories.length} MEMORIES • ${photosCount} PHOTOS`;
+                    const memWord = memories.length === 1 ? 'Chapter' : 'Chapters';
+                    const photoWord = photosCount === 1 ? 'Photo' : 'Photos';
+                    countEl.textContent = `${memories.length} ${memWord} • ${photosCount} ${photoWord}`;
                 }
 
                 if (speechEl) {
                     if (memories.length === 0) {
                         speechEl.textContent = isLifeMode
-                            ? `"I'm sitting under the breeze tree! Add your first memory and I'll learn your life story."`
-                            : `"Coach, I'm watching from the sideline bench! Record your first play so I can learn from your journey."`;
+                            ? `"I'm sitting under the quiet shade tree. Write your first reflection, and I'll keep your memories safe."`
+                            : `"I'm right here on the sideline. Record your first milestone so we can always look back on how far we've come."`;
                     } else {
                         const recent = memories[memories.length - 1];
-                        const photoSnippet = recent.caption ? ` Looking at '${recent.caption}',` : '';
-                        speechEl.textContent = `"I just learned '${recent.title}' (${recent.date})!${photoSnippet} You wrote: '${recent.journal.slice(0, 50)}...'."`;
+                        const photoSnippet = recent.caption ? ` Looking back at '${recent.caption}',` : '';
+                        speechEl.textContent = `"I was just thinking about '${recent.title}' from ${recent.date}.${photoSnippet} Remember when you wrote: '${recent.journal.slice(0, 55)}...'?"`;
                     }
                 }
             }
@@ -4765,9 +4983,7 @@
             /* ------------------------------------------------------------------
                10. BACKEND REST PERSISTENCE & OFFLINE QUEUE
                ------------------------------------------------------------------ */
-            const API_BASE = (window.location.protocol.startsWith('http') && window.location.origin)
-                ? (window.location.port === '3000' ? 'http://localhost:5000/api' : `${window.location.origin}/api`)
-                : 'http://localhost:5000/api';
+            // Using hoisted global API_BASE configured at startup
 
             async function fetchMemoriesFromBackend() {
                 try {
@@ -6984,20 +7200,20 @@
                 if (!aiWsStatusBadge || !aiWsStatusText) return;
                 const dot = aiWsStatusBadge.querySelector('.w-1\\.5');
                 if (status === 'connected') {
-                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] border border-emerald-500/40 flex items-center gap-1';
-                    aiWsStatusBadge.title = 'Real-Time WebSocket Sideline AI Stream Active';
-                    aiWsStatusText.textContent = text || 'LIVE STREAMING';
+                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-medium border border-emerald-500/40 flex items-center gap-1';
+                    aiWsStatusBadge.title = 'Real-time conversational link active';
+                    aiWsStatusText.textContent = text || 'READY TO TALK';
                     if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
                 } else if (status === 'connecting') {
-                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[9px] border border-amber-500/40 flex items-center gap-1';
-                    aiWsStatusBadge.title = 'Connecting to Sideline AI WebSocket Server...';
-                    aiWsStatusText.textContent = text || 'CONNECTING...';
+                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-medium border border-amber-500/40 flex items-center gap-1';
+                    aiWsStatusBadge.title = 'Connecting to Younger Self...';
+                    aiWsStatusText.textContent = text || 'TUNING IN...';
                     if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
                 } else {
-                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[9px] border border-rose-500/40 flex items-center gap-1';
-                    aiWsStatusBadge.title = 'WebSocket Offline — Automatic REST Fallback Active';
-                    aiWsStatusText.textContent = text || 'REST FALLBACK';
-                    if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-400';
+                    aiWsStatusBadge.className = 'px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-medium border border-amber-500/30 flex items-center gap-1';
+                    aiWsStatusBadge.title = 'Direct Journal Mode Active';
+                    aiWsStatusText.textContent = text || 'DIRECT MODE';
+                    if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
                 }
             }
 
@@ -7011,14 +7227,14 @@
                 const currentEra = aiEraSelect ? aiEraSelect.value : 'All Eras';
                 const wsUrl = `${protocol}//${host}/ws/sideline-ai?userId=${encodeURIComponent(getUserId())}&era=${encodeURIComponent(currentEra)}`;
 
-                updateWSStatus('connecting', 'CONNECTING...');
+                updateWSStatus('connecting', 'TUNING IN...');
 
                 try {
                     sidelineWS = new WebSocket(wsUrl);
 
                     sidelineWS.onopen = () => {
                         wsReconnectAttempts = 0;
-                        updateWSStatus('connected', 'LIVE STREAMING');
+                        updateWSStatus('connected', 'READY TO TALK');
                     };
 
                     sidelineWS.onmessage = (event) => {
@@ -7026,15 +7242,15 @@
                     };
 
                     sidelineWS.onclose = () => {
-                        updateWSStatus('offline', 'REST FALLBACK');
+                        updateWSStatus('offline', 'DIRECT MODE');
                         scheduleWSReconnect();
                     };
 
                     sidelineWS.onerror = () => {
-                        updateWSStatus('offline', 'REST FALLBACK');
+                        updateWSStatus('offline', 'DIRECT MODE');
                     };
                 } catch (e) {
-                    updateWSStatus('offline', 'REST FALLBACK');
+                    updateWSStatus('offline', 'DIRECT MODE');
                     scheduleWSReconnect();
                 }
             }
@@ -7371,10 +7587,66 @@
                 });
             }
 
+            let isChatHistoryLoaded = false;
+
+            async function loadChatHistoryFromBackend() {
+                if (isChatHistoryLoaded) return;
+                try {
+                    const uid = getUserId();
+                    const res = await fetch(`${API_BASE}/chat/history/${encodeURIComponent(uid)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data.history) && data.history.length > 0) {
+                            isChatHistoryLoaded = true;
+                            // Hide the empty placeholder bubble if we have real history
+                            const welcomeBubble = document.getElementById('ai-chat-welcome-bubble');
+                            if (welcomeBubble) welcomeBubble.classList.add('hidden');
+                            
+                            data.history.forEach(msg => {
+                                appendHistoricChatMessage(msg);
+                            });
+                            aiChatBox.scrollTop = aiChatBox.scrollHeight;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Could not load chat history:', err);
+                }
+            }
+
+            function appendHistoricChatMessage(msg) {
+                if (msg.sender === 'user') {
+                    const userEl = document.createElement('div');
+                    userEl.className = 'bg-stone-800 text-stone-200 p-2.5 rounded-2xl border border-white/10 text-right font-normal animate-fadeIn space-y-1.5 ml-auto max-w-[85%]';
+                    userEl.innerHTML = `
+                        <div>${(msg.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                        <div class="text-[9px] text-stone-500 font-mono">${msg.timestamp || ''}</div>
+                    `;
+                    aiChatBox.appendChild(userEl);
+                } else {
+                    const aiEl = document.createElement('div');
+                    aiEl.className = 'bg-amber-500/10 text-stone-200 p-3.5 rounded-2xl border border-amber-500/20 font-normal space-y-2 animate-fadeIn leading-relaxed max-w-[95%]';
+                    aiEl.innerHTML = `
+                        <div>
+                            <span class="text-amber-300 font-semibold">Younger Self:</span>
+                            <span>${(msg.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 mt-1 border-t border-amber-500/15 text-[9px] text-amber-300/60 font-mono">
+                            <span>${msg.era || 'Past Reflection'}</span>
+                            <span>${msg.timestamp || ''}</span>
+                        </div>
+                    `;
+                    aiChatBox.appendChild(aiEl);
+                }
+            }
+
             if (btnClearAIChat) {
-                btnClearAIChat.addEventListener('click', () => {
+                btnClearAIChat.addEventListener('click', async () => {
                     const userName = getUserName();
                     const selectedEra = aiEraSelect ? aiEraSelect.value : 'All Eras';
+                    try {
+                        await fetch(`${API_BASE}/chat/history/${encodeURIComponent(getUserId())}`, { method: 'DELETE' });
+                    } catch (e) {}
+                    isChatHistoryLoaded = false;
                     aiChatBox.innerHTML = `
                         <!-- Drag & Drop Multimodal Target Overlay (SRS 4.3) -->
                         <div id="ai-chat-drop-overlay" class="hidden absolute inset-0 z-20 rounded-2xl bg-stone-950/90 backdrop-blur-md border-2 border-dashed border-amber-400 flex flex-col items-center justify-center p-6 text-center pointer-events-none transition-all duration-200">
@@ -7385,8 +7657,8 @@
                         <div class="bg-amber-500/10 text-amber-200 p-3.5 rounded-2xl border border-amber-500/20 animate-fadeIn" id="ai-chat-welcome-bubble">
                             <span id="ai-chat-welcome-msg">${
                                 selectedEra === 'All Eras'
-                                    ? `Hey ${userName}! Chat history cleared. What memory or advice would you like to explore?`
-                                    : `Hey ${userName}! Session reset for our "${selectedEra}" era. I'm ready!`
+                                    ? `Hey ${userName}! We've cleared our past chat notes. What memory would you like to reflect on?`
+                                    : `Hey ${userName}! Clean slate for our "${selectedEra}" era. I'm ready!`
                             }</span>
                         </div>
                     `;
@@ -7398,6 +7670,7 @@
                 drawerAI.classList.add('active');
                 populateAIEraSelect();
                 connectSidelineWebSocket();
+                loadChatHistoryFromBackend();
                 playSoftSound('click');
                 gsap.to(camera.position, { x: 13, y: 3.5, z: 4.5, duration: 1.5, ease: 'power2.inOut' });
                 gsap.to(controls.target, { x: 15, y: 0.8, z: 0, duration: 1.5, ease: 'power2.inOut' });
@@ -7919,7 +8192,7 @@
                     closeProfileEditor();
 
                     try {
-                        await fetch('/api/profile/' + encodeURIComponent(userId), {
+                        await fetch(`${API_BASE}/profile/${encodeURIComponent(userId)}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -7928,6 +8201,190 @@
                         console.warn('Live profile update sync warning:', err);
                     }
                 });
+            }
+
+            // --- SETTINGS & PRIVACY MODAL LOGIC (SRS 4.1, 71 & GDPR) ---
+            const btnOpenSettingsModal = document.getElementById('btn-open-settings-modal');
+            if (btnOpenSettingsModal) btnOpenSettingsModal.addEventListener('click', openProfileEditor);
+
+            const tabBtnProfileInfo = document.getElementById('tab-btn-profile-info');
+            const tabBtnSecurityPrivacy = document.getElementById('tab-btn-security-privacy');
+            const tabContentProfileInfo = document.getElementById('tab-content-profile-info');
+            const tabContentSecurityPrivacy = document.getElementById('tab-content-security-privacy');
+
+            if (tabBtnProfileInfo && tabBtnSecurityPrivacy) {
+                tabBtnProfileInfo.addEventListener('click', () => {
+                    tabBtnProfileInfo.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-stone-100 border border-white/10 transition';
+                    tabBtnSecurityPrivacy.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-stone-400 hover:text-stone-200 border border-transparent transition';
+                    if (tabContentProfileInfo) tabContentProfileInfo.classList.remove('hidden');
+                    if (tabContentSecurityPrivacy) tabContentSecurityPrivacy.classList.add('hidden');
+                });
+                tabBtnSecurityPrivacy.addEventListener('click', () => {
+                    tabBtnSecurityPrivacy.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-stone-100 border border-white/10 transition';
+                    tabBtnProfileInfo.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-stone-400 hover:text-stone-200 border border-transparent transition';
+                    if (tabContentSecurityPrivacy) tabContentSecurityPrivacy.classList.remove('hidden');
+                    if (tabContentProfileInfo) tabContentProfileInfo.classList.add('hidden');
+                });
+            }
+
+            // Update Vault PIN from Settings
+            const btnSettingsUpdatePin = document.getElementById('btn-settings-update-pin');
+            if (btnSettingsUpdatePin) {
+                btnSettingsUpdatePin.addEventListener('click', async () => {
+                    const curPin = (document.getElementById('settings-current-pin').value || '').trim();
+                    const newPin = (document.getElementById('settings-new-pin').value || '').trim();
+                    const msgEl = document.getElementById('settings-pin-msg');
+                    if (!/^\d{4}$/.test(newPin)) {
+                        msgEl.textContent = 'New PIN must be exactly 4 digits.';
+                        msgEl.className = 'text-[10px] text-rose-400 text-center block';
+                        return;
+                    }
+                    try {
+                        btnSettingsUpdatePin.disabled = true;
+                        btnSettingsUpdatePin.textContent = 'Updating PIN...';
+                        const res = await fetch(`${API_BASE}/vault/change-pin`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: getUserId(), currentPin: curPin, newPin })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            msgEl.textContent = 'Vault PIN updated successfully!';
+                            msgEl.className = 'text-[10px] text-emerald-400 text-center block';
+                            document.getElementById('settings-current-pin').value = '';
+                            document.getElementById('settings-new-pin').value = '';
+                        } else {
+                            msgEl.textContent = data.error || 'Failed to update PIN.';
+                            msgEl.className = 'text-[10px] text-rose-400 text-center block';
+                        }
+                    } catch (e) {
+                        msgEl.textContent = 'Connection error updating PIN.';
+                        msgEl.className = 'text-[10px] text-rose-400 text-center block';
+                    } finally {
+                        btnSettingsUpdatePin.disabled = false;
+                        btnSettingsUpdatePin.textContent = 'Update Vault PIN';
+                    }
+                });
+            }
+
+            // GDPR Personal Data Export (.json)
+            const btnSettingsExportArchive = document.getElementById('btn-settings-export-archive');
+            if (btnSettingsExportArchive) {
+                btnSettingsExportArchive.addEventListener('click', async () => {
+                    const uid = getUserId();
+                    try {
+                        btnSettingsExportArchive.disabled = true;
+                        btnSettingsExportArchive.innerHTML = '<span>⏳ Preparing Archive...</span>';
+                        const res = await fetch(`${API_BASE}/users/${encodeURIComponent(uid)}/export`);
+                        if (res.ok) {
+                            const archive = await res.json();
+                            const blob = new Blob([JSON.stringify(archive, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `LegacyLane_Archive_${uid}_${new Date().toISOString().split('T')[0]}.json`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            showFvdToast('Complete personal archive downloaded successfully.');
+                        } else {
+                            alert('Could not generate archive. Please try again.');
+                        }
+                    } catch (err) {
+                        console.error('Export archive error:', err);
+                        alert('Error connecting to server for archive export.');
+                    } finally {
+                        btnSettingsExportArchive.disabled = false;
+                        btnSettingsExportArchive.innerHTML = `
+                            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Download Complete Personal Archive (.json)</span>
+                        `;
+                    }
+                });
+            }
+
+            // Danger Zone: GDPR Account & Memory Wipe
+            const btnSettingsDeleteAccount = document.getElementById('btn-settings-delete-account');
+            if (btnSettingsDeleteAccount) {
+                btnSettingsDeleteAccount.addEventListener('click', async () => {
+                    const confirmed = confirm('PERMANENT ACTION: Are you absolutely certain? This will wipe your account, all memory nodes, photos, and AI chats permanently.');
+                    if (!confirmed) return;
+                    const finalConfirm = prompt('Type DELETE to confirm permanent wiping of your account:');
+                    if (finalConfirm !== 'DELETE') {
+                        alert('Account deletion cancelled.');
+                        return;
+                    }
+                    try {
+                        const uid = getUserId();
+                        const res = await fetch(`${API_BASE}/users/${encodeURIComponent(uid)}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            alert('Your account and memories have been completely wiped. Redirecting to start.');
+                            window.location.href = 'LegacyLogin.html';
+                        } else {
+                            alert('Could not delete account. Please try again.');
+                        }
+                    } catch (e) {
+                        alert('Error deleting account: ' + e.message);
+                    }
+                });
+            }
+
+            // Global Sign Out Button
+            const btnGlobalSignOut = document.getElementById('btn-global-sign-out');
+            if (btnGlobalSignOut) {
+                btnGlobalSignOut.addEventListener('click', () => {
+                    if (confirm('Are you ready to sign out of LegacyLane?')) {
+                        localStorage.removeItem('legacylane_active_user');
+                        localStorage.removeItem('token');
+                        window.location.href = 'LegacyLogin.html';
+                    }
+                });
+            }
+
+            // --- TAG-BASED SIDEBAR FILTER CHIPS (SRS 4.1 & 71) ---
+            const filterChips = document.querySelectorAll('.filter-chip');
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    filterChips.forEach(c => {
+                        c.classList.remove('active', 'bg-amber-500/20', 'text-amber-300', 'border-amber-500/30');
+                        c.classList.add('bg-white/5', 'text-stone-300', 'border-white/5');
+                    });
+                    chip.classList.add('active', 'bg-amber-500/20', 'text-amber-300', 'border-amber-500/30');
+                    chip.classList.remove('bg-white/5', 'text-stone-300', 'border-white/5');
+                    const activeFilter = chip.getAttribute('data-filter') || 'all';
+                    applyActiveTagFilter(activeFilter);
+                });
+            });
+
+            function applyActiveTagFilter(filter) {
+                const mems = getActiveMemories();
+                if (filter === 'all') {
+                    if (mems.length > 0) visitNode(mems.length - 1);
+                } else if (filter === 'favorite') {
+                    const matchIdx = mems.findIndex(m => m.isFavorite);
+                    if (matchIdx !== -1) {
+                        visitNode(matchIdx);
+                    } else {
+                        showFvdToast('No landmark memories saved yet.');
+                    }
+                } else if (filter === 'insight') {
+                    const matchIdx = mems.findIndex(m => m.isInsight || (m.tags && m.tags.includes('#AIInsight')));
+                    if (matchIdx !== -1) {
+                        visitNode(matchIdx);
+                    } else {
+                        showFvdToast('No AI keepsake moments saved yet.');
+                    }
+                } else if (filter === 'vault') {
+                    const matchIdx = mems.findIndex(m => m.isVaultLocked);
+                    if (matchIdx !== -1) {
+                        visitNode(matchIdx);
+                    } else {
+                        showFvdToast('No vault-protected memories yet.');
+                    }
+                }
             }
 
             document.getElementById('btn-open-pro-card').addEventListener('click', () => {
@@ -8143,6 +8600,8 @@
                 const ttTitle = document.getElementById('tooltip-memory-title');
                 const ttScore = document.getElementById('tooltip-memory-score');
                 const ttLabel = document.getElementById('tooltip-memory-label');
+                const ttSnippet = document.getElementById('tooltip-memory-snippet');
+                const ttTags = document.getElementById('tooltip-memory-tags');
                 if (!container) return;
 
                 const width = 800;
@@ -8299,13 +8758,40 @@
                             if (ttLabel) {
                                 ttLabel.textContent = mem.sentimentLabel || (pt.isPeak ? 'Peak Euphoria 🌟' : pt.isValley ? 'Adversity & Grit 🌧️' : 'Steady Growth 🌱');
                             }
+                            if (ttSnippet) {
+                                if (mem.journal) {
+                                    ttSnippet.textContent = `"${mem.journal.slice(0, 110)}${mem.journal.length > 110 ? '...' : ''}"`;
+                                    ttSnippet.classList.remove('hidden');
+                                } else {
+                                    ttSnippet.classList.add('hidden');
+                                }
+                            }
+                            if (ttTags) {
+                                ttTags.innerHTML = '';
+                                const tags = Array.isArray(mem.tags) ? mem.tags.slice(0, 3) : [];
+                                tags.forEach(t => {
+                                    const span = document.createElement('span');
+                                    span.className = 'px-1.5 py-0.5 rounded-md bg-stone-800 text-[9px] text-amber-300 font-mono border border-white/5';
+                                    span.textContent = t.startsWith('#') ? t : `#${t}`;
+                                    ttTags.appendChild(span);
+                                });
+                            }
 
-                            // Calculate position relative to container
+                            // Dynamic collision avoidance: flip below if near top, clamp within edges
                             const pctX = (pt.x / width) * 100;
                             const pctY = (pt.y / height) * 100;
 
-                            tooltip.style.left = `${pctX}%`;
+                            tooltip.style.left = `${Math.max(16, Math.min(84, pctX))}%`;
                             tooltip.style.top = `${pctY}%`;
+
+                            if (pctY < 32) {
+                                tooltip.classList.remove('-translate-y-full', 'mb-3');
+                                tooltip.classList.add('translate-y-4');
+                            } else {
+                                tooltip.classList.add('-translate-y-full', 'mb-3');
+                                tooltip.classList.remove('translate-y-4');
+                            }
+
                             tooltip.classList.remove('hidden');
                         }
                     });
@@ -8794,6 +9280,22 @@
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.rotation.z = time * 0.5 + idx;
                 });
+
+                // ANIMATE 3D FLOATING MEMORY ORBS & ORBIT RINGS
+                if (activeMemoryOrbs && activeMemoryOrbs.length > 0) {
+                    activeMemoryOrbs.forEach(o => {
+                        if (o.ring) {
+                            o.ring.rotation.z += 0.02;
+                            o.ring.rotation.x = Math.sin(time * 1.2 + o.phase) * 0.2;
+                        }
+                        if (o.orb) {
+                            o.orb.rotation.y += 0.015;
+                            const floatY = o.baseY + Math.sin(time * 2.2 + o.phase) * 0.12;
+                            o.orb.position.y = floatY;
+                            if (o.ring) o.ring.position.y = floatY;
+                        }
+                    });
+                }
 
                 // ANIMATE 3D FLOATING GOLDEN INSIGHT CRYSTALS (SRS 4.3.1 WebGL Polyhedrons)
                 if (activeInsightCrystals && activeInsightCrystals.length > 0) {

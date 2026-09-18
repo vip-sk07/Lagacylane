@@ -1047,6 +1047,51 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// ----------------------------------------------------
+// 5B. CHAT HISTORY RETRIEVAL & DELETION (SRS 4.3)
+// ----------------------------------------------------
+app.get('/api/chat/history/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const chatCollection = getCollection('ChatSessions');
+    const sessions = await chatCollection.find({ User_ID: userId }).toArray();
+    
+    // Flatten messages into a clean chronological list
+    const history = [];
+    sessions.forEach(sess => {
+      if (Array.isArray(sess.Messages)) {
+        sess.Messages.forEach(msg => {
+          history.push({
+            sender: msg.sender,
+            text: msg.text,
+            timestamp: msg.timestamp,
+            era: sess.EraSelected,
+            journeyType: sess.JourneyType,
+            domain: sess.Domain
+          });
+        });
+      }
+    });
+
+    res.json({ success: true, history });
+  } catch (err) {
+    console.error('Fetch Chat History Error:', err);
+    res.status(500).json({ error: 'Server error retrieving chat history.' });
+  }
+});
+
+app.delete('/api/chat/history/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const chatCollection = getCollection('ChatSessions');
+    await chatCollection.deleteMany({ User_ID: userId });
+    res.json({ success: true, message: 'Chat history cleared successfully.' });
+  } catch (err) {
+    console.error('Delete Chat History Error:', err);
+    res.status(500).json({ error: 'Server error clearing chat history.' });
+  }
+});
+
 // Dedicated Multimodal Image Perception Endpoint
 app.post('/api/ai/perceive', upload.single('media'), async (req, res) => {
   try {
