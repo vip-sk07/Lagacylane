@@ -1,10 +1,14 @@
-import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, 'legacylane.db');
+const dbPath = process.env.SQLITE_DB_PATH || (process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'legacylane.db') : path.join(__dirname, 'legacylane.db'));
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
 
 let db;
 try {

@@ -21,14 +21,16 @@ const memoryFallback = {
 export async function connectMongoDB() {
   try {
     dbClient = new MongoClient(MONGO_URI, {
-      serverSelectionTimeoutMS: 3000 // 3 seconds timeout
+      serverSelectionTimeoutMS: 8000 // 8 seconds timeout (safe for cloud Atlas clusters)
     });
     await dbClient.connect();
     db = dbClient.db(DB_NAME);
-    console.log('✅ Connected to MongoDB NoSQL database successfully on port 27017!');
+    const isAtlas = MONGO_URI.includes('mongodb+srv://');
+    console.log(`✅ Connected to MongoDB NoSQL database successfully (${isAtlas ? 'MongoDB Atlas Cloud' : 'Local MongoDB'}) [DB: ${db.databaseName}]`);
     useFallback = false;
   } catch (err) {
-    console.warn('⚠️ MongoDB is starting or unreachable. Falling back to structured memory logs storage.');
+    const maskedUri = MONGO_URI.replace(/:[^:@]+@/, ':****@');
+    console.warn(`⚠️ MongoDB (${maskedUri}) unreachable (${err.message}). Falling back to structured memory logs storage.`);
     useFallback = true;
   }
 }
