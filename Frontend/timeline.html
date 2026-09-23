@@ -4290,6 +4290,13 @@
             headMesh.position.y = 2.0;
             avatarGroup.add(headMesh);
 
+            // Hair
+            const hairGeo = new THREE.BoxGeometry(0.64, 0.22, 0.64);
+            const hairMat = new THREE.MeshStandardMaterial({ color: 0x1a1208, roughness: 0.9 });
+            const hairMesh = new THREE.Mesh(hairGeo, hairMat);
+            hairMesh.position.set(0, 2.32, -0.02);
+            avatarGroup.add(hairMesh);
+
             const visorGeo = new THREE.BoxGeometry(0.62, 0.2, 0.3);
             const visorMat = new THREE.MeshStandardMaterial({
                 color: isLifeMode ? 0x38bdf8 : 0x00e5ff,
@@ -4300,6 +4307,66 @@
             visorMesh.position.set(0, 2.05, 0.2);
             avatarGroup.add(visorMesh);
 
+            // Articulated arms (upper + lower with elbow joint)
+            const upperArmGeo = new THREE.BoxGeometry(0.22, 0.55, 0.22);
+            const lowerArmGeo = new THREE.BoxGeometry(0.18, 0.45, 0.18);
+            const shoeMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 });
+
+            const armLGroup = new THREE.Group();
+            armLGroup.position.set(-0.55, 1.5, 0);
+            const upperArmL = new THREE.Mesh(upperArmGeo, skinMat);
+            upperArmL.position.y = -0.28;
+            armLGroup.add(upperArmL);
+            const lowerArmL = new THREE.Mesh(lowerArmGeo, skinMat);
+            lowerArmL.position.y = -0.75;
+            armLGroup.add(lowerArmL);
+            avatarGroup.add(armLGroup);
+
+            const armRGroup = new THREE.Group();
+            armRGroup.position.set(0.55, 1.5, 0);
+            const upperArmR = new THREE.Mesh(upperArmGeo, skinMat);
+            upperArmR.position.y = -0.28;
+            armRGroup.add(upperArmR);
+            const lowerArmR = new THREE.Mesh(lowerArmGeo, skinMat);
+            lowerArmR.position.y = -0.75;
+            armRGroup.add(lowerArmR);
+            avatarGroup.add(armRGroup);
+
+            // Articulated legs (upper + lower with knee + shoes)
+            const upperLegGeo = new THREE.BoxGeometry(0.28, 0.58, 0.28);
+            const lowerLegGeo = new THREE.BoxGeometry(0.22, 0.48, 0.22);
+            const shoeGeo   = new THREE.BoxGeometry(0.26, 0.14, 0.38);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+
+            const legLGroup = new THREE.Group();
+            legLGroup.position.set(-0.25, 0.68, 0);
+            const upperLegL = new THREE.Mesh(upperLegGeo, legMat);
+            upperLegL.position.y = -0.29;
+            legLGroup.add(upperLegL);
+            const lowerLegL = new THREE.Mesh(lowerLegGeo, legMat);
+            lowerLegL.position.y = -0.75;
+            legLGroup.add(lowerLegL);
+            const shoeL = new THREE.Mesh(shoeGeo, shoeMat);
+            shoeL.position.set(0, -1.04, 0.06);
+            legLGroup.add(shoeL);
+            avatarGroup.add(legLGroup);
+
+            const legRGroup = new THREE.Group();
+            legRGroup.position.set(0.25, 0.68, 0);
+            const upperLegR = new THREE.Mesh(upperLegGeo, legMat);
+            upperLegR.position.y = -0.29;
+            legRGroup.add(upperLegR);
+            const lowerLegR = new THREE.Mesh(lowerLegGeo, legMat);
+            lowerLegR.position.y = -0.75;
+            legRGroup.add(lowerLegR);
+            const shoeR = new THREE.Mesh(shoeGeo, shoeMat);
+            shoeR.position.set(0, -1.04, 0.06);
+            legRGroup.add(shoeR);
+            avatarGroup.add(legRGroup);
+
+            // Store limb refs for animation
+            const avatarLimbs = { armLGroup, armRGroup, legLGroup, legRGroup, torsoMesh, headMesh };
+
             // Floating 3D Tactical Card Hologram
             const tacticalCardTexture = createTacticalCardTexture();
             const tacticalCardSprite = new THREE.Sprite(new THREE.SpriteMaterial({
@@ -4307,7 +4374,7 @@
                 transparent: true,
                 depthTest: false
             }));
-            tacticalCardSprite.position.set(0, 3.0, 0);
+            tacticalCardSprite.position.set(0, 3.4, 0);
             tacticalCardSprite.scale.set(2.4, 1.15, 1);
             avatarGroup.add(tacticalCardSprite);
 
@@ -4352,6 +4419,63 @@
             let targetU = 0;
             let currentU = 0;
 
+            /* ------------------------------------------------------------------
+               TRAVEL DOT: a glowing sphere that slides along the spline
+               when the camera flies from one node to another
+               ------------------------------------------------------------------ */
+            const travelDotGeo = new THREE.SphereGeometry(0.28, 16, 16);
+            const travelDotMat = new THREE.MeshStandardMaterial({
+                color: 0xfbbf24,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 2.0,
+                roughness: 0.1
+            });
+            const travelDotMesh = new THREE.Mesh(travelDotGeo, travelDotMat);
+            travelDotMesh.visible = false;
+            scene.add(travelDotMesh);
+
+            let travelDotU = 0;       // current spline position of travel dot
+            let travelDotTargetU = 0; // destination spline position
+            let travelDotActive = false;
+
+            /* ------------------------------------------------------------------
+               YEAR LABEL SPRITE: draw a canvas pill with the year text
+               ------------------------------------------------------------------ */
+            function createYearLabelSprite(year, isLandmark = false) {
+                const cv = document.createElement('canvas');
+                cv.width = 200; cv.height = 64;
+                const ctx = cv.getContext('2d');
+                ctx.clearRect(0, 0, 200, 64);
+
+                // Pill background
+                const pillColor = isLandmark ? 'rgba(245,158,11,0.88)' : 'rgba(14,25,40,0.82)';
+                const borderColor = isLandmark ? '#fbbf24' : (isLifeMode ? '#38bdf8' : '#00e676');
+                ctx.beginPath();
+                ctx.roundRect(4, 8, 192, 48, 24);
+                ctx.fillStyle = pillColor;
+                ctx.fill();
+                ctx.strokeStyle = borderColor;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Year text
+                ctx.fillStyle = isLandmark ? '#1a0a00' : '#e7e5e4';
+                ctx.font = isLandmark ? 'bold 26px "Teko", monospace' : 'bold 22px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(isLandmark ? '★ ' + year : year, 100, 32);
+
+                const tex = new THREE.CanvasTexture(cv);
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: tex, transparent: true, depthTest: false
+                }));
+                sprite.scale.set(2.0, 0.64, 1);
+                return sprite;
+            }
+
+            // Track all year label sprites for cleanup
+            let yearLabelSprites = [];
+
             function rebuild3DSpline() {
                 if (splineTubeMesh) scene.remove(splineTubeMesh);
                 if (elevatedRibbonMesh) scene.remove(elevatedRibbonMesh);
@@ -4363,7 +4487,16 @@
                 activeInsightCrystals = [];
                 activeVaultMeshes = [];
 
-                const memories = getActiveMemories();
+                // Remove old year label sprites
+                yearLabelSprites.forEach(s => scene.remove(s));
+                yearLabelSprites = [];
+
+                // ── CHRONOLOGICAL SORT: always present memories in date order ──
+                const memories = getActiveMemories().slice().sort((a, b) => {
+                    const da = a.date ? new Date(a.date).getTime() : 0;
+                    const db = b.date ? new Date(b.date).getTime() : 0;
+                    return da - db;
+                });
 
                 if (memories.length === 0) {
                     gsap.to(avatarGroup.position, { x: 0, y: 0.4, z: 30, duration: 1 });
@@ -4372,10 +4505,16 @@
                     return;
                 }
 
-                // Generate points dynamically based on memories count
+                // ── TEMPORAL SPACING: nodes spaced proportionally to date delta ──
+                const dates = memories.map(m => m.date ? new Date(m.date).getTime() : 0);
+                const minDate = Math.min(...dates);
+                const maxDate = Math.max(...dates);
+                const dateRange = maxDate - minDate || 1;
+
                 const points = [];
                 memories.forEach((mem, idx) => {
-                    const z = 32 - (idx / Math.max(1, memories.length - 1)) * 64;
+                    const t = dates[idx] ? (dates[idx] - minDate) / dateRange : idx / Math.max(1, memories.length - 1);
+                    const z = 32 - t * 64;
                     const x = Math.sin(idx * 0.95) * 11;
                     points.push(new THREE.Vector3(x, 0.3, z));
                 });
@@ -4429,6 +4568,21 @@
                 } else {
                     splineCurve = null;
                 }
+
+                // ── YEAR LABELS: floating year pill sprites above each node ──
+                let lastYear = null;
+                points.forEach((pt, idx) => {
+                    const mem = memories[idx];
+                    const year = mem.date ? new Date(mem.date).getFullYear() : null;
+                    if (year && year !== lastYear) {
+                        lastYear = year;
+                        const isLandmark = Boolean(mem.isFavorite);
+                        const sprite = createYearLabelSprite(String(year), isLandmark);
+                        sprite.position.set(pt.x, 3.5, pt.z);
+                        scene.add(sprite);
+                        yearLabelSprites.push(sprite);
+                    }
+                });
 
                 // Render Checkpoint Ring & 3D Crystal Keepsake Meshes
                 points.forEach((pt, idx) => {
@@ -4687,6 +4841,22 @@
                 }
                 updateActiveNode(activeNodeIndex);
                 updateSubBenchWidget();
+
+                // After rebuild, sync travel dot and seed currentU so avatar walks IN smoothly
+                if (splineCurve && memories.length > 1) {
+                    const finalU = activeNodeIndex / Math.max(1, memories.length - 1);
+                    // Seed currentU one node behind targetU so the avatar walks forward visibly
+                    const oneNodeBack = Math.max(0, finalU - 1 / Math.max(1, memories.length - 1));
+                    currentU = oneNodeBack;
+                    // Travel dot starts where the avatar starts
+                    travelDotU = oneNodeBack;
+                    travelDotTargetU = finalU;
+                    travelDotActive = false;
+                    travelDotMesh.visible = false;
+                } else if (memories.length === 1) {
+                    // Single node — snap to its spline-equivalent starting position
+                    currentU = 0;
+                }
             }
 
             function updateHUDEmptyState() {
@@ -4796,7 +4966,7 @@
             /* ------------------------------------------------------------------
                8. SUB-BENCH KNOWLEDGE BASE & DYNAMIC RAG UPDATES
                ------------------------------------------------------------------ */
-            function updateSubBenchWidget() {
+            function updateSubBenchWidget(opts = {}) {
                 const memories = getActiveMemories();
                 const photosCount = memories.filter(m => m.photo).length;
 
@@ -4810,14 +4980,29 @@
                 }
 
                 if (speechEl) {
+                    if (opts.justLearned) {
+                        // Flash green "just learned" state
+                        const newMem = opts.justLearned;
+                        speechEl.textContent = `"✨ Just learned about '${newMem.title}'! I'll carry this memory with me on our journey."`;
+                        speechEl.style.color = '#4ade80';
+                        setTimeout(() => {
+                            speechEl.style.color = '';
+                            updateSubBenchWidget();
+                        }, 2800);
+                        return;
+                    }
+
                     if (memories.length === 0) {
                         speechEl.textContent = isLifeMode
                             ? `"I'm sitting under the quiet shade tree. Write your first reflection, and I'll keep your memories safe."`
                             : `"I'm right here on the sideline. Record your first milestone so we can always look back on how far we've come."`;
                     } else {
-                        const recent = memories[memories.length - 1];
-                        const photoSnippet = recent.caption ? ` Looking back at '${recent.caption}',` : '';
-                        speechEl.textContent = `"I was just thinking about '${recent.title}' from ${recent.date}.${photoSnippet} Remember when you wrote: '${recent.journal.slice(0, 55)}...'?"`;
+                        // Prefer the currently focused node over the last memory
+                        const focusIdx = (activeNodeIndex >= 0 && activeNodeIndex < memories.length)
+                            ? activeNodeIndex : memories.length - 1;
+                        const ref = memories[focusIdx];
+                        const photoSnippet = ref.caption ? ` Looking back at '${ref.caption}',` : '';
+                        speechEl.textContent = `"I was just thinking about '${ref.title}' from ${ref.date}.${photoSnippet} Remember when you wrote: '${ref.journal.slice(0, 55)}...'?"`;
                     }
                 }
             }
@@ -5446,6 +5631,13 @@
                 rebuild3DSpline();
                 renderProCardTraits();
                 if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
+
+                // Fly camera to new node and flash sub-bench "just learned"
+                const sortedList2 = getActiveMemories();
+                const newNodeIdx = sortedList2.findIndex(m => m.Memory_ID === (window._lastSavedMemoryId) || m.title === (window._lastSavedTitle));
+                const flyIdx = newNodeIdx !== -1 ? newNodeIdx : sortedList2.length - 1;
+                setTimeout(() => flyToNode(flyIdx, false, false), 400);
+                updateSubBenchWidget({ justLearned: sortedList2[flyIdx] });
             });
 
             /* ------------------------------------------------------------------
@@ -5454,53 +5646,134 @@
             let isTourActive = false;
             let tourInterval = null;
 
-            function visitNode(index, openModal = false) {
+            /* ------------------------------------------------------------------
+               CINEMATIC FLY-TO-NODE CAMERA SYSTEM
+               Called whenever the user navigates to a node (arrows, tour, click)
+               ------------------------------------------------------------------ */
+            function flyToNode(index, instant = false, openModal = false) {
                 const memories = getActiveMemories();
                 if (memories.length === 0) return;
                 if (index < 0) index = 0;
                 if (index >= memories.length) index = memories.length - 1;
 
-                activeNodeIndex = index;
-                updateActiveNode(index);
+                const mem = memories[index];
+                const isLandmark = Boolean(mem && mem.isFavorite);
+                const isVault    = Boolean(mem && mem.isVaultLocked);
 
-                // Compute node 3D coordinates on the spline
-                const targetZ = 32 - (index / Math.max(1, memories.length - 1)) * 64;
+                // Compute node position using same temporal-spaced formula
+                const dates = memories.map(m => m.date ? new Date(m.date).getTime() : 0);
+                const minDate = Math.min(...dates);
+                const maxDate = Math.max(...dates);
+                const dateRange = maxDate - minDate || 1;
+                const t = dates[index] ? (dates[index] - minDate) / dateRange : index / Math.max(1, memories.length - 1);
+                const targetZ = 32 - t * 64;
                 const targetX = Math.sin(index * 0.95) * 11;
+                const nodePos = new THREE.Vector3(targetX, 0.4, targetZ);
 
-                // Animate avatar position smoothly to node
-                gsap.to(avatarGroup.position, {
-                    x: targetX,
-                    y: 0.4,
-                    z: targetZ,
-                    duration: 1.2,
+                // Camera profile per node type
+                let camHeight, camDist, camSide;
+                if (isVault) {
+                    // Dramatic overhead swoop for vault memories
+                    camHeight = 14;
+                    camDist   = 6;
+                    camSide   = targetX > 0 ? -5 : 5;
+                } else if (isLandmark) {
+                    // Tighter, cinematic low angle for landmark moments
+                    camHeight = 5;
+                    camDist   = 9;
+                    camSide   = targetX > 0 ? -6 : 6;
+                } else {
+                    // Standard 3/4 isometric view
+                    camHeight = 8;
+                    camDist   = 12;
+                    camSide   = targetX > 0 ? -9 : 9;
+                }
+
+                const dur = instant ? 0.4 : 1.6;
+
+                // NOTE: The camera now strictly follows the avatar ("this guy") along the spline
+                if (!window.currentCamOffset) {
+                    window.currentCamOffset = {
+                        side: camera.position.x - controls.target.x,
+                        height: camera.position.y,
+                        dist: camera.position.z - controls.target.z,
+                        targetY: controls.target.y
+                    };
+                }
+
+                window.isCameraFollowingAvatar = true;
+                if (window.camOffsetTween) window.camOffsetTween.kill();
+
+                window.camOffsetTween = gsap.to(window.currentCamOffset, {
+                    side: camSide,
+                    height: camHeight,
+                    dist: camDist,
+                    targetY: isVault ? 4 : 1.4,
+                    duration: dur,
                     ease: 'power2.out'
                 });
 
-                // Smoothly glide controls target and camera
-                gsap.to(controls.target, {
-                    x: targetX,
-                    y: 1.2,
-                    z: targetZ,
-                    duration: 1.3,
-                    ease: 'power2.out'
-                });
+                // Fallback for single node (no spline)
+                if (!splineCurve || memories.length <= 1) {
+                    gsap.to(camera.position, {
+                        x: targetX + camSide,
+                        y: camHeight,
+                        z: targetZ + camDist,
+                        duration: dur,
+                        ease: 'power3.inOut'
+                    });
+                    gsap.to(controls.target, {
+                        x: targetX,
+                        y: isVault ? 4 : 1.4,
+                        z: targetZ,
+                        duration: dur,
+                        ease: 'power3.inOut'
+                    });
+                    window.isCameraFollowingAvatar = false;
+                }
 
-                const camOffsetX = targetX > 0 ? -9 : 9;
-                gsap.to(camera.position, {
-                    x: targetX + camOffsetX,
-                    y: 8,
-                    z: targetZ + 12,
-                    duration: 1.5,
-                    ease: 'power2.out'
-                });
+                // Fire travel dot along spline path
+                if (splineCurve && memories.length > 1) {
+                    const newU = memories.length > 1 ? index / (memories.length - 1) : 0;
+                    travelDotTargetU = newU;
+                    if (Math.abs(newU - travelDotU) > 0.01) {
+                        travelDotMesh.visible = true;
+                        travelDotActive = true;
+                        setTimeout(() => {
+                            travelDotActive = false;
+                            travelDotMesh.visible = false;
+                        }, dur * 1100);
+                    }
+                }
 
-                playSoftSound('chime');
+                // Spotlight follows node
+                if (splineCurve && memories.length > 1) {
+                    const newU = memories.length > 1 ? index / (memories.length - 1) : 0;
+                    const pt = splineCurve.getPointAt(newU);
+                    gsap.to(spotlight.position, { x: pt.x, y: 22, z: pt.z + 5, duration: dur, ease: 'power2.out' });
+                }
+
+                playSoftSound(isLandmark ? 'harmonic' : 'chime');
 
                 if (openModal) {
-                    setTimeout(() => {
-                        openInspectModalForNode(index);
-                    }, 350);
+                    setTimeout(() => openInspectModalForNode(index), dur * 900);
                 }
+            }
+
+            // Allow user to interrupt camera follow by clicking/dragging
+            canvas.addEventListener('mousedown', () => {
+                window.isCameraFollowingAvatar = false;
+            });
+
+            // visitNode is now an alias that also calls updateActiveNode
+            function visitNode(index, openModal = false, instant = false) {
+                const memories = getActiveMemories();
+                if (memories.length === 0) return;
+                if (index < 0) index = 0;
+                if (index >= memories.length) index = memories.length - 1;
+                activeNodeIndex = index;
+                updateActiveNode(index);
+                flyToNode(index, instant, openModal);
             }
 
             function toggleTour() {
@@ -7672,7 +7945,22 @@
                 connectSidelineWebSocket();
                 loadChatHistoryFromBackend();
                 playSoftSound('click');
-                gsap.to(camera.position, { x: 13, y: 3.5, z: 4.5, duration: 1.5, ease: 'power2.inOut' });
+
+                // ── Node-Aware: auto-select the currently viewed node's era ──
+                const memories = getActiveMemories();
+                if (aiEraSelect && activeNodeIndex >= 0 && activeNodeIndex < memories.length) {
+                    const nodeEra = memories[activeNodeIndex].era;
+                    if (nodeEra) {
+                        const optVals = Array.from(aiEraSelect.options).map(o => o.value);
+                        if (optVals.includes(nodeEra)) {
+                            aiEraSelect.value = nodeEra;
+                            updateAIEraDisplay();
+                        }
+                    }
+                }
+
+                // Bench camera angle — pull back to show bench + field
+                gsap.to(camera.position, { x: 13, y: 5.5, z: 6.5, duration: 1.5, ease: 'power2.inOut' });
                 gsap.to(controls.target, { x: 15, y: 0.8, z: 0, duration: 1.5, ease: 'power2.inOut' });
             });
 
@@ -7687,6 +7975,15 @@
                 const userName = getUserName();
                 const isAll = selectedEra === 'All Eras';
 
+                // ── NODE-AWARE CONTEXT: anchor to the currently viewed node ──
+                const allMems = getActiveMemories();
+                const focusedNode = (activeNodeIndex >= 0 && activeNodeIndex < allMems.length)
+                    ? allMems[activeNodeIndex]
+                    : null;
+                const nodeContextPrefix = focusedNode
+                    ? `[Currently reflecting on: "${focusedNode.title}" (${focusedNode.date}, ${focusedNode.era || 'this era'}). Use this as your starting anchor unless the question asks about a different memory.] `
+                    : '';
+
                 if (memories.length === 0) {
                     if (!isAll) {
                         return `You haven't logged any memories from this time yet. Responses will be limited. Record your first milestone for "${selectedEra}" above so we can reflect together!`;
@@ -7696,7 +7993,7 @@
                         : `I'm watching from the sideline bench. You haven't logged any milestone plays for ${currentSport.toUpperCase()} yet. Log your first moment so I can learn and reflect with you!`;
                 }
 
-                const query = userPrompt.toLowerCase();
+                const query = (nodeContextPrefix + userPrompt).toLowerCase();
 
                 // Motivational / Doubt / Struggle / Comeback query
                 if (
@@ -7740,9 +8037,10 @@
                     return `Reflecting on Node #${matched.id}: "${matched.title}" from ${matched.date}${settingStr}${peopleStr}... You wrote: "${matched.journal.slice(0, 110)}...". That milestone proved what we are capable of. What did that day teach you about the greatness ahead of us?`;
                 }
 
-                // Default uplifting voice quoting active node
-                const active = memories[activeNodeIndex >= 0 && activeNodeIndex < memories.length ? activeNodeIndex : (memories.length - 1)];
-                return `Thinking back to Node #${active.id}: "${active.title}" (${active.date}) from our ${active.era || selectedEra}... You wrote: "${active.journal.slice(0, 95)}...". Our timeline now connects ${memories.length} chapters of heart and dedication. How can I support your next step today?`;
+                // Default uplifting voice — node-aware anchor
+                const active = focusedNode || memories[memories.length - 1];
+                const nodeRef = focusedNode ? `the node you're viewing right now — "${active.title}"` : `Node #${active.id}: "${active.title}"`;
+                return `Thinking about ${nodeRef} (${active.date}) from our ${active.era || selectedEra} chapter... You wrote: "${active.journal.slice(0, 95)}...". Our timeline now holds ${allMems.length} chapters of heart and dedication. What would you like to explore from here?`;
             }
 
             async function sendAIMessage(promptText) {
@@ -9265,20 +9563,85 @@
                 const time = clock.getElapsedTime();
 
                 const memories = getActiveMemories();
-                if (splineCurve && memories.length > 1) {
-                    currentU += (targetU - currentU) * 0.08;
-                    const pos = splineCurve.getPointAt(currentU);
-                    avatarGroup.position.copy(pos);
 
-                    const tangent = splineCurve.getTangentAt(currentU);
-                    const angle = Math.atan2(tangent.x, tangent.z);
-                    avatarGroup.rotation.y = angle;
+                // ── AVATAR: idle breathing + walk animation ──
+                const breatheAmt = Math.sin(time * 2.1) * 0.018;
+                torsoMesh.position.y = 1.15 + breatheAmt;
+                headMesh.position.y  = 2.0  + breatheAmt * 0.6;
+                if (hairMesh) hairMesh.position.y = 2.32 + breatheAmt * 0.6;
+
+                // Walk cycle when avatar is moving along spline
+                const avatarMoving = splineCurve && memories.length > 1 && Math.abs(targetU - currentU) > 0.005;
+                if (avatarMoving) {
+                    const walkSpeed = 8;
+                    avatarLimbs.legLGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.55;
+                    avatarLimbs.legRGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.55;
+                    avatarLimbs.armLGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.38;
+                    avatarLimbs.armRGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.38;
+                } else {
+                    // Return limbs to idle rest
+                    avatarLimbs.legLGroup.rotation.x *= 0.85;
+                    avatarLimbs.legRGroup.rotation.x *= 0.85;
+                    avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.06;
+                    avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.06;
+                }
+
+                // ── SPLINE AVATAR FOLLOW: smooth lerp along path ──
+                if (splineCurve && memories.length > 1) {
+                    // Slower lerp = more visible walk
+                    currentU += (targetU - currentU) * 0.035;
+                    const pos = splineCurve.getPointAt(Math.min(Math.max(currentU, 0), 1));
+                    avatarGroup.position.set(pos.x, 0.4, pos.z);
+
+                    const tangent = splineCurve.getTangentAt(Math.min(Math.max(currentU, 0.001), 0.999));
+                    avatarGroup.rotation.y = Math.atan2(tangent.x, tangent.z);
+
+                    // ── CAMERA FOLLOWS AVATAR ──
+                    if (window.isCameraFollowingAvatar && window.currentCamOffset) {
+                        camera.position.set(
+                            pos.x + window.currentCamOffset.side,
+                            window.currentCamOffset.height,
+                            pos.z + window.currentCamOffset.dist
+                        );
+                        controls.target.set(
+                            pos.x,
+                            window.currentCamOffset.targetY,
+                            pos.z
+                        );
+
+                        // Release camera when we reach destination
+                        if (Math.abs(targetU - currentU) < 0.001) {
+                            window.isCameraFollowingAvatar = false;
+                        }
+                    }
+                }
+
+                // ── TRAVEL DOT: slide along spline between nodes ──
+                if (travelDotActive && splineCurve && memories.length > 1) {
+                    travelDotU += (travelDotTargetU - travelDotU) * 0.055;
+                    const dotPos = splineCurve.getPointAt(Math.min(Math.max(travelDotU, 0), 1));
+                    travelDotMesh.position.set(dotPos.x, 1.0, dotPos.z);
+                    // Pulse glow
+                    travelDotMat.emissiveIntensity = 1.5 + Math.sin(time * 12) * 0.5;
+                    if (Math.abs(travelDotU - travelDotTargetU) < 0.005) {
+                        travelDotActive = false;
+                        travelDotMesh.visible = false;
+                    }
                 }
 
                 // Selection Ring Pulse
                 selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.rotation.z = time * 0.5 + idx;
+                    // Boost active node ring
+                    if (idx === activeNodeIndex) {
+                        r.mesh.material.emissiveIntensity = 1.4 + Math.sin(time * 6) * 0.4;
+                    }
+                });
+
+                // Year label sprites: gentle float
+                yearLabelSprites.forEach((s, i) => {
+                    s.position.y = 3.5 + Math.sin(time * 1.2 + i * 0.7) * 0.08;
                 });
 
                 // ANIMATE 3D FLOATING MEMORY ORBS & ORBIT RINGS
@@ -9376,7 +9739,7 @@
 
                 // FLOATING 3D TACTICAL CARD GENTLE HOVER
                 if (tacticalCardSprite) {
-                    tacticalCardSprite.position.y = 3.0 + Math.sin(time * 2.5) * 0.04;
+                    tacticalCardSprite.position.y = 3.4 + Math.sin(time * 2.5) * 0.05;
                 }
 
                 controls.update();
