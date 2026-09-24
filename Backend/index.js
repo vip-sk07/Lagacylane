@@ -196,54 +196,118 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Google Sign-In Authentication
+// ----------------------------------------------------
+// Google Sign-In Authentication (Real OAuth ID Token Verification)
+// Client ID: 276711807803-lth8tuc91cgg5qb950mhkql8e6cis3tc.apps.googleusercontent.com
+// ----------------------------------------------------
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '276711807803-lth8tuc91cgg5qb950mhkql8e6cis3tc.apps.googleusercontent.com';
+
+/**
+ * Verify a Google ID token by calling Google's tokeninfo endpoint.
+ * Returns the token payload { sub, email, name, picture, email_verified }
+ * Throws if the token is invalid or the audience doesn't match.
+ */
+async function verifyGoogleIdToken(idToken) {
+  const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error('Google token verification failed: invalid or expired token');
+  }
+  const payload = await response.json();
+  if (payload.error) {
+    throw new Error(`Google token error: ${payload.error_description || payload.error}`);
+  }
+  // Ensure the token was issued for our LegacyLane app
+  if (payload.aud !== GOOGLE_CLIENT_ID) {
+    throw new Error('Google token audience mismatch — token not issued for LegacyLane');
+  }
+  if (payload.email_verified !== 'true' && payload.email_verified !== true) {
+    throw new Error('Google account email is not verified');
+  }
+  return payload;
+}
+
+/**
+ * POST /api/auth/google
+ * Accepts either:
+ *   a) { credential } — a raw Google ID token from Google One Tap / Sign-In button
+ *   b) { email, name, avatarUrl } — pre-extracted fields (fallback / test mode)
+ */
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { email, name, sportType, position, teamHistory, avatarUrl } = req.body;
+    let email, name, avatarUrl, googleId;
+    const { credential, sportType, position, teamHistory } = req.body;
 
-    if (!email || !name) {
-      return res.status(400).json({ error: 'Google email and name are required.' });
+    if (credential) {
+      // === REAL MODE: Verify the Google ID token ===
+      const payload = await verifyGoogleIdToken(credential);
+      email      = payload.email;
+      name       = payload.name;
+      avatarUrl  = payload.picture || null;
+      googleId   = payload.sub;
+    } else {
+      // === FALLBACK MODE: Trust pre-extracted fields (development/test) ===
+      email      = req.body.email;
+      name       = req.body.name;
+      avatarUrl  = req.body.avatarUrl || null;
+      googleId   = null;
+      if (!email || !name) {
+        return res.status(400).json({ error: 'Google email and name are required.' });
+      }
     }
 
+    // Find or create the user in our SQLite database
     let userRow = db.prepare('SELECT * FROM Users WHERE Email = ?').get(email);
 
     if (!userRow) {
-      const userId = 'usr_google_' + Date.now();
+      const userId = googleId ? `usr_google_${googleId}` : `usr_google_${Date.now()}`;
       const dummyHash = await bcrypt.hash(userId, 10);
 
       db.prepare(`
         INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, AvatarURL)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(userId, name, email, dummyHash, 'Athlete', avatarUrl || null);
+      `).run(userId, name, email, dummyHash, 'Athlete', avatarUrl);
 
       const profileId = 'prof_' + Date.now();
       db.prepare(`
         INSERT INTO AthleteProfiles (Profile_ID, User_ID, SportType, Position, TeamHistory, JerseyNumber)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(profileId, userId, sportType || 'football', position || 'Attacking Midfielder (#10)', teamHistory || 'Legacy Academy', 10);
+      `).run(profileId, userId, sportType || 'football', position || 'Player', teamHistory || 'Legacy Academy', 10);
 
       userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    } else {
+      // Update avatar URL if Google profile picture changed
+      if (avatarUrl && userRow.AvatarURL !== avatarUrl) {
+        db.prepare('UPDATE Users SET AvatarURL = ? WHERE User_ID = ?').run(avatarUrl, userRow.User_ID);
+        userRow.AvatarURL = avatarUrl;
+      }
     }
 
     const athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userRow.User_ID);
 
     const userPayload = {
-      id: userRow.User_ID,
-      name: userRow.Name,
-      email: userRow.Email,
-      role: userRow.ProfileType,
-      sport: athleteRow ? athleteRow.SportType : (sportType || 'football'),
-      position: athleteRow ? athleteRow.Position : 'Player',
-      team: athleteRow ? athleteRow.TeamHistory : 'Personal',
-      jerseyNumber: athleteRow ? athleteRow.JerseyNumber : 10,
-      avatarUrl: userRow.AvatarURL
+      id:          userRow.User_ID,
+      name:        userRow.Name,
+      email:       userRow.Email,
+      role:        userRow.ProfileType,
+      sport:       athleteRow ? athleteRow.SportType    : (sportType  || 'football'),
+      position:    athleteRow ? athleteRow.Position     : 'Player',
+      team:        athleteRow ? athleteRow.TeamHistory  : 'Legacy Academy',
+      jerseyNumber:athleteRow ? athleteRow.JerseyNumber : 10,
+      avatarUrl:   userRow.AvatarURL
     };
 
     res.json({ message: 'Google Sign-In successful', user: userPayload });
   } catch (err) {
-    console.error('Google Auth Error:', err);
-    res.status(500).json({ error: 'Server error during Google authentication.' });
+    console.error('Google Auth Error:', err.message);
+    res.status(401).json({ error: err.message || 'Google authentication failed.' });
   }
+});
+
+// GET /api/auth/google/client-id  — returns the public client ID for frontend Google Sign-In button
+app.get('/api/auth/google/client-id', (req, res) => {
+  res.json({ clientId: GOOGLE_CLIENT_ID });
 });
 
 // ----------------------------------------------------
