@@ -17,6 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <!-- Canvas Confetti CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Chart.js for Wellness Insights (SRS §4.4) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -903,6 +905,10 @@
                         <svg class="w-3.5 h-3.5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                         <span>Share Keepsake</span>
                     </button>
+                    <button id="btn-inspect-copy-keepsake-link" type="button" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 border border-white/10 text-xs font-medium flex items-center gap-1.5 transition" title="Copy Shareable Keepsake Link">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        <span id="btn-inspect-copy-label">Copy Link</span>
+                    </button>
                     <button id="btn-toggle-vault-lock" type="button" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 text-xs font-medium flex items-center gap-1.5 transition" title="Toggle Zero-Knowledge Vault Encryption">
                         <svg id="icon-vault-lock-state" class="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         <span id="text-vault-lock-state">Lock in Vault</span>
@@ -1287,7 +1293,7 @@
                 <!-- Relative container for SVG + dynamic hover tooltip -->
                 <div class="relative bg-black/60 rounded-2xl border border-white/10 p-3 sm:p-4 overflow-hidden" id="wellness-chart-box">
                     <div class="w-full h-64" id="wellness-svg-canvas-container">
-                        <!-- SVG dynamically rendered here -->
+                        <canvas id="wellness-chartjs-canvas" style="width:100%;height:256px;"></canvas>
                     </div>
 
                     <!-- SRS 4.4.3 REQ-2: Hover Tooltip Overlay -->
@@ -1733,6 +1739,19 @@
                         <!-- Loaded dynamically via JS -->
                     </div>
                 </div>
+
+                <!-- Redeem Family Invite Code Form (SRS §Sharing) -->
+                <div class="pt-4 border-t border-white/10 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono text-stone-300 font-semibold tracking-wide uppercase">Redeem Family Passcode</span>
+                        <span class="text-[10px] font-mono text-indigo-400">Join Circle</span>
+                    </div>
+                    <form id="form-family-redeem" class="flex gap-2">
+                        <input type="text" id="family-redeem-code-input" placeholder="e.g. LL-FAM-ABCD" required class="flex-1 px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 font-mono text-xs uppercase tracking-widest focus:border-indigo-400 focus:outline-none">
+                        <button type="submit" id="btn-redeem-family-code" class="btn-hover-lift px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">Redeem Code</button>
+                    </form>
+                    <p id="family-redeem-status-msg" class="text-[11px] font-mono text-center hidden"></p>
+                </div>
             </div>
 
         </div>
@@ -1954,6 +1973,19 @@
                     <div id="fvd-circle-members-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
                         <!-- Loaded dynamically via JS -->
                     </div>
+                </div>
+
+                <!-- Redeem Family Invite Code Form (SRS §Sharing) -->
+                <div class="bg-stone-900/50 rounded-2xl p-5 border border-purple-500/20 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono text-purple-300 font-bold uppercase tracking-wide">Redeem Family Passcode</span>
+                        <span class="text-[10px] font-mono text-stone-400">Join a Family Vault</span>
+                    </div>
+                    <form id="fvd-form-family-redeem" class="flex gap-2">
+                        <input type="text" id="fvd-redeem-code-input" placeholder="e.g. LL-FAM-ABCD" required class="flex-1 px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 font-mono text-xs uppercase tracking-widest focus:border-purple-400 focus:outline-none">
+                        <button type="submit" id="fvd-btn-redeem-code" class="btn-hover-lift px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition">Claim Circle Access</button>
+                    </form>
+                    <p id="fvd-redeem-status-msg" class="text-[11px] font-mono text-center hidden"></p>
                 </div>
             </div>
 
@@ -5174,11 +5206,14 @@
                 try {
                     const uid = getUserId();
                     const jType = isLifeMode ? 'life' : 'sports';
-                    const res = await fetch(`${API_BASE}/memories/${uid}?journeyType=${jType}&domain=${currentSport}`);
+                    // SRS §5.1: Paginated fetch, 20 memories per page
+                    if (!window._currentMemPage) window._currentMemPage = 1;
+                    const memPage = window._currentMemPage;
+                    const res = await fetch(`${API_BASE}/memories/${uid}?journeyType=${jType}&domain=${currentSport}&page=${memPage}&limit=20`);
                     if (res.ok) {
                         const data = await res.json();
                         if (Array.isArray(data.memories) && data.memories.length > 0) {
-                            allMemoriesStore[currentSport] = data.memories.map((m, idx) => ({
+                            const newMems = data.memories.map((m, idx) => ({
                                 id: idx + 1,
                                 Memory_ID: m.id || ('mem_' + Date.now() + '_' + idx),
                                 title: m.title,
@@ -5186,7 +5221,7 @@
                                 era: m.era || 'Youth & Formative Years',
                                 journal: m.journal || m.content || m.matchDetails || '',
                                 sentiment: typeof m.sentiment === 'number' ? m.sentiment : 85,
-                                sentimentLabel: m.sentimentLabel || 'Pure Gratitude 🕊️',
+                                sentimentLabel: m.sentimentLabel || 'Pure Gratitude \uD83D\uDD4A\uFE0F',
                                 photo: m.photo || (m.media ? m.media : null),
                                 caption: m.caption || '',
                                 photos: (Array.isArray(m.photos) && m.photos.length > 0)
@@ -5202,6 +5237,14 @@
                                 domain: m.domain || currentSport,
                                 journeyType: m.journeyType || (isLifeMode ? 'life' : 'sports')
                             }));
+                            // Append for page > 1, replace for page 1
+                            if (memPage === 1) {
+                                allMemoriesStore[currentSport] = newMems;
+                            } else {
+                                allMemoriesStore[currentSport] = [...(allMemoriesStore[currentSport] || []), ...newMems];
+                            }
+                            // SRS §5.1: Track if more pages exist (batch size = 20)
+                            window._hasMoreMemPages = data.memories.length === 20;
                             saveMemoriesStore();
                             rebuild3DSpline();
                             renderProCardTraits();
@@ -6835,6 +6878,57 @@
                 });
             }
 
+            // Modal 9 Family Code Redeem Form Submission (SRS §Sharing)
+            const fvdFormFamilyRedeem = document.getElementById('fvd-form-family-redeem');
+            if (fvdFormFamilyRedeem) {
+                fvdFormFamilyRedeem.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const codeInput = document.getElementById('fvd-redeem-code-input');
+                    const code = (codeInput ? codeInput.value : '').trim().toUpperCase();
+                    const statusMsg = document.getElementById('fvd-redeem-status-msg');
+                    const submitBtn = document.getElementById('fvd-btn-redeem-code');
+
+                    if (!code) return;
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Verifying...'; }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/family-circle/redeem`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                inviteCode: code,
+                                familyUserId: getUserId(),
+                                familyUserName: localStorage.getItem('username') || 'Circle Member'
+                            })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            if (codeInput) codeInput.value = '';
+                            if (statusMsg) {
+                                statusMsg.textContent = data.message || 'Passcode redeemed! You are now connected to the Family Circle.';
+                                statusMsg.className = 'text-[11px] font-mono text-center text-emerald-400 block';
+                            }
+                            playSoftSound('chime');
+                            showFvdToast('Circle code redeemed successfully! 🌟');
+                            updateFamilyCircleUI();
+                        } else {
+                            if (statusMsg) {
+                                statusMsg.textContent = data.error || 'Invalid or expired invite code.';
+                                statusMsg.className = 'text-[11px] font-mono text-center text-rose-400 block';
+                            }
+                            showFvdToast(data.error || 'Failed to redeem invite code.');
+                        }
+                    } catch (err) {
+                        if (statusMsg) {
+                            statusMsg.textContent = 'Connection error redeeming code.';
+                            statusMsg.className = 'text-[11px] font-mono text-center text-rose-400 block';
+                        }
+                    } finally {
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Claim Circle Access'; }
+                    }
+                });
+            }
+
             // 3. PRIVACY MATRIX & AUDITING LOGIC
             function updatePrivacyMatrixUI() {
                 const memories = getActiveMemories();
@@ -6965,6 +7059,28 @@
                     renderKeepsakeCanvas(mem, currentKeepsakeTheme);
                     modalShareKeepsake.classList.add('active');
                     playSoftSound('click');
+                });
+            }
+
+            // Direct 1-Click Copy Keepsake Link from Inspect Modal (SRS §Sharing)
+            const btnInspectCopyLink = document.getElementById('btn-inspect-copy-keepsake-link');
+            if (btnInspectCopyLink) {
+                btnInspectCopyLink.addEventListener('click', async () => {
+                    const memories = getActiveMemories();
+                    if (memories.length === 0 || activeNodeIndex < 0) return;
+                    const mem = memories[activeNodeIndex];
+                    const memId = mem.Memory_ID || mem.id;
+                    const shareUrl = `${window.location.origin}/api/share/keepsake/${encodeURIComponent(memId)}`;
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        const label = document.getElementById('btn-inspect-copy-label');
+                        if (label) label.textContent = '✓ Copied!';
+                        playSoftSound('harmonic');
+                        setTimeout(() => { if (label) label.textContent = 'Copy Link'; }, 2500);
+                        alert(`Shareable Keepsake Link Copied to Clipboard:\n\n${shareUrl}`);
+                    } catch (e) {
+                        prompt('Copy your keepsake share URL:', shareUrl);
+                    }
                 });
             }
 
@@ -7309,6 +7425,45 @@
                 });
             }
 
+            // ── SHAREABLE KEEPSAKE LINK (SRS §Sharing) ──
+            const btnCopyShareLink = document.getElementById('btn-copy-shareable-link');
+            if (btnCopyShareLink) {
+                btnCopyShareLink.addEventListener('click', async () => {
+                    const mems = getActiveMemories();
+                    const mem = mems[activeNodeIndex] || mems[0];
+                    const memId = window._activeShareMemoryId || (mem && mem.Memory_ID);
+                    if (!memId) { showToast('No memory selected to share.', 'warn'); return; }
+                    const shareUrl = `${window.location.origin}/api/share/keepsake/${memId}`;
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        btnCopyShareLink.innerHTML = '<span>✓ Link Copied!</span>';
+                        setTimeout(() => { btnCopyShareLink.innerHTML = '<span>Copy Link</span>'; }, 2500);
+                    } catch (e) {
+                        const inp = document.createElement('input');
+                        inp.value = shareUrl; document.body.appendChild(inp); inp.select();
+                        document.execCommand('copy'); inp.remove();
+                    }
+                    const toast = document.getElementById('keepsake-share-toast');
+                    if (toast) { toast.textContent = `Shareable link copied to clipboard!`; toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 3500); }
+                });
+            }
+            const btnNativeWebShareById = document.getElementById('btn-native-web-share');
+            if (btnNativeWebShareById) {
+                btnNativeWebShareById.addEventListener('click', async () => {
+                    const mems = getActiveMemories();
+                    const mem = mems[activeNodeIndex] || mems[0];
+                    const memId = window._activeShareMemoryId || (mem && mem.Memory_ID);
+                    if (!mem || !memId) return;
+                    const url = `${window.location.origin}/api/share/keepsake/${memId}`;
+                    if (navigator.share) {
+                        await navigator.share({ title: mem.title, text: (mem.journal || '').substring(0, 140), url }).catch(() => {});
+                    } else {
+                        await navigator.clipboard.writeText(url).catch(() => {});
+                        showToast('Link copied!', 'success');
+                    }
+                });
+            }
+
             // Family Circle Controller
             async function fetchFamilyCircle() {
                 const membersListContainer = document.getElementById('family-circle-members-list');
@@ -7424,6 +7579,57 @@
                                 <span>Grant Circle Access</span>
                             `;
                         }
+                    }
+                });
+            }
+
+            // Modal 8 Family Code Redeem Form Submission (SRS §Sharing)
+            const formFamilyRedeem = document.getElementById('form-family-redeem');
+            if (formFamilyRedeem) {
+                formFamilyRedeem.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const codeInput = document.getElementById('family-redeem-code-input');
+                    const code = (codeInput ? codeInput.value : '').trim().toUpperCase();
+                    const statusMsg = document.getElementById('family-redeem-status-msg');
+                    const submitBtn = document.getElementById('btn-redeem-family-code');
+
+                    if (!code) return;
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Verifying...'; }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/family-circle/redeem`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                inviteCode: code,
+                                familyUserId: getUserId(),
+                                familyUserName: localStorage.getItem('username') || 'Circle Member'
+                            })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            if (codeInput) codeInput.value = '';
+                            if (statusMsg) {
+                                statusMsg.textContent = data.message || 'Passcode redeemed! You are now connected to the Family Circle.';
+                                statusMsg.className = 'text-[11px] font-mono text-center text-emerald-400 block';
+                            }
+                            playSoftSound('chime');
+                            showShareToast('Circle code redeemed successfully! 🌟');
+                            fetchFamilyCircle();
+                        } else {
+                            if (statusMsg) {
+                                statusMsg.textContent = data.error || 'Invalid or expired invite code.';
+                                statusMsg.className = 'text-[11px] font-mono text-center text-rose-400 block';
+                            }
+                            showShareToast(data.error || 'Failed to redeem invite code.');
+                        }
+                    } catch (err) {
+                        if (statusMsg) {
+                            statusMsg.textContent = 'Connection error redeeming code.';
+                            statusMsg.className = 'text-[11px] font-mono text-center text-rose-400 block';
+                        }
+                    } finally {
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Redeem Code'; }
                     }
                 });
             }
@@ -8887,8 +9093,108 @@
                     burnoutRiskEl.className = `font-teko text-3xl font-bold leading-tight ${risk === 'High' ? 'text-rose-400' : risk === 'Moderate' ? 'text-amber-300' : 'text-cyan-300'}`;
                 }
 
-                // Render the SVG chart
-                renderWellnessSVGChart(sortedMemories);
+                // ── Chart.js Wellness Graph (SRS §4.4 REQ-1 & REQ-2) ──
+                const chartCanvas = document.getElementById('wellness-chartjs-canvas');
+                // Build dataPoints from backendData if available, otherwise from sortedMemories
+                const chartData = (backendData && Array.isArray(backendData.dataPoints) && backendData.dataPoints.length > 0)
+                    ? backendData
+                    : {
+                        dataPoints: sortedMemories.map(m => ({
+                            id: m.Memory_ID,
+                            date: m.date ? m.date.substring(0, 7) : '',
+                            fullDate: m.date || '',
+                            title: m.title || 'Untitled',
+                            score: typeof m.sentiment === 'number' ? m.sentiment : 85,
+                            sentimentLabel: m.sentimentLabel || '',
+                            era: m.era || ''
+                        }))
+                    };
+                if (chartCanvas && chartData.dataPoints && chartData.dataPoints.length > 0) {
+                    if (window._wellnessChartInstance) {
+                        window._wellnessChartInstance.destroy();
+                        window._wellnessChartInstance = null;
+                    }
+                    const labels = chartData.dataPoints.map(p => p.date || (p.fullDate || '').substring(0, 7));
+                    const scores = chartData.dataPoints.map(p => p.score);
+                    const pointColors = scores.map(s => s >= 85 ? '#00e676' : s >= 60 ? '#ffb300' : '#ff1744');
+                    window._wellnessChartInstance = new Chart(chartCanvas, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Wellness Score',
+                                data: scores,
+                                fill: true,
+                                backgroundColor: (ctx) => {
+                                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                                    g.addColorStop(0, 'rgba(0,230,118,0.35)');
+                                    g.addColorStop(1, 'rgba(0,230,118,0.02)');
+                                    return g;
+                                },
+                                borderColor: '#00e676',
+                                borderWidth: 2,
+                                pointBackgroundColor: pointColors,
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1.5,
+                                pointRadius: 5,
+                                pointHoverRadius: 8,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: { duration: 700, easing: 'easeInOutQuart' },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    enabled: true,
+                                    backgroundColor: 'rgba(8,16,26,0.95)',
+                                    borderColor: 'rgba(0,230,118,0.4)',
+                                    borderWidth: 1,
+                                    titleColor: '#e2e8f0',
+                                    bodyColor: '#94a3b8',
+                                    padding: 12,
+                                    cornerRadius: 12,
+                                    callbacks: {
+                                        title: (items) => chartData.dataPoints[items[0].dataIndex]?.title || labels[items[0].dataIndex],
+                                        label: (item) => [
+                                            `Score: ${item.raw}% \u2014 ${chartData.dataPoints[item.dataIndex]?.sentimentLabel || ''}`,
+                                            `Era: ${chartData.dataPoints[item.dataIndex]?.era || ''}`,
+                                            `Date: ${chartData.dataPoints[item.dataIndex]?.fullDate || labels[item.dataIndex]}`
+                                        ]
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                                y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 }, callback: v => `${v}%` } }
+                            },
+                            onClick: (event, elements) => {
+                                if (!elements.length) return;
+                                const idx = elements[0].index;
+                                const point = chartData.dataPoints[idx];
+                                const tooltipEl = document.getElementById('wellness-chart-tooltip');
+                                if (tooltipEl && point) {
+                                    tooltipEl.innerHTML = `<p class="font-semibold text-stone-100 text-xs">${point.title}</p><p class="text-[11px] font-mono text-stone-400">${point.fullDate || point.date}</p><p class="text-xs text-emerald-300 mt-1">${point.sentimentLabel || ''}</p><p class="text-[10px] text-stone-400 mt-0.5">Score: ${point.score}% \u2022 ${point.era || ''}</p>`;
+                                    tooltipEl.classList.remove('hidden');
+                                    setTimeout(() => tooltipEl.classList.add('hidden'), 4500);
+                                }
+                            }
+                        }
+                    });
+                    // Populate sentiment editor select
+                    const selectEl = document.getElementById('wellness-adjust-select');
+                    if (selectEl) {
+                        selectEl.innerHTML = '<option value="">\u2014 Select a memory to re-weight \u2014</option>';
+                        chartData.dataPoints.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.date || ''} \u2014 ${p.title} (${p.score}%)`;
+                            selectEl.appendChild(opt);
+                        });
+                    }
+                }
             }
 
             function renderWellnessSVGChart(dataPoints) {

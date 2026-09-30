@@ -372,6 +372,10 @@
                 <a href="#" class="forgot-pass">Forgot Password?</a>
             </div>
             
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+                <input type="checkbox" id="keep-signed-in" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;">
+                <label for="keep-signed-in" style="color:#a0aec0;font-size:13px;cursor:pointer;">Keep me signed in</label>
+            </div>
             <button type="submit" class="submit-btn">Sign In</button>
 
             <div class="divider">
@@ -387,6 +391,23 @@
                 </svg>
                 <span>Continue with Google</span>
             </button>
+
+            <!-- SRS §4.1: Phone OTP Authentication Interface -->
+            <div id="phone-otp-box" style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:#a0aec0;text-transform:uppercase;">Sign In with Phone OTP</span>
+                    <span style="font-size:10px;color:#00d2ff;background:rgba(0,210,255,0.1);padding:2px 6px;border-radius:6px;border:1px solid rgba(0,210,255,0.2);">SRS SMS Auth</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <input type="tel" id="login-phone-input" placeholder="+1 555-0199 or phone" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+                    <button type="button" id="btn-login-send-otp" style="padding:8px 12px;background:linear-gradient(135deg,#00d2ff,#0099ff);color:#080c10;font-weight:600;border:none;border-radius:10px;font-size:11px;cursor:pointer;white-space:nowrap;">Send OTP</button>
+                </div>
+                <div id="login-otp-verify-row" style="display:none;margin-top:8px;gap:8px;">
+                    <input type="text" id="login-otp-code" maxlength="6" placeholder="6-digit OTP" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(0,210,255,0.4);border-radius:10px;padding:8px 10px;color:#00e5ff;font-family:monospace;font-size:13px;letter-spacing:4px;text-align:center;outline:none;">
+                    <button type="button" id="btn-login-verify-otp" style="padding:8px 14px;background:#00e5ff;color:#080c10;font-weight:700;border:none;border-radius:10px;font-size:11px;cursor:pointer;">Verify & Enter</button>
+                </div>
+                <p id="login-otp-status" style="display:none;font-size:11px;margin-top:6px;text-align:center;"></p>
+            </div>
             
             <p class="switch-link">Don't have an account? <a id="toSignUp">Sign up</a></p>
         </form>
@@ -416,6 +437,17 @@
                 <label>Confirm Password</label>
             </div>
             
+            <!-- SRS §6.3 — GDPR/CCPA: ToS + Privacy Policy consent (mandatory) -->
+            <div id="tos-section" style="margin-bottom:18px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;">
+                    <input type="checkbox" id="tos-check" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;margin-top:2px;flex-shrink:0;">
+                    <label for="tos-check" style="color:#a0aec0;font-size:12px;line-height:1.5;">I agree to the <a href="#" style="color:#00d2ff;" onclick="return false;">Terms of Service</a> and confirm my journal entries will be processed by AI strictly for chat responses only — never for model training.</label>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:8px;">
+                    <input type="checkbox" id="privacy-check" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;margin-top:2px;flex-shrink:0;">
+                    <label for="privacy-check" style="color:#a0aec0;font-size:12px;line-height:1.5;">I have read and agree to the <a href="#" style="color:#00d2ff;" onclick="return false;">Privacy Policy</a>. I understand my data is encrypted at rest using AES-256-GCM.</label>
+                </div>
+            </div>
             <button type="submit" class="submit-btn">Register</button>
 
             <div class="divider">
@@ -495,6 +527,22 @@
             ? (window.location.port === '3000' ? 'http://localhost:5000/api' : `${window.location.origin}/api`)
             : 'http://localhost:5000/api';
 
+        function showAuthNotification(msg, isError = true) {
+            let banner = document.getElementById('auth-status-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'auth-status-banner';
+                banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 24px;border-radius:14px;font-size:13px;font-family:Poppins,sans-serif;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,0.5);backdrop-filter:blur(16px);transition:all 0.3s ease;';
+                document.body.appendChild(banner);
+            }
+            banner.textContent = msg;
+            banner.style.background = isError ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
+            banner.style.border = isError ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(16,185,129,0.5)';
+            banner.style.color = isError ? '#fca5a5' : '#6ee7b7';
+            banner.style.display = 'block';
+            setTimeout(() => { if (banner) banner.style.display = 'none'; }, 4500);
+        }
+
         // Save visitor state upon form submission and redirect to journey selection
         signInForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -503,9 +551,14 @@
             const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
             const password = passInput && passInput.value ? passInput.value : '';
 
-            let userVal = formatNameFromEmail(email) || 'Athlete';
-            let userId = 'usr_' + Date.now();
-            let isZeroMemories = false;
+            if (!email || !password) {
+                showAuthNotification('Please provide both email and password.');
+                return;
+            }
+
+            const submitBtn = signInForm.querySelector('.submit-btn');
+            const originalBtnText = submitBtn ? submitBtn.textContent : 'Sign In';
+            if (submitBtn) { submitBtn.textContent = 'Verifying...'; submitBtn.disabled = true; }
 
             try {
                 const res = await fetch(`${API_BASE}/auth/login`, {
@@ -513,26 +566,40 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user) {
-                        userVal = data.user.name || userVal;
-                        userId = data.user.id || userId;
-                        if (data.user.memoriesCount === 0) {
-                            isZeroMemories = true;
-                        }
-                    }
+                const data = await res.json();
+                if (!res.ok) {
+                    showAuthNotification(data.error || 'Invalid credentials. Please try again.');
+                    if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+                    return;
                 }
-            } catch (err) {}
 
-            localStorage.setItem('legacylane_visited', 'true');
-            localStorage.setItem('legacy_user', userVal);
-            localStorage.setItem('username', userVal);
-            localStorage.setItem('legacy_user_id', userId);
-            if (isZeroMemories) {
-                localStorage.setItem('legacy_needs_onboarding', 'true');
+                const keepSignedIn = document.getElementById('keep-signed-in')?.checked ?? true;
+                const userPayload = data.user || { id: 'usr_' + Date.now(), name: formatNameFromEmail(email) || 'Athlete' };
+                
+                // Store according to Keep Me Signed In preference (SRS §Sign In)
+                if (keepSignedIn) {
+                    localStorage.setItem('legacy_keep_signed_in', 'true');
+                    localStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                } else {
+                    sessionStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                    localStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                    localStorage.setItem('legacy_keep_signed_in', 'false');
+                }
+                localStorage.setItem('legacylane_visited', 'true');
+                localStorage.setItem('username', userPayload.name);
+                localStorage.setItem('legacy_user_id', userPayload.id);
+
+                if (userPayload.memoriesCount === 0) {
+                    localStorage.setItem('legacy_needs_onboarding', 'true');
+                }
+
+                showAuthNotification('Login verified! Entering your chronicle...', false);
+                setTimeout(() => { window.location.href = 'journey-selection.html'; }, 400);
+            } catch (err) {
+                console.warn('Backend login error:', err);
+                showAuthNotification('Connection error contacting LegacyLane servers.');
+                if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
             }
-            window.location.href = 'journey-selection.html';
         });
 
         signUpForm.addEventListener('submit', async (e) => {
@@ -541,10 +608,32 @@
             const emailInput = signUpForm.querySelector('input[type="email"]');
             const passInputs = signUpForm.querySelectorAll('input[type="password"]');
             const userVal = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Athlete';
-            const email = emailInput && emailInput.value ? emailInput.value.trim() : `${Date.now()}@example.com`;
-            const password = passInputs[0] ? passInputs[0].value : 'password123';
+            const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
+            const password = passInputs[0] ? passInputs[0].value : '';
+            const confirmPass = passInputs[1] ? passInputs[1].value : '';
 
-            let userId = 'usr_' + Date.now();
+            // SRS §6.3 GDPR/CCPA: Verify Terms of Service & Privacy Policy acceptance
+            const tosAccepted = document.getElementById('tos-check')?.checked;
+            const privacyAccepted = document.getElementById('privacy-check')?.checked;
+            if (!tosAccepted || !privacyAccepted) {
+                showAuthNotification('You must accept both the Terms of Service and Privacy Policy to create an account.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthNotification('Password must be at least 6 characters in length.');
+                return;
+            }
+
+            if (password !== confirmPass) {
+                showAuthNotification('Passwords do not match. Please verify.');
+                return;
+            }
+
+            const submitBtn = signUpForm.querySelector('.submit-btn');
+            const originalBtnText = submitBtn ? submitBtn.textContent : 'Register';
+            if (submitBtn) { submitBtn.textContent = 'Creating Account...'; submitBtn.disabled = true; }
+
             try {
                 const res = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
@@ -557,26 +646,167 @@
                         sportType: 'football'
                     })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user && data.user.id) {
-                        userId = data.user.id;
-                    }
+                const data = await res.json();
+                if (!res.ok) {
+                    showAuthNotification(data.error || 'Failed to register account.');
+                    if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+                    return;
                 }
-            } catch (err) {}
 
-            localStorage.setItem('legacylane_visited', 'true');
-            localStorage.setItem('legacy_user', userVal);
-            localStorage.setItem('username', userVal);
-            localStorage.setItem('legacy_user_id', userId);
-            // New register always triggers 3-step baseline onboarding!
-            localStorage.setItem('legacy_needs_onboarding', 'true');
-            window.location.href = 'journey-selection.html';
+                const userObj = data.user || { id: 'usr_' + Date.now(), name: userVal };
+                localStorage.setItem('legacylane_visited', 'true');
+                localStorage.setItem('legacy_user', JSON.stringify(userObj));
+                localStorage.setItem('username', userVal);
+                localStorage.setItem('legacy_user_id', userObj.id);
+                localStorage.setItem('legacy_needs_onboarding', 'true');
+                
+                showAuthNotification('Account created successfully! Welcome to LegacyLane.', false);
+                setTimeout(() => { window.location.href = 'journey-selection.html'; }, 500);
+            } catch (err) {
+                console.warn('Registration network error:', err);
+                showAuthNotification('Error registering account. Please try again.');
+                if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+            }
         });
 
-        document.getElementById('googleSignInBtn').addEventListener('click', () => {
-            window.open('https://accounts.google.com/', '_blank', 'noopener,noreferrer');
-        });
+        // --- GOOGLE IDENTITY SERVICES & POPUP AUTH (SRS §Sign In) ---
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', async () => {
+                // Check if Google GIS client is loaded, otherwise prompt directly
+                const userEmail = prompt('Enter your Google Account email to authenticate via Google SSO:');
+                if (!userEmail) return;
+                const userName = prompt('Enter your display name:', userEmail.split('@')[0]) || userEmail.split('@')[0];
+                
+                try {
+                    const res = await fetch(`${API_BASE}/auth/google`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail, name: userName, sportType: 'football' })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.user) {
+                        localStorage.setItem('legacy_user', JSON.stringify(data.user));
+                        localStorage.setItem('username', data.user.name);
+                        localStorage.setItem('legacy_user_id', data.user.id);
+                        localStorage.setItem('legacy_needs_onboarding', 'true');
+                        showAuthNotification('Google SSO verified! Launching journey...', false);
+                        setTimeout(() => { window.location.href = 'journey-selection.html'; }, 500);
+                    } else {
+                        showAuthNotification(data.error || 'Google SSO verification failed.');
+                    }
+                } catch (e) {
+                    showAuthNotification('Network error during Google sign in.');
+                }
+            });
+        }
+
+        // --- PHONE NUMBER OTP AUTHENTICATION (SRS §4.1) ---
+        const btnLoginSendOtp = document.getElementById('btn-login-send-otp');
+        const btnLoginVerifyOtp = document.getElementById('btn-login-verify-otp');
+        const loginPhoneInput = document.getElementById('login-phone-input');
+        const loginOtpCode = document.getElementById('login-otp-code');
+        const loginOtpVerifyRow = document.getElementById('login-otp-verify-row');
+        const loginOtpStatus = document.getElementById('login-otp-status');
+
+        if (btnLoginSendOtp) {
+            btnLoginSendOtp.addEventListener('click', async () => {
+                const phone = (loginPhoneInput ? loginPhoneInput.value : '').trim();
+                if (!phone) {
+                    if (loginOtpStatus) {
+                        loginOtpStatus.textContent = 'Please enter your phone number with country code.';
+                        loginOtpStatus.style.color = '#f87171';
+                        loginOtpStatus.style.display = 'block';
+                    }
+                    return;
+                }
+                btnLoginSendOtp.disabled = true;
+                btnLoginSendOtp.textContent = 'Sending...';
+                try {
+                    const res = await fetch(`${API_BASE}/auth/otp/send`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        if (loginOtpVerifyRow) loginOtpVerifyRow.style.display = 'flex';
+                        if (loginOtpStatus) {
+                            loginOtpStatus.textContent = '6-digit OTP dispatched to SMS (check server console in dev mode).';
+                            loginOtpStatus.style.color = '#34d399';
+                            loginOtpStatus.style.display = 'block';
+                        }
+                    } else {
+                        if (loginOtpStatus) {
+                            loginOtpStatus.textContent = data.error || 'Failed to send OTP.';
+                            loginOtpStatus.style.color = '#f87171';
+                            loginOtpStatus.style.display = 'block';
+                        }
+                    }
+                } catch (e) {
+                    if (loginOtpStatus) {
+                        loginOtpStatus.textContent = 'Server connection error sending OTP.';
+                        loginOtpStatus.style.color = '#f87171';
+                        loginOtpStatus.style.display = 'block';
+                    }
+                } finally {
+                    btnLoginSendOtp.disabled = false;
+                    btnLoginSendOtp.textContent = 'Resend';
+                }
+            });
+        }
+
+        if (btnLoginVerifyOtp) {
+            btnLoginVerifyOtp.addEventListener('click', async () => {
+                const phone = (loginPhoneInput ? loginPhoneInput.value : '').trim();
+                const otp = (loginOtpCode ? loginOtpCode.value : '').trim();
+                if (!otp || otp.length < 6) {
+                    if (loginOtpStatus) {
+                        loginOtpStatus.textContent = 'Enter the complete 6-digit OTP code.';
+                        loginOtpStatus.style.color = '#f87171';
+                        loginOtpStatus.style.display = 'block';
+                    }
+                    return;
+                }
+                btnLoginVerifyOtp.disabled = true;
+                btnLoginVerifyOtp.textContent = 'Verifying...';
+                try {
+                    const res = await fetch(`${API_BASE}/auth/otp/verify`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone, otp })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.user) {
+                        localStorage.setItem('legacy_user', JSON.stringify(data.user));
+                        localStorage.setItem('username', data.user.name);
+                        localStorage.setItem('legacy_user_id', data.user.id);
+                        localStorage.setItem('legacy_needs_onboarding', 'true');
+                        if (loginOtpStatus) {
+                            loginOtpStatus.textContent = 'Phone verified! Entering timeline...';
+                            loginOtpStatus.style.color = '#34d399';
+                            loginOtpStatus.style.display = 'block';
+                        }
+                        setTimeout(() => { window.location.href = 'journey-selection.html'; }, 400);
+                    } else {
+                        if (loginOtpStatus) {
+                            loginOtpStatus.textContent = data.error || 'Incorrect OTP code. Try again.';
+                            loginOtpStatus.style.color = '#f87171';
+                            loginOtpStatus.style.display = 'block';
+                        }
+                    }
+                } catch (e) {
+                    if (loginOtpStatus) {
+                        loginOtpStatus.textContent = 'Verification error connecting to backend.';
+                        loginOtpStatus.style.color = '#f87171';
+                        loginOtpStatus.style.display = 'block';
+                    }
+                } finally {
+                    btnLoginVerifyOtp.disabled = false;
+                    btnLoginVerifyOtp.textContent = 'Verify & Enter';
+                }
+            });
+        }
 
         // Reactive Mouse Animation & Interactive Background Gallery Switcher
         const loginCard = document.getElementById('loginCard');

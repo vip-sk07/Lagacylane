@@ -27,6 +27,8 @@ import { encryptText, decryptText } from '../AI_Modules/encryption.js';
 import { connectMongoDB, getCollection } from './mongodb.js';
 
 import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import { body, validationResult } from 'express-validator';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,6 +59,34 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// ── RATE LIMITING (SRS §5.3 Security Requirements) ──
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please wait 15 minutes and try again.' }
+});
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Rate limit exceeded. Please slow down.' }
+});
+app.use('/api/auth', authLimiter);
+app.use('/api', apiLimiter);
+
+// ── INPUT VALIDATION MIDDLEWARE (SRS §5.3 — XSS + Injection Prevention) ──
+const validate = (validations) => async (req, res, next) => {
+  await Promise.all(validations.map(v => v.run(req)));
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ error: errors.array()[0].msg });
+  }
+  next();
+};
 
 // Ensure uploads folder exists (supports persistent volumes on cloud hosts)
 const uploadsDir = process.env.UPLOADS_DIR || (process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'uploads') : path.join(__dirname, 'uploads'));
@@ -104,7 +134,13 @@ const upload = multer({
 // ----------------------------------------------------
 
 // Register New User / Create Account
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register',
+  validate([
+    body('name').trim().notEmpty().withMessage('Name is required.').isLength({ max: 100 }).withMessage('Name too long.'),
+    body('email').trim().isEmail().withMessage('A valid email is required.').normalizeEmail(),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters.')
+  ]),
+async (req, res) => {
   try {
     const { name, email, password, profileType, sportType, position, teamHistory, avatarUrl } = req.body;
 
@@ -152,7 +188,12 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login User
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login',
+  validate([
+    body('email').trim().isEmail().withMessage('A valid email is required.').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required.')
+  ]),
+async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -1530,7 +1571,9 @@ app.post('/api/family-circle/invite-code', (req, res) => {
 // Redeem an Invite Code by a family member/guest
 app.post('/api/family-circle/redeem', (req, res) => {
   try {
-    const { inviteCode, familyUserId, familyUserName } = req.body;
+    const { inviteCode } = req.body;
+    const familyUserId = req.body.familyUserId || req.body.userId;
+    const familyUserName = req.body.familyUserName || req.body.name || req.body.userName;
     if (!inviteCode) return res.status(400).json({ error: 'Invite code is required.' });
 
     const cleanCode = String(inviteCode).trim().toUpperCase();
@@ -1704,6 +1747,7 @@ app.get('/api/users/:userId/export', async (req, res) => {
 
     const archive = {
       user,
+      profile: profile || null,
       athleteProfile: profile,
       timelineMemories: memories,
       aiChatHistory: chats,
@@ -1738,10 +1782,72 @@ app.delete('/api/users/:userId', async (req, res) => {
       removeUserVectors(userId);
     }
 
-    res.json({ message: 'User account and all personal timeline memories permanently deleted.' });
+    res.json({ success: true, message: 'User account and all personal timeline memories permanently deleted.' });
   } catch (err) {
     console.error('Delete Account Error:', err);
     res.status(500).json({ error: 'Server error wiping account.' });
+  }
+});
+
+// ── OTP SEND/VERIFY ENDPOINTS (SRS §4.1 — Phone Number Authentication) ──
+// Production: Replace stub with Twilio Verify or Firebase Phone Auth.
+const otpStore = new Map();
+
+app.post('/api/auth/otp/send', async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const cleanPhone = String(phone || '').replace(/\s/g, '');
+    if (!cleanPhone || !/^\+?[1-9]\d{7,14}$/.test(cleanPhone)) {
+      return res.status(400).json({ error: 'A valid international phone number is required.' });
+    }
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+    otpStore.set(cleanPhone, { otp, expiresAt, attempts: 0 });
+    // TODO Production: await twilioClient.verify.v2.services(VERIFY_SID).verifications.create({ to: cleanPhone, channel: 'sms' });
+    console.log(`[OTP STUB] Phone: ${cleanPhone} | OTP: ${otp}`);
+    res.json({ success: true, message: 'OTP sent. (Dev: check server console)', expiresInMinutes: 5 });
+  } catch (err) {
+    console.error('OTP Send Error:', err);
+    res.status(500).json({ error: 'Server error sending OTP.' });
+  }
+});
+
+app.post('/api/auth/otp/verify', async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP are required.' });
+    const cleanPhone = String(phone).replace(/\s/g, '');
+    const record = otpStore.get(cleanPhone);
+    if (!record) return res.status(400).json({ error: 'No OTP found. Please request a new one.' });
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(cleanPhone);
+      return res.status(400).json({ error: 'OTP expired. Please request a new one.' });
+    }
+    record.attempts = (record.attempts || 0) + 1;
+    if (record.attempts > 5) {
+      otpStore.delete(cleanPhone);
+      return res.status(429).json({ error: 'Too many attempts. Please request a new OTP.' });
+    }
+    if (String(otp) !== record.otp) {
+      return res.status(401).json({ valid: false, error: 'Invalid OTP. Please try again.' });
+    }
+    otpStore.delete(cleanPhone);
+    const phoneEmail = `phone_${cleanPhone.replace(/\+/g, '')}@legacylane.local`;
+    let userRow = db.prepare('SELECT * FROM Users WHERE Email = ?').get(phoneEmail);
+    if (!userRow) {
+      const userId = 'usr_phone_' + Date.now();
+      const dummyHash = await bcrypt.hash(userId, 10);
+      db.prepare(`INSERT INTO Users (User_ID, Name, Email, PasswordHash, ProfileType) VALUES (?, ?, ?, ?, ?)`)
+        .run(userId, 'User', phoneEmail, dummyHash, 'Standard');
+      userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    }
+    res.json({
+      message: 'Phone verified. Login successful.',
+      user: { id: userRow.User_ID, name: userRow.Name, email: userRow.Email, role: userRow.ProfileType }
+    });
+  } catch (err) {
+    console.error('OTP Verify Error:', err);
+    res.status(500).json({ error: 'Server error verifying OTP.' });
   }
 });
 
