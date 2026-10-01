@@ -1802,9 +1802,28 @@
                 });
             });
 
+            function getCleanUserName() {
+                const raw = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
+                if (!raw) return '';
+                if (raw.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (parsed.name) return parsed.name;
+                        if (parsed.username) return parsed.username;
+                    } catch (e) {}
+                }
+                if (raw === 'Marcus Vance' || raw === 'usr_marcus') return '';
+                return raw;
+            }
+
             function openLifeModal() {
+                const cleanUser = getCleanUserName();
+                const nameInput = document.getElementById('life-name');
+                if (nameInput && cleanUser) {
+                    nameInput.value = cleanUser;
+                }
                 lifeModal.classList.add('active');
-                playSynthSound(450, 'triangle', 0.3, 0.05);
+                playSynthSound(520, 'sine', 0.3, 0.06);
             }
 
             function closeLifeModal() {
@@ -1837,7 +1856,7 @@
                 const lifePhase = document.getElementById('life-phase')?.value || 'Exploration';
                 const lifeMotto = document.getElementById('life-motto')?.value || '';
 
-                const enteredName = (document.getElementById('life-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Life Chronicler';
+                const enteredName = (document.getElementById('life-name')?.value || '').trim() || getCleanUserName() || 'Life Chronicler';
                 const userId = getOrCreateUserId(enteredName);
 
                 localStorage.setItem('legacy_user', enteredName);
@@ -1923,23 +1942,13 @@
             });
 
             function openAthleteModal() {
-                const storedUser = localStorage.getItem('legacy_user');
+                const cleanUser = getCleanUserName();
                 const nameInput = document.getElementById('athlete-name');
-                if (nameInput && storedUser && storedUser !== 'Marcus Vance') {
-                    nameInput.value = storedUser;
+                if (nameInput && cleanUser) {
+                    nameInput.value = cleanUser;
                 }
                 athleteModal.classList.add('active');
                 playSynthSound(450, 'triangle', 0.3, 0.05);
-            }
-
-            function openLifeModal() {
-                const storedUser = localStorage.getItem('legacy_user');
-                const nameInput = document.getElementById('life-name');
-                if (nameInput && storedUser && storedUser !== 'Marcus Vance') {
-                    nameInput.value = storedUser;
-                }
-                lifeModal.classList.add('active');
-                playSynthSound(520, 'sine', 0.3, 0.06);
             }
 
             function closeAthleteModal() {
@@ -1962,7 +1971,7 @@
                 const positionRole = document.getElementById('position-role')?.value || 'Player';
                 const teamHistory = document.getElementById('team-history')?.value || 'Legacy Academy';
 
-                const enteredName = (document.getElementById('athlete-name')?.value || '').trim() || localStorage.getItem('legacy_user') || 'Athlete';
+                const enteredName = (document.getElementById('athlete-name')?.value || '').trim() || getCleanUserName() || 'Athlete';
                 const enteredJersey = (document.getElementById('athlete-jersey')?.value || '').trim() || '10';
                 const chosenSport = (primarySport || 'football').toLowerCase();
                 const userId = getOrCreateUserId(enteredName);

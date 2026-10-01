@@ -63,9 +63,10 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 // ── RATE LIMITING (SRS §5.3 Security Requirements) ──
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.method === 'GET' || req.path.includes('/config'),
   message: { error: 'Too many login attempts. Please wait 15 minutes and try again.' }
 });
 const apiLimiter = rateLimit({

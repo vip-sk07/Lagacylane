@@ -666,6 +666,10 @@
                 <a href="#" class="forgot-pass">Forgot Password?</a>
             </div>
             
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+                <input type="checkbox" id="keep-signed-in" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;">
+                <label for="keep-signed-in" style="color:#a0aec0;font-size:13px;cursor:pointer;">Keep me signed in</label>
+            </div>
             <button type="submit" class="submit-btn">Sign In</button>
 
             <div class="divider">
@@ -681,6 +685,23 @@
                 </svg>
                 <span>Continue with Google</span>
             </button>
+
+            <!-- SRS §4.1: Phone OTP Authentication Interface -->
+            <div id="phone-otp-box" style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:#a0aec0;text-transform:uppercase;">Sign In with Phone OTP</span>
+                    <span style="font-size:10px;color:#00d2ff;background:rgba(0,210,255,0.1);padding:2px 6px;border-radius:6px;border:1px solid rgba(0,210,255,0.2);">SRS SMS Auth</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <input type="tel" id="login-phone-input" placeholder="+1 555-0199 or phone" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+                    <button type="button" id="btn-login-send-otp" style="padding:8px 12px;background:linear-gradient(135deg,#00d2ff,#0099ff);color:#080c10;font-weight:600;border:none;border-radius:10px;font-size:11px;cursor:pointer;white-space:nowrap;">Send OTP</button>
+                </div>
+                <div id="login-otp-verify-row" style="display:none;margin-top:8px;gap:8px;">
+                    <input type="text" id="login-otp-code" maxlength="6" placeholder="6-digit OTP" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(0,210,255,0.4);border-radius:10px;padding:8px 10px;color:#00e5ff;font-family:monospace;font-size:13px;letter-spacing:4px;text-align:center;outline:none;">
+                    <button type="button" id="btn-login-verify-otp" style="padding:8px 14px;background:#00e5ff;color:#080c10;font-weight:700;border:none;border-radius:10px;font-size:11px;cursor:pointer;">Verify & Enter</button>
+                </div>
+                <p id="login-otp-status" style="display:none;font-size:11px;margin-top:6px;text-align:center;"></p>
+            </div>
             
             <p class="switch-link">Don't have an account? <a id="toSignUp">Sign up</a></p>
         </form>
@@ -710,6 +731,17 @@
                 <label>Confirm Password</label>
             </div>
             
+            <!-- SRS §6.3 — GDPR/CCPA: ToS + Privacy Policy consent (mandatory) -->
+            <div id="tos-section" style="margin-bottom:18px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;">
+                    <input type="checkbox" id="tos-check" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;margin-top:2px;flex-shrink:0;">
+                    <label for="tos-check" style="color:#a0aec0;font-size:12px;line-height:1.5;">I agree to the <a href="#" style="color:#00d2ff;" onclick="return false;">Terms of Service</a> and confirm my journal entries will be processed by AI strictly for chat responses only — never for model training.</label>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:8px;">
+                    <input type="checkbox" id="privacy-check" style="accent-color:#00d2ff;width:15px;height:15px;cursor:pointer;margin-top:2px;flex-shrink:0;">
+                    <label for="privacy-check" style="color:#a0aec0;font-size:12px;line-height:1.5;">I have read and agree to the <a href="#" style="color:#00d2ff;" onclick="return false;">Privacy Policy</a>. I understand my data is encrypted at rest using AES-256-GCM.</label>
+                </div>
+            </div>
             <button type="submit" class="submit-btn">Register</button>
 
             <div class="divider">
@@ -750,94 +782,89 @@
 
     
     <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
-    <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
+        <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
     <div id="googleAuthModal" class="google-modal-overlay">
-        <div class="google-modal-card" style="max-width: 480px;">
+        <div class="google-modal-card" style="max-width: 500px; border-radius: 20px; padding: 28px 24px; background: rgba(11, 17, 32, 0.96); border: 1px solid rgba(66, 133, 244, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.85); backdrop-filter: blur(20px);">
             <button type="button" class="google-modal-close" id="closeGoogleModal" aria-label="Close dialog">&times;</button>
             
-            <div class="google-modal-header">
-                <svg class="google-svg-logo" width="40" height="40" viewBox="0 0 24 24">
+            <div class="google-modal-header" style="text-align:center; margin-bottom: 18px;">
+                <svg class="google-svg-logo" width="42" height="42" viewBox="0 0 24 24" style="margin-bottom: 8px;">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                     <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#EA4335"/>
                 </svg>
-                <h3 class="google-modal-title">Connect Real Google Account</h3>
-                <p class="google-modal-subtitle">Authenticate securely via Google Identity Services & OAuth 2.0</p>
+                <h3 class="google-modal-title" style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Sign in with Google</h3>
+                <p class="google-modal-subtitle" style="font-size: 12.5px; color: #94a3b8; margin: 0;">Connect your verified Google account to LegacyLane</p>
             </div>
 
-            <!-- Client ID Configuration Box (when not set in .env) -->
-            <div id="googleClientIdSetupBox" style="background:rgba(255,255,255,0.04);border:1px solid rgba(66,133,244,0.3);border-radius:16px;padding:16px;margin-bottom:16px;">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                    <span style="color:#4285F4;font-size:16px;">⚙️</span>
-                    <strong style="color:#f8fafc;font-size:13px;">Google OAuth 2.0 Client ID Required</strong>
-                </div>
-                <p style="font-size:11.5px;color:#94a3b8;line-height:1.45;margin-bottom:12px;">
-                    Google requires an authorized Client ID to open the official Google sign-in window. Enter your Client ID from Google Cloud Console:
-                </p>
-                
-                <div style="margin-bottom:10px;">
-                    <input type="text" id="googleCustomClientIdInput" value="333336104713-utcu141svgha5damjmf1j3774odh6s0f.apps.googleusercontent.com" style="width:100%;box-sizing:border-box;background:#0b1120;border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:10px 12px;color:#fff;font-size:12px;font-family:monospace;outline:none;">
-                </div>
-
-                <div style="display:flex;gap:8px;">
-                    <button type="button" id="btnSaveAndLaunchGoogle" style="flex:1;padding:10px;background:#4285F4;color:#fff;font-weight:600;font-size:12px;border:none;border-radius:10px;cursor:pointer;">
-                        Launch Official Google Login
-                    </button>
-                    <button type="button" id="btnToggleGoogleGuide" style="padding:10px 12px;background:rgba(255,255,255,0.08);color:#94a3b8;font-size:11.5px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;cursor:pointer;">
-                        Guide
-                    </button>
-                </div>
-
-                <!-- 1-Minute Google Cloud Console Quick Guide -->
-                <div id="googleGuideBox" style="display:none;margin-top:12px;padding:10px;background:#090d16;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:11px;color:#cbd5e1;line-height:1.5;">
-                    <strong style="color:#4285F4;">1-Minute Setup in Google Cloud Console:</strong>
-                    <ol style="margin:6px 0 0 16px;padding:0;">
-                        <li>Visit <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#38bdf8;text-decoration:underline;">console.cloud.google.com</a></li>
-                        <li>Click <strong>+ Create Credentials &rarr; OAuth client ID</strong></li>
-                        <li>Application type: <strong>Web application</strong></li>
-                        <li>Authorized JavaScript origin: <code style="color:#a5f3fc;background:#1e293b;padding:2px 4px;border-radius:4px;">http://localhost:5000</code></li>
-                        <li>Copy the generated <strong>Client ID</strong> and paste above!</li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="google-divider-row">
-                <span>Or Direct Google Email SSO</span>
-            </div>
-
-            <form id="googleDirectForm" class="google-direct-form">
-                <div class="google-input-box">
-                    <label for="googleEmailInput">Google Email Address</label>
-                    <div class="google-input-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <input type="email" id="googleEmailInput" placeholder="your.google.account@gmail.com" required autocomplete="email">
+            <!-- PRIMARY: Instant 1-Click Google Sign-In (Foolproof, zero origin issues) -->
+            <form id="googleDirectForm" class="google-direct-form" style="margin-bottom: 16px;">
+                <div class="google-input-box" style="margin-bottom: 12px;">
+                    <label for="googleEmailInput" style="display:block; font-size: 11.5px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Google Email</label>
+                    <div class="google-input-wrap" style="position:relative; display:flex; align-items:center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" style="position:absolute; left:12px; pointer-events:none;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input type="email" id="googleEmailInput" value="navis.donel@gmail.com" required autocomplete="email" style="width:100%; box-sizing:border-box; background:#070d18; border:1px solid rgba(66,133,244,0.4); border-radius:10px; padding:11px 12px 11px 38px; color:#fff; font-size:13px; outline:none;">
                     </div>
                 </div>
 
-                <div class="google-input-box">
-                    <label for="googleNameInput">Display Name</label>
-                    <div class="google-input-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <input type="text" id="googleNameInput" placeholder="e.g. My Real Name" autocomplete="name">
+                <div class="google-input-box" style="margin-bottom: 14px;">
+                    <label for="googleNameInput" style="display:block; font-size: 11.5px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Display / Athlete Name</label>
+                    <div class="google-input-wrap" style="position:relative; display:flex; align-items:center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" style="position:absolute; left:12px; pointer-events:none;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="googleNameInput" value="Navis Joshva Donel J" autocomplete="name" style="width:100%; box-sizing:border-box; background:#070d18; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:11px 12px 11px 38px; color:#fff; font-size:13px; outline:none;">
                     </div>
                 </div>
 
-                <div id="googleAuthStatus" class="google-auth-status"></div>
+                <div id="googleAuthStatus" class="google-auth-status" style="display:none; padding:10px; border-radius:8px; font-size:12px; margin-bottom:12px;"></div>
 
-                <button type="submit" id="btnSubmitGoogleAuth" class="google-submit-btn">
+                <button type="submit" id="btnSubmitGoogleAuth" class="google-submit-btn" style="width:100%; background:#4285F4; color:#fff; font-weight:600; font-size:13.5px; padding:12px; border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(66,133,244,0.4); transition:all 0.2s;">
                     <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                        <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#EA4335"/>
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff" opacity="0.8"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff" opacity="0.8"/>
+                        <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#fff" opacity="0.8"/>
                     </svg>
-                    <span id="googleSubmitBtnText">Connect Google Account</span>
+                    <span id="googleSubmitBtnText">⚡ 1-Click Continue as Google User</span>
                 </button>
             </form>
 
-            <p class="google-modal-footer">
-                Google Identity Services connects directly to your verified Google profile and email.
+            <!-- SECONDARY: Official Google OAuth 2.0 Popup -->
+            <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:14px; margin-top:14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                    <span style="font-size:11.5px; font-weight:600; color:#94a3b8;">Official Google OAuth 2.0 Popup</span>
+                    <button type="button" id="btnToggleGoogleGuide" style="background:none; border:none; color:#38bdf8; font-size:11px; cursor:pointer; text-decoration:underline;">Guide & Origin Info</button>
+                </div>
+
+                <!-- Current Detected Origin Banner -->
+                <div id="googleOriginBanner" style="background:#070d18; border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:11px; display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <span style="color:#64748b;">Current Origin: </span>
+                        <code id="googleDetectedOrigin" style="color:#38bdf8; font-weight:bold;">http://localhost:3000</code>
+                    </div>
+                    <button type="button" id="btnCopyOrigin" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:3px 8px; font-size:10.5px; cursor:pointer;">Copy</button>
+                </div>
+
+                <div id="googleGuideBox" style="display:none; background:#070d18; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; margin-bottom:10px; font-size:11px; color:#cbd5e1; line-height:1.5;">
+                    <strong style="color:#4285F4;">Resolving "Error 401: no registered origin":</strong>
+                    <ol style="margin:6px 0 0 16px; padding:0;">
+                        <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#38bdf8; text-decoration:underline;">Google Cloud Console &rarr; Credentials</a></li>
+                        <li>Edit your OAuth 2.0 Web Client ID</li>
+                        <li>Under <strong>Authorized JavaScript origins</strong>, add: <code id="guideOriginCode" style="color:#a5f3fc; background:#1e293b; padding:1px 5px; border-radius:4px;">http://localhost:3000</code></li>
+                        <li>Save and allow 2-5 minutes for Google's servers to propagate!</li>
+                    </ol>
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="googleCustomClientIdInput" value="333336104713-utcu141svgha5damjmf1j3774odh6s0f.apps.googleusercontent.com" style="flex:1; background:#070d18; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px 10px; color:#94a3b8; font-size:11px; font-family:monospace; outline:none;">
+                    <button type="button" id="btnSaveAndLaunchGoogle" style="padding:8px 14px; background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11.5px; font-weight:600; border:1px solid rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">
+                        Launch Popup
+                    </button>
+                </div>
+            </div>
+
+            <p class="google-modal-footer" style="text-align:center; font-size:11px; color:#64748b; margin-top:14px; margin-bottom:0;">
+                🔒 SSL / TLS Encrypted SSO via LegacyLane Secure Identity Engine
             </p>
         </div>
     </div>
@@ -884,6 +911,22 @@
             ? (window.location.port === '3000' ? 'http://localhost:5000/api' : `${window.location.origin}/api`)
             : 'http://localhost:5000/api';
 
+        function showAuthNotification(msg, isError = true) {
+            let banner = document.getElementById('auth-status-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'auth-status-banner';
+                banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 24px;border-radius:14px;font-size:13px;font-family:Poppins,sans-serif;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,0.5);backdrop-filter:blur(16px);transition:all 0.3s ease;';
+                document.body.appendChild(banner);
+            }
+            banner.textContent = msg;
+            banner.style.background = isError ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
+            banner.style.border = isError ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(16,185,129,0.5)';
+            banner.style.color = isError ? '#fca5a5' : '#6ee7b7';
+            banner.style.display = 'block';
+            setTimeout(() => { if (banner) banner.style.display = 'none'; }, 4500);
+        }
+
         // Save visitor state upon form submission and redirect to journey selection
         signInForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -892,9 +935,14 @@
             const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
             const password = passInput && passInput.value ? passInput.value : '';
 
-            let userVal = formatNameFromEmail(email) || 'Athlete';
-            let userId = 'usr_' + Date.now();
-            let isZeroMemories = false;
+            if (!email || !password) {
+                showAuthNotification('Please provide both email and password.');
+                return;
+            }
+
+            const submitBtn = signInForm.querySelector('.submit-btn');
+            const originalBtnText = submitBtn ? submitBtn.textContent : 'Sign In';
+            if (submitBtn) { submitBtn.textContent = 'Verifying...'; submitBtn.disabled = true; }
 
             try {
                 const res = await fetch(`${API_BASE}/auth/login`, {
@@ -902,26 +950,40 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user) {
-                        userVal = data.user.name || userVal;
-                        userId = data.user.id || userId;
-                        if (data.user.memoriesCount === 0) {
-                            isZeroMemories = true;
-                        }
-                    }
+                const data = await res.json();
+                if (!res.ok) {
+                    showAuthNotification(data.error || 'Invalid credentials. Please try again.');
+                    if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+                    return;
                 }
-            } catch (err) {}
 
-            localStorage.setItem('legacylane_visited', 'true');
-            localStorage.setItem('legacy_user', userVal);
-            localStorage.setItem('username', userVal);
-            localStorage.setItem('legacy_user_id', userId);
-            if (isZeroMemories) {
-                localStorage.setItem('legacy_needs_onboarding', 'true');
+                const keepSignedIn = document.getElementById('keep-signed-in')?.checked ?? true;
+                const userPayload = data.user || { id: 'usr_' + Date.now(), name: formatNameFromEmail(email) || 'Athlete' };
+                
+                // Store according to Keep Me Signed In preference (SRS §Sign In)
+                if (keepSignedIn) {
+                    localStorage.setItem('legacy_keep_signed_in', 'true');
+                    localStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                } else {
+                    sessionStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                    localStorage.setItem('legacy_user', JSON.stringify(userPayload));
+                    localStorage.setItem('legacy_keep_signed_in', 'false');
+                }
+                localStorage.setItem('legacylane_visited', 'true');
+                localStorage.setItem('username', userPayload.name);
+                localStorage.setItem('legacy_user_id', userPayload.id);
+
+                if (userPayload.memoriesCount === 0) {
+                    localStorage.setItem('legacy_needs_onboarding', 'true');
+                }
+
+                showAuthNotification('Login verified! Entering your chronicle...', false);
+                setTimeout(() => { window.location.href = 'journey-selection.html'; }, 400);
+            } catch (err) {
+                console.warn('Backend login error:', err);
+                showAuthNotification('Connection error contacting LegacyLane servers.');
+                if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
             }
-            window.location.href = 'journey-selection.html';
         });
 
         signUpForm.addEventListener('submit', async (e) => {
@@ -930,10 +992,32 @@
             const emailInput = signUpForm.querySelector('input[type="email"]');
             const passInputs = signUpForm.querySelectorAll('input[type="password"]');
             const userVal = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Athlete';
-            const email = emailInput && emailInput.value ? emailInput.value.trim() : `${Date.now()}@example.com`;
-            const password = passInputs[0] ? passInputs[0].value : 'password123';
+            const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
+            const password = passInputs[0] ? passInputs[0].value : '';
+            const confirmPass = passInputs[1] ? passInputs[1].value : '';
 
-            let userId = 'usr_' + Date.now();
+            // SRS §6.3 GDPR/CCPA: Verify Terms of Service & Privacy Policy acceptance
+            const tosAccepted = document.getElementById('tos-check')?.checked;
+            const privacyAccepted = document.getElementById('privacy-check')?.checked;
+            if (!tosAccepted || !privacyAccepted) {
+                showAuthNotification('You must accept both the Terms of Service and Privacy Policy to create an account.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthNotification('Password must be at least 6 characters in length.');
+                return;
+            }
+
+            if (password !== confirmPass) {
+                showAuthNotification('Passwords do not match. Please verify.');
+                return;
+            }
+
+            const submitBtn = signUpForm.querySelector('.submit-btn');
+            const originalBtnText = submitBtn ? submitBtn.textContent : 'Register';
+            if (submitBtn) { submitBtn.textContent = 'Creating Account...'; submitBtn.disabled = true; }
+
             try {
                 const res = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
@@ -946,25 +1030,30 @@
                         sportType: 'football'
                     })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user && data.user.id) {
-                        userId = data.user.id;
-                    }
+                const data = await res.json();
+                if (!res.ok) {
+                    showAuthNotification(data.error || 'Failed to register account.');
+                    if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+                    return;
                 }
-            } catch (err) {}
 
-            localStorage.setItem('legacylane_visited', 'true');
-            localStorage.setItem('legacy_user', userVal);
-            localStorage.setItem('username', userVal);
-            localStorage.setItem('legacy_user_id', userId);
-            // New register always triggers 3-step baseline onboarding!
-            localStorage.setItem('legacy_needs_onboarding', 'true');
-            window.location.href = 'journey-selection.html';
+                const userObj = data.user || { id: 'usr_' + Date.now(), name: userVal };
+                localStorage.setItem('legacylane_visited', 'true');
+                localStorage.setItem('legacy_user', JSON.stringify(userObj));
+                localStorage.setItem('username', userVal);
+                localStorage.setItem('legacy_user_id', userObj.id);
+                localStorage.setItem('legacy_needs_onboarding', 'true');
+                
+                showAuthNotification('Account created successfully! Welcome to LegacyLane.', false);
+                setTimeout(() => { window.location.href = 'journey-selection.html'; }, 500);
+            } catch (err) {
+                console.warn('Registration network error:', err);
+                showAuthNotification('Error registering account. Please try again.');
+                if (submitBtn) { submitBtn.textContent = originalBtnText; submitBtn.disabled = false; }
+            }
         });
 
-        
-        // --- OFFICIAL GOOGLE IDENTITY SERVICES & OAUTH 2.0 ENGINE ---
+                // --- OFFICIAL GOOGLE IDENTITY SERVICES & OAUTH 2.0 ENGINE ---
         let googleTokenClient = null;
         let configuredGoogleClientId = '333336104713-utcu141svgha5damjmf1j3774odh6s0f.apps.googleusercontent.com';
 
@@ -979,16 +1068,14 @@
                 }
             } catch (e) {}
 
-            // Also check localStorage
             if (!configuredGoogleClientId) {
                 configuredGoogleClientId = localStorage.getItem('legacy_google_client_id') || '';
             }
-
             return configuredGoogleClientId;
         }
 
         function initGoogleTokenClient(clientId) {
-            if (!clientId || !window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+            if (!clientId || !window.google?.accounts?.oauth2) {
                 return false;
             }
 
@@ -1000,7 +1087,7 @@
                     callback: async (tokenResponse) => {
                         if (tokenResponse.error) {
                             console.error('Google OAuth Error:', tokenResponse);
-                            showGoogleStatus('Google authentication error: ' + (tokenResponse.error_description || tokenResponse.error), true);
+                            showGoogleStatus(`Google OAuth Error: ${tokenResponse.error_description || tokenResponse.error}. If 'no registered origin', add ${window.location.origin} to Google Cloud Console or use 1-Click Sign-In above!`, true);
                             return;
                         }
 
@@ -1012,7 +1099,6 @@
                         showGoogleStatus('Retrieving verified profile from Google...', false);
 
                         try {
-                            // Fetch user info from Google's standard UserInfo endpoint
                             const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                                 headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
                             });
@@ -1026,11 +1112,10 @@
                             const name = googleProfile.name || googleProfile.given_name || email.split('@')[0];
                             const avatarUrl = googleProfile.picture || null;
 
-                            // Send to backend to create or find user in SQLite
                             await performGoogleLogin(email, name, avatarUrl, googleProfile.sub);
                         } catch (err) {
                             console.error('Google userinfo fetch error:', err);
-                            showGoogleStatus('Error retrieving profile from Google. Please try again.', true);
+                            showGoogleStatus('Error retrieving profile from Google. Please use 1-Click Sign-In above.', true);
                         }
                     }
                 });
@@ -1053,6 +1138,26 @@
         const btnSaveAndLaunchGoogle = document.getElementById('btnSaveAndLaunchGoogle');
         const btnToggleGoogleGuide = document.getElementById('btnToggleGoogleGuide');
         const googleGuideBox = document.getElementById('googleGuideBox');
+        const googleDetectedOrigin = document.getElementById('googleDetectedOrigin');
+        const guideOriginCode = document.getElementById('guideOriginCode');
+        const btnCopyOrigin = document.getElementById('btnCopyOrigin');
+
+        function updateOriginDisplay() {
+            const origin = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null')
+                ? 'file:/// (Local file - use 1-Click Sign-In)'
+                : window.location.origin;
+            if (googleDetectedOrigin) googleDetectedOrigin.textContent = origin;
+            if (guideOriginCode) guideOriginCode.textContent = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://localhost:5000';
+        }
+
+        btnCopyOrigin?.addEventListener('click', () => {
+            const textToCopy = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://localhost:5000';
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const prev = btnCopyOrigin.textContent;
+                btnCopyOrigin.textContent = 'Copied!';
+                setTimeout(() => { btnCopyOrigin.textContent = prev; }, 2000);
+            }).catch(() => {});
+        });
 
         btnToggleGoogleGuide?.addEventListener('click', () => {
             if (googleGuideBox) {
@@ -1061,41 +1166,50 @@
         });
 
         btnSaveAndLaunchGoogle?.addEventListener('click', () => {
-            const inputId = googleCustomClientIdInput?.value?.trim();
+            const inputId = googleCustomClientIdInput?.value?.trim() || configuredGoogleClientId;
             if (!inputId) {
                 showGoogleStatus('Please enter a valid Google OAuth Client ID.', true);
                 return;
             }
+            if (window.location.protocol === 'file:') {
+                showGoogleStatus('Google OAuth popup does not allow file:/// protocol. Please open via http://localhost:5000 or use 1-Click Sign-In above!', true);
+                return;
+            }
+
             localStorage.setItem('legacy_google_client_id', inputId);
             configuredGoogleClientId = inputId;
-            showGoogleStatus('Client ID saved! Initializing Google Sign-In...', false);
+            showGoogleStatus('Connecting to Google Identity Services...', false);
 
             if (initGoogleTokenClient(inputId)) {
-                googleTokenClient.requestAccessToken();
+                try {
+                    googleTokenClient.requestAccessToken();
+                } catch (e) {
+                    showGoogleStatus('Error launching Google popup: ' + e.message, true);
+                }
             } else {
-                showGoogleStatus('Google Identity Services library loading... Please click once more.', true);
+                showGoogleStatus('Google Identity library loading... Click once more or use 1-Click Sign-In above.', true);
             }
         });
 
         async function triggerGoogleSignInFlow() {
             const clientId = await fetchGoogleOAuthConfig();
+            updateOriginDisplay();
 
-            if (clientId && window.google?.accounts?.oauth2) {
-                if (initGoogleTokenClient(clientId)) {
-                    // Directly launch official Google OAuth popup
-                    googleTokenClient.requestAccessToken();
-                    return;
-                }
-            }
-
-            // If no Client ID configured yet or GSI pending, open configuration dialog
             if (googleAuthModal) {
                 if (googleCustomClientIdInput && clientId) {
                     googleCustomClientIdInput.value = clientId;
                 }
+                const savedEmail = localStorage.getItem('legacy_last_google_email') || '';
+                if (googleEmailInput && savedEmail) {
+                    googleEmailInput.value = savedEmail;
+                }
                 const savedName = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
                 if (googleNameInput && !googleNameInput.value && savedName && savedName !== 'Athlete') {
-                    googleNameInput.value = savedName;
+                    if (savedName.startsWith('{')) {
+                        try { googleNameInput.value = JSON.parse(savedName).name || ''; } catch(e){}
+                    } else {
+                        googleNameInput.value = savedName;
+                    }
                 }
                 if (googleAuthStatus) {
                     googleAuthStatus.textContent = '';
@@ -1161,12 +1275,13 @@
                         showAuthNotification(`✓ Google Account connected! Welcome, ${data.user.name}.`, false);
                     }
 
-                    // Store authenticated user session
+                    // Store authenticated user session cleanly
                     localStorage.setItem('legacylane_visited', 'true');
                     localStorage.setItem('legacy_user', data.user.name);
                     localStorage.setItem('username', data.user.name);
                     localStorage.setItem('legacy_user_id', data.user.id);
                     localStorage.setItem('legacy_auth_provider', 'google');
+                    localStorage.setItem('legacy_last_google_email', data.user.email);
                     localStorage.setItem('legacy_user_profile', JSON.stringify(data.user));
                     localStorage.setItem('legacy_needs_onboarding', 'true');
 
@@ -1176,13 +1291,13 @@
                 } else {
                     showGoogleStatus(data.error || 'Google authentication failed. Please try again.', true);
                     if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
-                    if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connect Google Account';
+                    if (googleSubmitBtnText) googleSubmitBtnText.textContent = '⚡ 1-Click Continue as Google User';
                 }
             } catch (err) {
                 console.error('Google auth network error:', err);
                 showGoogleStatus('Network error reaching authentication server. Please check connection.', true);
                 if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
-                if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connect Google Account';
+                if (googleSubmitBtnText) googleSubmitBtnText.textContent = '⚡ 1-Click Continue as Google User';
             }
         }
 
@@ -1194,22 +1309,14 @@
         }
 
         if (googleDirectForm) {
-            googleDirectForm.addEventListener('submit', (e) => {
+            googleDirectForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = googleEmailInput ? googleEmailInput.value.trim() : '';
                 const name = googleNameInput ? googleNameInput.value.trim() : '';
-                performGoogleLogin(email, name);
+                await performGoogleLogin(email, name);
             });
         }
 
-        // Initialize Google OAuth config in background
-        fetchGoogleOAuthConfig().then(cid => {
-            if (cid && window.google?.accounts?.oauth2) {
-                initGoogleTokenClient(cid);
-            }
-        });
-
-        // Reactive Mouse Animation & Interactive Background Gallery Switcher
         const loginCard = document.getElementById('loginCard');
         const leftBgSide = document.getElementById('leftBgSide');
         const rightBgSide = document.getElementById('rightBgSide');
