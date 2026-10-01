@@ -194,6 +194,130 @@
             background: rgba(0, 230, 118, 0.6);
         }
 
+        /* -------------------------------------------------------------
+           LIGHT MODE & THEME ADAPTATION SYSTEM
+           ------------------------------------------------------------- */
+        body {
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        body.theme-light {
+            background-color: #f0f4f8;
+            color: #0f172a;
+        }
+
+        body.theme-light .tactical-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+        }
+
+        body.theme-light .tactical-glass-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            box-shadow: 0 24px 50px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+        }
+
+        body.theme-light .drawer-overlay {
+            background: rgba(240, 244, 248, 0.85);
+        }
+
+        body.theme-light .text-stone-100,
+        body.theme-light .text-stone-200 {
+            color: #0f172a !important;
+        }
+
+        body.theme-light .text-stone-300 {
+            color: #334155 !important;
+        }
+
+        body.theme-light .text-stone-400 {
+            color: #64748b !important;
+        }
+
+        body.theme-light .text-stone-500 {
+            color: #94a3b8 !important;
+        }
+
+        body.theme-light .bg-stone-800,
+        body.theme-light .bg-stone-900,
+        body.theme-light .bg-stone-950,
+        body.theme-light .bg-black\/35,
+        body.theme-light .bg-black\/40 {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light input,
+        body.theme-light textarea,
+        body.theme-light select {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        body.theme-light input:focus,
+        body.theme-light textarea:focus,
+        body.theme-light select:focus {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+
+        body.theme-light .border-white\/10,
+        body.theme-light .border-white\/15,
+        body.theme-light .border-white\/20,
+        body.theme-light .border-white\/5 {
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        body.theme-light #left-sidebar {
+            background: rgba(255, 255, 255, 0.96);
+            border-right-color: rgba(15, 23, 42, 0.12);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.08);
+            color: #0f172a;
+        }
+
+        body.theme-light .sidebar-nav-item {
+            color: #334155;
+        }
+
+        body.theme-light .sidebar-nav-item:hover {
+            background: rgba(15, 23, 42, 0.06);
+            color: #0f172a;
+        }
+
+        body.theme-light .ai-drawer-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.12);
+            border-left-color: rgba(245, 158, 11, 0.6);
+            color: #0f172a;
+        }
+
+        body.theme-light .btn-hover-lift {
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Pulse glow animation for FAB */
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 25px rgba(245, 158, 11, 0.45), 0 0 50px rgba(245, 158, 11, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), 0 0 70px rgba(245, 158, 11, 0.35);
+            }
+        }
+
+        #fab-add-memory {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
         /* Ambient Breeze Drifting Leaves & Petals for Life Sanctuary */
         #breeze-overlay {
             position: fixed;
@@ -520,32 +644,60 @@
 
     </div><!-- /#left-sidebar -->
 
+    <!-- Floating Action Button (FAB) for Instant 1-Click Memory Logging (Hotkey: N) -->
+    <button id="fab-add-memory" type="button" class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-stone-950 font-bold shadow-2xl flex items-center justify-center border-2 border-amber-200/80 cursor-pointer transition transform hover:scale-110 active:scale-95 pointer-events-auto" title="Add Memory (Hotkey: N)">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+    </button>
+
     <!-- UI Overlay Controls -->
     <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 overflow-hidden">
 
         <!-- ==========================================================================
              1. TOP NAVIGATION BAR & MULTI-SPORT SWITCHER
              ========================================================================== -->
-        <header class="w-full max-w-7xl mx-auto flex items-center gap-3 pointer-events-auto">
+        <header class="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
             
             <!-- Left: Identity & Mode Badge -->
-            <div class="tactical-glass px-4 py-2.5 rounded-2xl flex items-center gap-3.5 border border-white/10 shadow-lg">
-                <div id="player-avatar-box" class="w-10 h-10 rounded-xl bg-stone-800 flex flex-col items-center justify-center border border-white/10 shadow-sm">
-                    <span id="player-ovr-display" class="font-teko text-2xl font-bold leading-none text-stone-200">92</span>
-                    <span id="player-ovr-label" class="text-[8px] font-mono tracking-normal text-stone-400">Rating</span>
+            <div class="tactical-glass px-4 py-2 rounded-2xl flex items-center gap-3 border border-white/10 shadow-lg">
+                <div id="player-avatar-box" class="w-9 h-9 rounded-xl bg-stone-800 flex flex-col items-center justify-center border border-white/10 shadow-sm cursor-pointer hover:border-amber-400/50 transition" title="Click to view player dossier">
+                    <span id="player-ovr-display" class="font-teko text-xl font-bold leading-none text-stone-200">92</span>
+                    <span id="player-ovr-label" class="text-[7px] font-mono tracking-normal text-stone-400">Rating</span>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span id="player-name-display" class="text-sm font-semibold text-stone-100 tracking-normal cursor-pointer hover:text-amber-300 transition" title="Click to customize your name">Athlete</span>
-                        <span id="current-sport-badge" class="px-2.5 py-0.5 rounded-full bg-stone-800 text-stone-300 font-mono text-[10px] font-medium border border-white/10">Football</span>
+                        <span id="player-name-display" class="text-xs sm:text-sm font-semibold text-stone-100 tracking-normal cursor-pointer hover:text-amber-300 transition" title="Click to customize your profile">Athlete</span>
+                        <span id="current-sport-badge" class="px-2 py-0.5 rounded-full bg-stone-800 text-stone-300 font-mono text-[9px] font-medium border border-white/10">Football</span>
                     </div>
-                    <p id="plays-count-display" class="text-[11px] font-mono text-stone-400 font-medium tracking-normal mt-0.5">0 Preserved Memories • Archive Timeline</p>
+                    <p id="plays-count-display" class="text-[10px] font-mono text-stone-400 font-medium tracking-normal">0 Preserved Memories • Archive Timeline</p>
                 </div>
             </div>
 
-            <!-- Center: Journey Domain Switcher (Isolated per mode) -->
-            <div id="domain-switcher-container" class="tactical-glass p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
-                <!-- Dynamically populated via JS to strictly isolate Life vs Sports -->
+            <!-- Center: Journey Domain Switcher (Strictly isolated per mode) -->
+            <div id="domain-switcher-container" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 overflow-x-auto max-w-full">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Right: Quick Actions (Theme Switcher + Add Memory CTA + Audio) -->
+            <div class="flex items-center gap-2">
+                <!-- Light / Dark Mode Toggle -->
+                <button id="theme-toggle-btn" type="button" class="tactical-glass px-3 py-2 rounded-xl flex items-center gap-1.5 border border-white/10 hover:border-amber-400/40 transition btn-hover-lift cursor-pointer shadow-sm" title="Toggle Light / Dark Mode">
+                    <span id="theme-toggle-icon">🌙</span>
+                    <span id="theme-toggle-text" class="hidden sm:inline font-mono text-xs text-stone-300 font-medium">Dark</span>
+                </button>
+
+                <!-- Primary + Add Memory CTA -->
+                <button id="header-btn-add-memory" type="button" class="btn-hover-lift px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-stone-950 font-bold text-xs tracking-wide shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition border border-amber-300/50 cursor-pointer" title="Record a new milestone (Hotkey: N)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    <span>+ Add Memory</span>
+                    <span class="hidden md:inline text-[9px] font-mono px-1 py-0.2 rounded bg-black/15 text-stone-900 border border-black/10 font-bold">N</span>
+                </button>
+
+                <!-- Audio Atmosphere Button -->
+                <button id="header-audio-toggle" type="button" class="tactical-glass w-9 h-9 rounded-xl flex items-center justify-center border border-white/10 hover:border-white/20 transition btn-hover-lift cursor-pointer text-stone-300" title="Toggle Soundscape Audio">
+                    <svg id="header-audio-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/></svg>
+                </button>
             </div>
 
         </header>
@@ -743,6 +895,24 @@
 
             <form id="form-log-play" class="space-y-4">
                 
+                <!-- Guided Inspiration / Theme Selector (No hardcodes, just helpful sparks) -->
+                <div class="bg-stone-900/40 p-2.5 rounded-2xl border border-white/10 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[11px] font-mono text-amber-300 font-semibold uppercase tracking-wider">Inspiration Spark (Optional)</label>
+                        <span class="text-[10px] font-mono text-stone-400">Choose a theme to prompt your memory</span>
+                    </div>
+                    <select id="log-inspiration-selector" class="w-full px-3 py-1.5 rounded-xl bg-stone-950 border border-white/15 text-stone-200 text-xs focus:border-amber-400 focus:outline-none cursor-pointer">
+                        <option value="">✨ Custom Milestone / Blank Slate</option>
+                        <option value="genesis">🌱 The Genesis: When your journey first began</option>
+                        <option value="obstacle">⚡ The Crucible: Overcoming a major obstacle or defeat</option>
+                        <option value="breakthrough">🏆 The Breakthrough: That clutch triumphant moment</option>
+                        <option value="turning_point">🍂 The Turning Point: A lesson that reshaped your perspective</option>
+                        <option value="graduation">🎓 Next Chapter: Advancing to higher competition or mastery</option>
+                        <option value="mentorship">🤝 The Mentor: Advice or teammate that lifted you up</option>
+                        <option value="peace">🕊️ Quiet Gratitude: A moment of calm and deep reflection</option>
+                    </select>
+                </div>
+
                 <!-- Title & Date -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
@@ -875,10 +1045,16 @@
 
                 <input type="hidden" id="editing-memory-id" value="">
 
-                <button type="submit" id="btn-submit-memory" class="btn-hover-lift w-full py-3.5 rounded-2xl bg-stone-100 hover:bg-white text-stone-900 font-semibold text-xs transition shadow-md flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span id="btn-submit-memory-text">Preserve Memory</span>
-                </button>
+                <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                    <button type="button" id="btn-submit-and-another" class="btn-hover-lift w-full sm:flex-1 py-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-semibold text-xs border border-amber-400/40 transition flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        <span>⚡ Save & Add Another</span>
+                    </button>
+                    <button type="submit" id="btn-submit-memory" class="btn-hover-lift w-full sm:flex-1 py-3.5 rounded-2xl bg-stone-100 hover:bg-white text-stone-900 font-semibold text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span id="btn-submit-memory-text">Preserve Memory</span>
+                    </button>
+                </div>
             </form>
 
         </div>
@@ -1445,12 +1621,12 @@
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">FIRST MILESTONE / TITLE:</label>
-                        <input type="text" id="onboarding-title-1" value="Day One: Lacing Up My First Pair of Cleats" placeholder="e.g. First Day at the Academy" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        <input type="text" id="onboarding-title-1" value="" placeholder="E.g. The Genesis: When your passion first began" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">EARLIEST REFLECTION / JOURNAL:</label>
-                        <textarea id="onboarding-journal-1" rows="2" placeholder="What emotions do you remember when you first took the field?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Full of raw passion and nervous excitement. I laced up my boots, looked across the empty ground, and promised myself I would see this journey through.</textarea>
+                        <textarea id="onboarding-journal-1" rows="2" placeholder="What emotions or events marked the earliest beginning of your path?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                     </div>
                 </div>
 
@@ -1467,7 +1643,7 @@
                 <div class="bg-black/35 rounded-2xl p-4 border border-white/5 space-y-1">
                     <p class="text-[11px] font-mono text-emerald-300 font-semibold tracking-wide uppercase">Breakthrough Peak • Sets Era 2</p>
                     <h4 class="text-sm font-semibold text-stone-100">What was your first big breakthrough or milestone?</h4>
-                    <p class="text-xs text-stone-400">The moment your training yielded its first undeniable triumph. This sets a resilience anchor in your wellness curve.</p>
+                    <p class="text-xs text-stone-400">The moment your commitment yielded its first undeniable triumph or awakening.</p>
                 </div>
 
                 <div class="space-y-3">
@@ -1484,12 +1660,12 @@
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">BREAKTHROUGH TITLE:</label>
-                        <input type="text" id="onboarding-title-2" value="Clutch Winning Goal in State Championship" placeholder="e.g. Regional Championship Final" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        <input type="text" id="onboarding-title-2" value="" placeholder="E.g. A Decisive Victory or Breakthrough Milestone" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">HOW DID THAT TRIUMPH FEEL?:</label>
-                        <textarea id="onboarding-journal-2" rows="2" placeholder="Describe the feeling when you proved your ability." class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Down by 1 with five minutes on the clock. Everything slowed down. When the ball hit the net, all the early mornings and sacrifices made sense. That moment changed how I saw myself.</textarea>
+                        <textarea id="onboarding-journal-2" rows="2" placeholder="Describe the realization when you proved your ability to yourself." class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                     </div>
                 </div>
 
@@ -1526,12 +1702,12 @@
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">CURRENT CHAPTER / FOCUS TITLE:</label>
-                        <input type="text" id="onboarding-title-3" value="Chasing National Consistency & Mentoring the Squad" placeholder="e.g. Mastery & Leadership" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                        <input type="text" id="onboarding-title-3" value="" placeholder="E.g. Chasing Mastery & Leading with Purpose" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-[11px] font-mono text-stone-300 mb-1">WHAT DRIVES YOU TODAY?:</label>
-                        <textarea id="onboarding-journal-3" rows="2" placeholder="What are your goals and thoughts right now?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed">Focusing on consistent excellence, staying injury-free, and elevating the younger teammates around me while writing the pinnacle of my career.</textarea>
+                        <textarea id="onboarding-journal-3" rows="2" placeholder="What are your goals and thoughts right now?" class="w-full px-3 py-2 rounded-xl bg-stone-900 border border-white/15 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                     </div>
                 </div>
 
@@ -1924,11 +2100,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <div>
                             <label class="block text-[11px] font-mono text-stone-300 mb-1">NAME / TITLE:</label>
-                            <input type="text" id="fvd-invite-name" required placeholder="e.g. Coach Marcus" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 text-xs focus:border-purple-400 focus:outline-none">
+                            <input type="text" id="fvd-invite-name" required placeholder="e.g. Coach Alex" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 text-xs focus:border-purple-400 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-[11px] font-mono text-stone-300 mb-1">EMAIL ADDRESS:</label>
-                            <input type="email" id="fvd-invite-email" placeholder="e.g. marcus@team.com" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 text-xs focus:border-purple-400 focus:outline-none">
+                            <input type="email" id="fvd-invite-email" placeholder="e.g. alex@example.com" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-white/15 text-stone-100 text-xs focus:border-purple-400 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-[11px] font-mono text-stone-300 mb-1">RELATIONSHIP:</label>
@@ -2047,6 +2223,15 @@
             </div>
 
         </div>
+    <!-- ==========================================================================
+         FLOATING ACTION BUTTON (FAB) FOR QUICK MEMORY RECORDING
+         ========================================================================== -->
+    <div class="fixed bottom-6 right-6 z-40 pointer-events-auto">
+        <button id="fab-add-memory" type="button" class="btn-hover-lift flex items-center gap-2.5 px-4 sm:px-5 py-3 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-stone-950 font-bold text-xs tracking-wider shadow-2xl shadow-amber-500/40 border border-amber-300/60 cursor-pointer group transition-all duration-300 hover:scale-105 active:scale-95" title="Capture New Memory (HotKey: N)">
+            <span class="w-2.5 h-2.5 rounded-full bg-stone-950 animate-ping"></span>
+            <svg class="w-4 h-4 text-stone-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span class="font-mono uppercase tracking-wider font-extrabold">+ Add Memory</span>
+        </button>
     </div>
 
     <!-- ==========================================================================
@@ -2116,18 +2301,18 @@
                     return clean;
                 }
                 const athleteProfile = JSON.parse(localStorage.getItem('legacy_athlete_profile') || '{}');
-                if (athleteProfile && athleteProfile.name && athleteProfile.name.trim() && athleteProfile.name.trim() !== 'Marcus Vance') {
+                if (athleteProfile && athleteProfile.name && athleteProfile.name.trim()) {
                     return athleteProfile.name.trim();
                 }
                 const lifeProfile = JSON.parse(localStorage.getItem('legacy_life_profile') || '{}');
-                if (lifeProfile && lifeProfile.name && lifeProfile.name.trim() && lifeProfile.name.trim() !== 'Marcus Vance') {
+                if (lifeProfile && lifeProfile.name && lifeProfile.name.trim()) {
                     return lifeProfile.name.trim();
                 }
                 const stored = localStorage.getItem('legacy_user') || localStorage.getItem('username');
-                if (stored && stored.trim() && stored !== 'Marcus Vance') {
+                if (stored && stored.trim()) {
                     return stored.trim();
                 }
-                return isLifeMode ? 'Life Chronicler' : 'Athlete';
+                return isLifeMode ? 'Life Explorer' : 'Athlete';
             }
 
             function getJerseyNumber() {
@@ -2172,7 +2357,7 @@
 
             function getUserId() {
                 let id = localStorage.getItem('legacy_user_id');
-                if (!id || id === 'usr_marcus') {
+                if (!id) {
                     const cleanName = getUserName().toLowerCase().replace(/[^a-z0-9]/g, '_');
                     id = 'usr_' + (cleanName || 'user') + '_' + Math.random().toString(36).substring(2, 7);
                     localStorage.setItem('legacy_user_id', id);
@@ -2372,6 +2557,78 @@
             const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 2.2 : 1.2, 60, Math.PI / 3.5, 0.5);
             spotlight.position.set(0, 22, 0);
             scene.add(spotlight);
+
+            /* ------------------------------------------------------------------
+               3B. SECURITY SANITIZER & XSS DEFENSE
+               ------------------------------------------------------------------ */
+            function escapeHTML(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            /* ------------------------------------------------------------------
+               3C. LIGHT MODE / DARK MODE THEME CONTROLLER
+               ------------------------------------------------------------------ */
+            function applyTheme(theme) {
+                const isLight = theme === 'light';
+                localStorage.setItem('legacy_theme', theme);
+                document.body.classList.toggle('theme-light', isLight);
+
+                const iconEl = document.getElementById('theme-toggle-icon');
+                const textEl = document.getElementById('theme-toggle-text');
+                if (iconEl) iconEl.textContent = isLight ? '☀️' : '🌙';
+                if (textEl) textEl.textContent = isLight ? 'Light' : 'Dark';
+
+                if (isLight) {
+                    const lightBg = isLifeMode ? 0xe2f1ea : 0xe2e8f0;
+                    scene.background = new THREE.Color(lightBg);
+                    if (scene.fog) scene.fog.color = new THREE.Color(lightBg);
+                    ambientLight.color.setHex(0xffffff);
+                    ambientLight.intensity = isLifeMode ? 2.0 : 1.8;
+                    dirLight.intensity = 1.6;
+                } else {
+                    const darkBg = isLifeMode ? 0x06151b
+                        : (currentSport === 'basketball' ? 0x070b14
+                        : (currentSport === 'tennis' ? 0x06101e
+                        : (currentSport === 'cricket' ? 0x081510
+                        : (currentSport === 'track' ? 0x130909 : 0x08101a))));
+                    scene.background = new THREE.Color(darkBg);
+                    if (scene.fog) scene.fog.color = new THREE.Color(darkBg);
+                    ambientLight.color.setHex(isLifeMode ? 0x1e3a8a : 0x1e293b);
+                    ambientLight.intensity = isLifeMode ? 1.4 : 1.3;
+                    dirLight.intensity = isLifeMode ? 1.6 : 1.4;
+                }
+
+                // Invalidate textures cache and re-render nodes so procedural graphics match theme
+                if (typeof nodeGraphicTextures !== 'undefined' && nodeGraphicTextures.clear) {
+                    nodeGraphicTextures.clear();
+                }
+                if (typeof rebuild3DSpline === 'function') {
+                    rebuild3DSpline();
+                }
+            }
+
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    const currentIsLight = document.body.classList.contains('theme-light');
+                    applyTheme(currentIsLight ? 'dark' : 'light');
+                    playSoftSound('click');
+                });
+            }
+
+            const headerAudioToggle = document.getElementById('header-audio-toggle');
+            if (headerAudioToggle) {
+                headerAudioToggle.addEventListener('click', () => {
+                    const btn = document.getElementById('btn-global-audio-toggle');
+                    if (btn) btn.click();
+                });
+            }
 
             /* ------------------------------------------------------------------
                4. PROCEDURAL ENVIRONMENT, TREES IN BREEZE, & FIELD
@@ -3903,24 +4160,41 @@
 
                 clearAllEnvironments();
 
-                if (sport === 'life') {
+                if (document.body.classList.contains('theme-light')) {
+                    const lightBg = sport === 'life' ? 0xe2f1ea : 0xe2e8f0;
+                    scene.background = new THREE.Color(lightBg);
+                    if (scene.fog) scene.fog.color = new THREE.Color(lightBg);
+                } else if (sport === 'life') {
                     scene.background = new THREE.Color(0x06151b);
-                    buildLifeSanctuary();
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x06151b);
                 } else if (sport === 'basketball') {
                     scene.background = new THREE.Color(0x070b14);
-                    buildRealisticBasketballArena();
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x070b14);
                 } else if (sport === 'tennis') {
                     scene.background = new THREE.Color(0x06101e);
-                    buildRealisticTennisArena();
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x06101e);
                 } else if (sport === 'cricket') {
                     scene.background = new THREE.Color(0x081510);
-                    buildRealisticCricketOval();
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x081510);
                 } else if (sport === 'track') {
                     scene.background = new THREE.Color(0x130909);
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x130909);
+                } else {
+                    scene.background = new THREE.Color(0x08101a);
+                    if (scene.fog) scene.fog.color = new THREE.Color(0x08101a);
+                }
+
+                if (sport === 'life') {
+                    buildLifeSanctuary();
+                } else if (sport === 'basketball') {
+                    buildRealisticBasketballArena();
+                } else if (sport === 'tennis') {
+                    buildRealisticTennisArena();
+                } else if (sport === 'cricket') {
+                    buildRealisticCricketOval();
+                } else if (sport === 'track') {
                     buildRealisticTrackStadium();
                 } else {
-                    // Football / Soccer
-                    scene.background = new THREE.Color(0x08101a);
                     buildRealisticFootballStadium();
                 }
             }
@@ -4471,41 +4745,227 @@
             let travelDotActive = false;
 
             /* ------------------------------------------------------------------
-               YEAR LABEL SPRITE: draw a canvas pill with the year text
+               3D MEMORY GRAPHICS & HOLOGRAM MEDALLION ENGINE
+               Every memory node renders a high-res procedural graphics medallion
                ------------------------------------------------------------------ */
-            function createYearLabelSprite(year, isLandmark = false) {
-                const cv = document.createElement('canvas');
-                cv.width = 200; cv.height = 64;
-                const ctx = cv.getContext('2d');
-                ctx.clearRect(0, 0, 200, 64);
+            let activeGraphicDiscs = [];
+            const nodeGraphicTextures = new Map();
 
-                // Pill background
-                const pillColor = isLandmark ? 'rgba(245,158,11,0.88)' : 'rgba(14,25,40,0.82)';
-                const borderColor = isLandmark ? '#fbbf24' : (isLifeMode ? '#38bdf8' : '#00e676');
+            function createNodeGraphicTexture(mem, idx, isLight = false) {
+                const photoSrc = mem.photo || (Array.isArray(mem.photos) && mem.photos[0]) || (Array.isArray(mem.mediaAssets) && mem.mediaAssets[0]?.url) || '';
+                const cacheKey = `${mem.Memory_ID || idx}_${photoSrc}_${isLight ? 'light' : 'dark'}`;
+                if (nodeGraphicTextures.has(cacheKey)) {
+                    return nodeGraphicTextures.get(cacheKey);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const cx = 256;
+                const cy = 256;
+                const radius = 232;
+
+                function renderGraphics(loadedImg = null) {
+                    ctx.clearRect(0, 0, 512, 512);
+
+                    // Circular clip
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.clip();
+
+                    if (loadedImg) {
+                        const minDim = Math.min(loadedImg.width, loadedImg.height);
+                        const sx = (loadedImg.width - minDim) / 2;
+                        const sy = (loadedImg.height - minDim) / 2;
+                        ctx.drawImage(loadedImg, sx, sy, minDim, minDim, 24, 24, 464, 464);
+
+                        // Subtle dark vignette gradient
+                        const vig = ctx.createRadialGradient(cx, cy, 120, cx, cy, radius);
+                        vig.addColorStop(0, 'rgba(0,0,0,0)');
+                        vig.addColorStop(1, 'rgba(0,0,0,0.65)');
+                        ctx.fillStyle = vig;
+                        ctx.fillRect(0, 0, 512, 512);
+                    } else {
+                        // Procedural Graphic Disc with domain emblem
+                        const themeColor = mem.isFavorite ? '#f59e0b' : (mem.isVaultLocked ? '#a855f7' : (isLifeMode ? '#06b6d4' : '#10b981'));
+                        const grad = ctx.createRadialGradient(cx, cy, 40, cx, cy, radius);
+                        grad.addColorStop(0, isLight ? '#ffffff' : '#131d2e');
+                        grad.addColorStop(0.65, isLight ? '#f1f5f9' : '#080f1a');
+                        grad.addColorStop(1, isLight ? '#e2e8f0' : '#020617');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, 512, 512);
+
+                        // High-tech geometric circle runes
+                        ctx.strokeStyle = themeColor;
+                        ctx.lineWidth = 3;
+                        ctx.globalAlpha = 0.45;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, radius - 30, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([10, 8]);
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, radius - 55, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.globalAlpha = 1.0;
+
+                        // Central Domain Emblem
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        let glyph = '⚽';
+                        if (isLifeMode) glyph = '🕊️';
+                        else if (currentSport === 'basketball') glyph = '🏀';
+                        else if (currentSport === 'tennis') glyph = '🎾';
+                        else if (currentSport === 'track') glyph = '🏃';
+                        else if (currentSport === 'cricket') glyph = '🏏';
+
+                        if (mem.isFavorite) glyph = '🏆';
+                        if (mem.isVaultLocked) glyph = '🛡️';
+                        if (mem.isInsight) glyph = '💎';
+
+                        ctx.font = '115px "Segoe UI Emoji", sans-serif';
+                        ctx.fillText(glyph, cx, cy - 25);
+
+                        // Memory Title label
+                        ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+                        ctx.font = 'bold 28px "Plus Jakarta Sans", sans-serif';
+                        let displayTitle = mem.title || `Milestone #${idx + 1}`;
+                        if (displayTitle.length > 18) displayTitle = displayTitle.substring(0, 16) + '…';
+                        ctx.fillText(displayTitle, cx, cy + 85);
+
+                        // Year badge
+                        const yr = mem.date ? new Date(mem.date).getFullYear() : (2020 + idx);
+                        ctx.fillStyle = themeColor;
+                        ctx.font = 'bold 24px "JetBrains Mono", monospace';
+                        ctx.fillText(String(yr), cx, cy + 130);
+                    }
+
+                    ctx.restore();
+
+                    // Bezel Rim
+                    const themeColor = mem.isFavorite ? '#f59e0b' : (mem.isVaultLocked ? '#a855f7' : (isLifeMode ? '#06b6d4' : '#10b981'));
+                    ctx.lineWidth = 14;
+                    ctx.strokeStyle = themeColor;
+                    ctx.shadowColor = themeColor;
+                    ctx.shadowBlur = 24;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius - 7, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.globalAlpha = 0.85;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius - 16, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1.0;
+
+                    // Bottom Pill Badge
+                    if (mem.isFavorite || mem.isVaultLocked) {
+                        ctx.fillStyle = mem.isVaultLocked ? '#7e22ce' : '#d97706';
+                        ctx.beginPath();
+                        ctx.roundRect(cx - 75, cy + radius - 48, 150, 38, 19);
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(mem.isVaultLocked ? '🔒 VAULT' : '★ LANDMARK', cx, cy + radius - 29);
+                    }
+                }
+
+                if (photoSrc) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        renderGraphics(img);
+                        texture.needsUpdate = true;
+                    };
+                    img.onerror = () => {
+                        renderGraphics(null);
+                        texture.needsUpdate = true;
+                    };
+                    img.src = photoSrc;
+                    renderGraphics(null);
+                } else {
+                    renderGraphics(null);
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.generateMipmaps = true;
+                texture.minFilter = THREE.LinearMipmapLinearFilter;
+                nodeGraphicTextures.set(cacheKey, texture);
+                return texture;
+            }
+
+            /* ------------------------------------------------------------------
+               FLOATING 3D LABEL SPRITE: title + date badge above EVERY memory node
+               ------------------------------------------------------------------ */
+            function createMemoryLabelSprite(mem, idx, isLight = false) {
+                const cv = document.createElement('canvas');
+                cv.width = 320; cv.height = 80;
+                const ctx = cv.getContext('2d');
+                ctx.clearRect(0, 0, 320, 80);
+
+                const isLandmark = Boolean(mem?.isFavorite);
+                const isVault = Boolean(mem?.isVaultLocked);
+                const pillColor = isLandmark
+                    ? 'rgba(245, 158, 11, 0.92)'
+                    : (isVault
+                        ? 'rgba(126, 34, 206, 0.92)'
+                        : (isLight ? 'rgba(255, 255, 255, 0.94)' : 'rgba(14, 25, 40, 0.88)'));
+                const borderColor = isLandmark ? '#fbbf24' : (isVault ? '#c084fc' : (isLifeMode ? '#38bdf8' : '#00e676'));
+                
+                // Pill
                 ctx.beginPath();
-                ctx.roundRect(4, 8, 192, 48, 24);
+                ctx.roundRect(6, 8, 308, 64, 32);
                 ctx.fillStyle = pillColor;
                 ctx.fill();
                 ctx.strokeStyle = borderColor;
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Year text
-                ctx.fillStyle = isLandmark ? '#1a0a00' : '#e7e5e4';
-                ctx.font = isLandmark ? 'bold 26px "Teko", monospace' : 'bold 22px monospace';
+                // Year & Badge icon
+                const yr = mem?.date ? new Date(mem.date).getFullYear() : (idx + 1);
+                let prefix = isLandmark ? '★ ' : (isVault ? '🔒 ' : '');
+                
+                // Truncate title
+                let titleText = mem?.title || `Milestone #${idx + 1}`;
+                if (titleText.length > 18) titleText = titleText.substring(0, 16) + '…';
+
+                ctx.fillStyle = (isLandmark || isVault) ? '#ffffff' : (isLight ? '#0f172a' : '#f8fafc');
+                ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(isLandmark ? '★ ' + year : year, 100, 32);
+                ctx.fillText(`${prefix}${titleText}`, 160, 32);
+
+                ctx.fillStyle = (isLandmark || isVault) ? 'rgba(255,255,255,0.85)' : (isLight ? '#475569' : '#94a3b8');
+                ctx.font = 'bold 16px "JetBrains Mono", monospace';
+                ctx.fillText(String(yr), 160, 54);
 
                 const tex = new THREE.CanvasTexture(cv);
                 const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
                     map: tex, transparent: true, depthTest: false
                 }));
-                sprite.scale.set(2.0, 0.64, 1);
+                sprite.scale.set(3.4, 0.85, 1);
                 return sprite;
             }
 
-            // Track all year label sprites for cleanup
+            function createYearLabelSprite(year, isLandmark = false) {
+                return createMemoryLabelSprite({ title: `Year ${year}`, date: `${year}-01-01`, isFavorite: isLandmark }, 0);
+            }
+
+            // Track all label sprites for cleanup
             let yearLabelSprites = [];
 
             function rebuild3DSpline() {
@@ -4518,6 +4978,14 @@
                 checkpointRings = [];
                 activeInsightCrystals = [];
                 activeVaultMeshes = [];
+
+                // Clean up previous active graphic discs
+                activeGraphicDiscs.forEach(g => {
+                    if (g.disc && g.disc.parent) g.disc.parent.remove(g.disc);
+                    if (g.corona && g.corona.parent) g.corona.parent.remove(g.corona);
+                    if (g.wave && g.wave.parent) g.wave.parent.remove(g.wave);
+                });
+                activeGraphicDiscs = [];
 
                 // Remove old year label sprites
                 yearLabelSprites.forEach(s => scene.remove(s));
@@ -4862,6 +5330,62 @@
                             phase: idx * 1.6
                         });
                     }
+
+                    // ── HIGH-RES 3D GRAPHIC MEDALLION & BILLBOARD DISC ──
+                    const isLightMode = document.body.classList.contains('theme-light');
+                    const graphicTex = createNodeGraphicTexture(mem, idx, isLightMode);
+                    const discGeo = new THREE.PlaneGeometry(2.3, 2.3);
+                    const discMat = new THREE.MeshBasicMaterial({
+                        map: graphicTex,
+                        transparent: true,
+                        side: THREE.DoubleSide,
+                        depthWrite: false
+                    });
+                    const discMesh = new THREE.Mesh(discGeo, discMat);
+                    discMesh.position.y = 2.4;
+                    discMesh.userData = { nodeIndex: idx, isMemoryDisc: true };
+                    ringGroup.add(discMesh);
+
+                    // Animated Glowing Corona Ring around Medallion
+                    const coronaColor = mem.isFavorite ? 0xf59e0b : (mem.isVaultLocked ? 0xa855f7 : (isLifeMode ? 0x06b6d4 : 0x00e676));
+                    const coronaGeo = new THREE.RingGeometry(1.18, 1.34, 32);
+                    const coronaMat = new THREE.MeshBasicMaterial({
+                        color: coronaColor,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.82
+                    });
+                    const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
+                    coronaMesh.position.y = 2.4;
+                    coronaMesh.userData = { nodeIndex: idx };
+                    ringGroup.add(coronaMesh);
+
+                    // Ground Ripple Wave Ring
+                    const waveGeo = new THREE.RingGeometry(0.85, 1.15, 32);
+                    const waveMat = new THREE.MeshBasicMaterial({
+                        color: coronaColor,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.35
+                    });
+                    const waveMesh = new THREE.Mesh(waveGeo, waveMat);
+                    waveMesh.rotation.x = Math.PI / 2;
+                    waveMesh.position.y = 0.05;
+                    ringGroup.add(waveMesh);
+
+                    activeGraphicDiscs.push({
+                        disc: discMesh,
+                        corona: coronaMesh,
+                        wave: waveMesh,
+                        baseY: 2.4,
+                        phase: idx * 1.4,
+                        idx
+                    });
+
+                    // Floating 3D Title & Date Pill Sprite
+                    const labelSprite = createMemoryLabelSprite(mem, idx, isLightMode);
+                    labelSprite.position.set(0, 3.85, 0);
+                    ringGroup.add(labelSprite);
 
                     ringGroup.userData = { nodeIndex: idx };
                     scene.add(ringGroup);
@@ -5520,7 +6044,7 @@
                 });
             }
 
-            document.getElementById('btn-open-log-modal').addEventListener('click', () => {
+            function openAddMemoryModal() {
                 editingMemoryId = null;
                 formLogPlay.reset();
                 attachedPhotos = [];
@@ -5529,14 +6053,95 @@
                 document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Preserve Memory' : 'Log Match Milestone';
                 modalLogPlay.classList.add('active');
                 playSoftSound('click');
+                setTimeout(() => {
+                    document.getElementById('log-input-title')?.focus();
+                }, 120);
+            }
+
+            document.getElementById('btn-open-log-modal').addEventListener('click', openAddMemoryModal);
+            document.getElementById('header-btn-add-memory')?.addEventListener('click', openAddMemoryModal);
+            document.getElementById('fab-add-memory')?.addEventListener('click', openAddMemoryModal);
+
+            // Global Hotkeys: 'N' / 'n' to open Add Memory Modal, 'Escape' to dismiss modals
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.drawer-overlay.active').forEach(m => m.classList.remove('active'));
+                }
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+                if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    if (modalLogPlay && !modalLogPlay.classList.contains('active')) {
+                        e.preventDefault();
+                        openAddMemoryModal();
+                    }
+                }
             });
+
+            // Universal backdrop dismissal: clicking outside card closes any overlay modal
+            document.querySelectorAll('.drawer-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
+
+            // Inspiration spark themes
+            const inspirationSelector = document.getElementById('log-inspiration-selector');
+            if (inspirationSelector) {
+                const inspirationThemes = {
+                    genesis: {
+                        title: isLifeMode ? 'The First Spark of Curiosity' : 'Day One: Stepping on the Field',
+                        journalHint: 'Recall where you were, who believed in you first, and what you felt when you took your very first step...'
+                    },
+                    obstacle: {
+                        title: isLifeMode ? 'Weathering the Heavy Storm' : 'The Grueling Comeback After Adversity',
+                        journalHint: 'What made this trial seem impossible, and where did you discover the quiet grit to keep moving forward?'
+                    },
+                    breakthrough: {
+                        title: isLifeMode ? 'The Moment Everything Clicked' : 'The Championship Clutch Victory',
+                        journalHint: 'What did the roar or the silence feel like? Who rushed to embrace you?'
+                    },
+                    turning_point: {
+                        title: isLifeMode ? 'The Crossroads Decision' : 'A Crucial Shift in Tactics & Discipline',
+                        journalHint: 'What belief did you let go of, and what new truth did you embrace on this pivotal day?'
+                    },
+                    graduation: {
+                        title: isLifeMode ? 'Entering the Next Chapter' : 'Debuting on the Elite Stage',
+                        journalHint: 'Stepping into a bigger world. Describe the nervous excitement and determination.'
+                    },
+                    mentorship: {
+                        title: isLifeMode ? 'Words from a Guiding Light' : 'Coach’s Halftime Speech',
+                        journalHint: 'What sentence did they utter that has stayed in your mind ever since?'
+                    },
+                    peace: {
+                        title: isLifeMode ? 'An Afternoon of Pure Stillness' : 'Quiet Reflection After the Final Whistle',
+                        journalHint: 'Sitting back, taking a breath, and noticing all the little blessings along this path...'
+                    }
+                };
+
+                inspirationSelector.addEventListener('change', (e) => {
+                    const val = e.target.value;
+                    if (val && inspirationThemes[val]) {
+                        const data = inspirationThemes[val];
+                        const titleInput = document.getElementById('log-input-title');
+                        const journalInput = document.getElementById('log-input-journal');
+                        if (titleInput && (!titleInput.value.trim() || Object.values(inspirationThemes).some(t => t.title === titleInput.value))) {
+                            titleInput.value = data.title;
+                        }
+                        if (journalInput) {
+                            journalInput.placeholder = data.journalHint;
+                        }
+                        playSoftSound('click');
+                    }
+                });
+            }
 
             document.getElementById('btn-close-log-modal').addEventListener('click', () => {
                 modalLogPlay.classList.remove('active');
             });
 
-            formLogPlay.addEventListener('submit', async (e) => {
-                e.preventDefault();
+            async function saveMemorySubmission(keepOpenForNext = false) {
                 playSoftSound('chime');
 
                 const title = document.getElementById('log-input-title').value.trim();
@@ -5549,6 +6154,15 @@
                 const sentimentLabel = logInputSentimentLabel.value || 'Pure Gratitude 🕊️';
                 const journal = document.getElementById('log-input-journal').value.trim();
                 const isVaultLocked = Boolean(document.getElementById('log-input-vault-locked')?.checked);
+
+                if (!title) {
+                    document.getElementById('log-input-title')?.focus();
+                    return;
+                }
+                if (!journal) {
+                    document.getElementById('log-input-journal')?.focus();
+                    return;
+                }
 
                 // Build photos array with individual captions
                 const photosList = attachedPhotos.map(p => ({
@@ -5654,33 +6268,69 @@
                         addToOfflineQueue('create', newMemory.Memory_ID, payload);
                     }
 
-                    confetti({
-                        particleCount: 80,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: isLifeMode ? ['#f59e0b', '#38bdf8', '#fbcfe8'] : ['#10b981', '#f59e0b', '#06b6d4']
-                    });
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 80,
+                            spread: 70,
+                            origin: { y: 0.6 },
+                            colors: isLifeMode ? ['#f59e0b', '#38bdf8', '#fbcfe8'] : ['#10b981', '#f59e0b', '#06b6d4']
+                        });
+                    }
 
                     const sortedList = getActiveMemories();
                     const newIdx = sortedList.findIndex(m => m.Memory_ID === newMemory.Memory_ID || m.title === newMemory.title);
                     updateActiveNode(newIdx !== -1 ? newIdx : sortedList.length - 1);
                 }
 
-                formLogPlay.reset();
-                editingMemoryId = null;
-                attachedPhotos = [];
-                renderAttachedPhotosPreview();
-                modalLogPlay.classList.remove('active');
                 rebuild3DSpline();
                 renderProCardTraits();
                 if (typeof populateAIEraSelect === 'function') populateAIEraSelect();
 
-                // Fly camera to new node and flash sub-bench "just learned"
                 const sortedList2 = getActiveMemories();
-                const newNodeIdx = sortedList2.findIndex(m => m.Memory_ID === (window._lastSavedMemoryId) || m.title === (window._lastSavedTitle));
+                const newNodeIdx = sortedList2.findIndex(m => m.title === title);
                 const flyIdx = newNodeIdx !== -1 ? newNodeIdx : sortedList2.length - 1;
-                setTimeout(() => flyToNode(flyIdx, false, false), 400);
-                updateSubBenchWidget({ justLearned: sortedList2[flyIdx] });
+
+                if (keepOpenForNext) {
+                    // Reset inputs for rapid sequential creation while retaining Era and Date
+                    document.getElementById('log-input-title').value = '';
+                    document.getElementById('log-input-journal').value = '';
+                    document.getElementById('log-input-favorite').checked = false;
+                    attachedPhotos = [];
+                    renderAttachedPhotosPreview();
+                    editingMemoryId = null;
+                    document.getElementById('log-input-title').focus();
+                    updateSubBenchWidget({ justLearned: sortedList2[flyIdx] });
+
+                    // Button visual feedback
+                    const btnAnother = document.getElementById('btn-submit-and-another');
+                    if (btnAnother) {
+                        const origText = btnAnother.innerHTML;
+                        btnAnother.innerHTML = `<span>✓ Saved! Next Memory Ready</span>`;
+                        btnAnother.classList.add('bg-emerald-500/30', 'text-emerald-200');
+                        setTimeout(() => {
+                            btnAnother.innerHTML = origText;
+                            btnAnother.classList.remove('bg-emerald-500/30', 'text-emerald-200');
+                        }, 2200);
+                    }
+                } else {
+                    formLogPlay.reset();
+                    editingMemoryId = null;
+                    attachedPhotos = [];
+                    renderAttachedPhotosPreview();
+                    modalLogPlay.classList.remove('active');
+                    setTimeout(() => flyToNode(flyIdx, false, false), 400);
+                    updateSubBenchWidget({ justLearned: sortedList2[flyIdx] });
+                }
+            }
+
+            formLogPlay.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveMemorySubmission(false);
+            });
+
+            document.getElementById('btn-submit-and-another')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await saveMemorySubmission(true);
             });
 
             /* ------------------------------------------------------------------
@@ -6988,10 +7638,10 @@
                         <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-stone-900/70 border border-white/5 hover:border-purple-500/30 transition">
                             <div class="min-w-0 max-w-sm">
                                 <div class="flex items-center gap-2">
-                                    <h5 class="text-xs font-semibold text-stone-200 truncate">${m.title || 'Untitled Moment'}</h5>
-                                    <span class="px-2 py-0.5 rounded-full bg-stone-800 text-[10px] font-mono text-stone-400">${m.date || ''}</span>
+                                    <h5 class="text-xs font-semibold text-stone-200 truncate">${escapeHTML(m.title || 'Untitled Moment')}</h5>
+                                    <span class="px-2 py-0.5 rounded-full bg-stone-800 text-[10px] font-mono text-stone-400">${escapeHTML(m.date || '')}</span>
                                 </div>
-                                <p class="text-[10px] text-stone-400 truncate mt-0.5">${m.era || (isLifeMode ? 'Life Sanctuary' : currentSport.toUpperCase())}</p>
+                                <p class="text-[10px] text-stone-400 truncate mt-0.5">${escapeHTML(m.era || (isLifeMode ? 'Life Sanctuary' : currentSport.toUpperCase()))}</p>
                             </div>
                             <!-- 3-Pill Switcher -->
                             <div class="flex items-center p-1 bg-stone-950 rounded-xl border border-white/10 text-[11px] font-medium">
@@ -9643,7 +10293,7 @@
                 const anchors = [
                     {
                         era: document.getElementById('onboarding-era-1')?.value?.trim() || 'Youth & Formative Years',
-                        title: document.getElementById('onboarding-title-1')?.value?.trim() || 'Day One: Lacing Up My First Pair of Cleats',
+                        title: document.getElementById('onboarding-title-1')?.value?.trim() || (isLifeMode ? 'The Beginning: Taking My First Step' : 'Day One: Stepping on the Field'),
                         date: date1Input?.value || twoYearsAgo,
                         journal: document.getElementById('onboarding-journal-1')?.value?.trim() || '',
                         sentiment: 85,
@@ -9652,7 +10302,7 @@
                     },
                     {
                         era: document.getElementById('onboarding-era-2')?.value?.trim() || 'Breakthrough & Championship Season',
-                        title: document.getElementById('onboarding-title-2')?.value?.trim() || 'Clutch Winning Goal in State Championship',
+                        title: document.getElementById('onboarding-title-2')?.value?.trim() || (isLifeMode ? 'The Turning Point: Discovering My True Passion' : 'The Championship Clutch Victory'),
                         date: date2Input?.value || oneYearAgo,
                         journal: document.getElementById('onboarding-journal-2')?.value?.trim() || '',
                         sentiment: 98,
@@ -9662,7 +10312,7 @@
                     },
                     {
                         era: document.getElementById('onboarding-era-3')?.value?.trim() || 'Pro Athlete & Mastery Era',
-                        title: document.getElementById('onboarding-title-3')?.value?.trim() || 'Chasing National Consistency & Mentoring the Squad',
+                        title: document.getElementById('onboarding-title-3')?.value?.trim() || (isLifeMode ? 'Current Chapter: Cultivating Wisdom & Craft' : 'Chasing National Consistency & Mentoring the Squad'),
                         date: date3Input?.value || dateStrToday,
                         journal: document.getElementById('onboarding-journal-3')?.value?.trim() || '',
                         sentiment: 90,
@@ -9776,6 +10426,7 @@
                13. INITIALIZATION & CINEMATIC INTRO ANIMATION
                ------------------------------------------------------------------ */
             renderDomainSwitcher();
+            applyTheme(localStorage.getItem('legacy_theme') || 'dark');
             rebuild3DSpline();
             updateSubBenchWidget();
             fetchMemoriesFromBackend();
@@ -9834,9 +10485,12 @@
                     return;
                 }
 
-                // Click on checkpoint rings
-                const ringGroups = checkpointRings.map(r => r.group);
-                const ringHits = raycaster.intersectObjects(ringGroups, true);
+                // Click on checkpoint rings & 3D graphic discs
+                const interactiveObjects = [
+                    ...checkpointRings.map(r => r.group),
+                    ...activeGraphicDiscs.map(g => g.disc).filter(Boolean)
+                ];
+                const ringHits = raycaster.intersectObjects(interactiveObjects, true);
                 if (ringHits.length > 0) {
                     let hitObj = ringHits[0].object;
                     while (hitObj && hitObj.userData.nodeIndex === undefined && hitObj.parent) {
@@ -9846,6 +10500,22 @@
                         visitNode(hitObj.userData.nodeIndex, true);
                     }
                 }
+            });
+
+            // Interactive Cursor on Canvas Hover
+            canvas.addEventListener('pointermove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                const interactiveObjects = [
+                    ...checkpointRings.map(r => r.group),
+                    ...activeGraphicDiscs.map(g => g.disc).filter(Boolean),
+                    benchGroup
+                ];
+                const hits = raycaster.intersectObjects(interactiveObjects, true);
+                canvas.style.cursor = hits.length > 0 ? 'pointer' : 'default';
             });
 
             /* ------------------------------------------------------------------
@@ -10000,6 +10670,27 @@
                         v.seal.position.y = floatY;
                         v.wire.position.y = floatY;
                         v.beacon.material.opacity = 0.22 + Math.sin(time * 3 + v.phase) * 0.1;
+                    });
+                }
+
+                // ANIMATE 3D FLOATING GRAPHIC MEDALLIONS & CORONAS
+                if (activeGraphicDiscs && activeGraphicDiscs.length > 0) {
+                    activeGraphicDiscs.forEach(g => {
+                        if (g.disc) {
+                            g.disc.quaternion.copy(camera.quaternion);
+                            const floatY = g.baseY + Math.sin(time * 2.2 + g.phase) * 0.12;
+                            g.disc.position.y = floatY;
+                            if (g.corona) {
+                                g.corona.position.y = floatY;
+                                g.corona.quaternion.copy(camera.quaternion);
+                                g.corona.rotation.z = time * 0.8 + g.phase;
+                            }
+                            if (g.wave) {
+                                const s = 1.0 + Math.sin(time * 2.4 + g.phase) * 0.18;
+                                g.wave.scale.set(s, s, 1);
+                                g.wave.material.opacity = 0.22 + Math.sin(time * 2.4 + g.phase) * 0.12;
+                            }
+                        }
                     });
                 }
 
