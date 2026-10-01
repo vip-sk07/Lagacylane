@@ -229,18 +229,45 @@ async function verifyGoogleIdToken(idToken) {
 }
 
 /**
+ * Verify a Google OAuth2 access token by calling Google's userinfo endpoint.
+ * Returns user profile { sub, email, name, picture, email_verified }
+ */
+async function verifyGoogleAccessToken(accessToken) {
+  const url = 'https://www.googleapis.com/oauth2/v3/userinfo';
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!response.ok) {
+    throw new Error('Google access token verification failed: invalid or expired token');
+  }
+  const payload = await response.json();
+  if (payload.error) {
+    throw new Error(`Google token error: ${payload.error_description || payload.error}`);
+  }
+  return payload;
+}
+
+/**
  * POST /api/auth/google
- * Accepts either:
- *   a) { credential } — a raw Google ID token from Google One Tap / Sign-In button
- *   b) { email, name, avatarUrl } — pre-extracted fields (fallback / test mode)
+ * Accepts:
+ *   a) { accessToken } — OAuth2 access token from Google popup
+ *   b) { credential }  — raw Google ID token from Google One Tap / Sign-In button
+ *   c) { email, name, avatarUrl } — pre-extracted fields (fallback / test mode)
  */
 app.post('/api/auth/google', async (req, res) => {
   try {
     let email, name, avatarUrl, googleId;
-    const { credential, sportType, position, teamHistory } = req.body;
+    const { credential, accessToken, sportType, position, teamHistory } = req.body;
 
-    if (credential) {
-      // === REAL MODE: Verify the Google ID token ===
+    if (accessToken) {
+      // === POPUP MODE: Verify the Google OAuth2 access token ===
+      const payload = await verifyGoogleAccessToken(accessToken);
+      email      = payload.email;
+      name       = payload.name;
+      avatarUrl  = payload.picture || null;
+      googleId   = payload.sub;
+    } else if (credential) {
+      // === ONE TAP MODE: Verify the Google ID token ===
       const payload = await verifyGoogleIdToken(credential);
       email      = payload.email;
       name       = payload.name;
