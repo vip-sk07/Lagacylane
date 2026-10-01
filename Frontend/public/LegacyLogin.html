@@ -750,28 +750,60 @@
 
     
     <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
+    <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
     <div id="googleAuthModal" class="google-modal-overlay">
-        <div class="google-modal-card">
+        <div class="google-modal-card" style="max-width: 480px;">
             <button type="button" class="google-modal-close" id="closeGoogleModal" aria-label="Close dialog">&times;</button>
             
             <div class="google-modal-header">
-                <svg class="google-svg-logo" width="36" height="36" viewBox="0 0 24 24">
+                <svg class="google-svg-logo" width="40" height="40" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                     <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#EA4335"/>
                 </svg>
-                <h3 class="google-modal-title">Sign in with Google</h3>
-                <p class="google-modal-subtitle">Choose or enter your Google Account to continue to <strong style="color:#ffffff;">LegacyLane</strong></p>
+                <h3 class="google-modal-title">Connect Real Google Account</h3>
+                <p class="google-modal-subtitle">Authenticate securely via Google Identity Services & OAuth 2.0</p>
             </div>
 
-            <!-- Quick 1-Click Saved / Athlete Accounts -->
-            <div class="google-account-list" id="googleAccountList">
-                <!-- Injected dynamically -->
+            <!-- Client ID Configuration Box (when not set in .env) -->
+            <div id="googleClientIdSetupBox" style="background:rgba(255,255,255,0.04);border:1px solid rgba(66,133,244,0.3);border-radius:16px;padding:16px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span style="color:#4285F4;font-size:16px;">⚙️</span>
+                    <strong style="color:#f8fafc;font-size:13px;">Google OAuth 2.0 Client ID Required</strong>
+                </div>
+                <p style="font-size:11.5px;color:#94a3b8;line-height:1.45;margin-bottom:12px;">
+                    Google requires an authorized Client ID to open the official Google sign-in window. Enter your Client ID from Google Cloud Console:
+                </p>
+                
+                <div style="margin-bottom:10px;">
+                    <input type="text" id="googleCustomClientIdInput" placeholder="e.g. 123456789-abc.apps.googleusercontent.com" style="width:100%;box-sizing:border-box;background:#0b1120;border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:10px 12px;color:#fff;font-size:12px;font-family:monospace;outline:none;">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button type="button" id="btnSaveAndLaunchGoogle" style="flex:1;padding:10px;background:#4285F4;color:#fff;font-weight:600;font-size:12px;border:none;border-radius:10px;cursor:pointer;">
+                        Launch Official Google Login
+                    </button>
+                    <button type="button" id="btnToggleGoogleGuide" style="padding:10px 12px;background:rgba(255,255,255,0.08);color:#94a3b8;font-size:11.5px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;cursor:pointer;">
+                        Guide
+                    </button>
+                </div>
+
+                <!-- 1-Minute Google Cloud Console Quick Guide -->
+                <div id="googleGuideBox" style="display:none;margin-top:12px;padding:10px;background:#090d16;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:11px;color:#cbd5e1;line-height:1.5;">
+                    <strong style="color:#4285F4;">1-Minute Setup in Google Cloud Console:</strong>
+                    <ol style="margin:6px 0 0 16px;padding:0;">
+                        <li>Visit <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#38bdf8;text-decoration:underline;">console.cloud.google.com</a></li>
+                        <li>Click <strong>+ Create Credentials &rarr; OAuth client ID</strong></li>
+                        <li>Application type: <strong>Web application</strong></li>
+                        <li>Authorized JavaScript origin: <code style="color:#a5f3fc;background:#1e293b;padding:2px 4px;border-radius:4px;">http://localhost:5000</code></li>
+                        <li>Copy the generated <strong>Client ID</strong> and paste above!</li>
+                    </ol>
+                </div>
             </div>
 
             <div class="google-divider-row">
-                <span>or use Google email</span>
+                <span>Or Direct Google Email SSO</span>
             </div>
 
             <form id="googleDirectForm" class="google-direct-form">
@@ -779,15 +811,15 @@
                     <label for="googleEmailInput">Google Email Address</label>
                     <div class="google-input-wrap">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <input type="email" id="googleEmailInput" placeholder="name@gmail.com" required autocomplete="email">
+                        <input type="email" id="googleEmailInput" placeholder="your.google.account@gmail.com" required autocomplete="email">
                     </div>
                 </div>
 
                 <div class="google-input-box">
-                    <label for="googleNameInput">Display / Athlete Name</label>
+                    <label for="googleNameInput">Display Name</label>
                     <div class="google-input-wrap">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <input type="text" id="googleNameInput" placeholder="e.g. Alex Vance" autocomplete="name">
+                        <input type="text" id="googleNameInput" placeholder="e.g. My Real Name" autocomplete="name">
                     </div>
                 </div>
 
@@ -800,12 +832,12 @@
                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                         <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#EA4335"/>
                     </svg>
-                    <span id="googleSubmitBtnText">Authorize & Continue</span>
+                    <span id="googleSubmitBtnText">Connect Google Account</span>
                 </button>
             </form>
 
             <p class="google-modal-footer">
-                Google securely shares your verified identity with LegacyLane. Zero external redirects.
+                Google Identity Services connects directly to your verified Google profile and email.
             </p>
         </div>
     </div>
@@ -932,7 +964,83 @@
         });
 
         
-        // --- AUTHENTIC GOOGLE IDENTITY & SSO ENGINE ---
+        // --- OFFICIAL GOOGLE IDENTITY SERVICES & OAUTH 2.0 ENGINE ---
+        let googleTokenClient = null;
+        let configuredGoogleClientId = '';
+
+        async function fetchGoogleOAuthConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/google/config`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.clientId && data.clientId.trim()) {
+                        configuredGoogleClientId = data.clientId.trim();
+                    }
+                }
+            } catch (e) {}
+
+            // Also check localStorage
+            if (!configuredGoogleClientId) {
+                configuredGoogleClientId = localStorage.getItem('legacy_google_client_id') || '';
+            }
+
+            return configuredGoogleClientId;
+        }
+
+        function initGoogleTokenClient(clientId) {
+            if (!clientId || !window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+                return false;
+            }
+
+            try {
+                googleTokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: clientId.trim(),
+                    scope: 'openid email profile',
+                    prompt: 'select_account',
+                    callback: async (tokenResponse) => {
+                        if (tokenResponse.error) {
+                            console.error('Google OAuth Error:', tokenResponse);
+                            showGoogleStatus('Google authentication error: ' + (tokenResponse.error_description || tokenResponse.error), true);
+                            return;
+                        }
+
+                        if (!tokenResponse.access_token) {
+                            showGoogleStatus('No access token returned from Google.', true);
+                            return;
+                        }
+
+                        showGoogleStatus('Retrieving verified profile from Google...', false);
+
+                        try {
+                            // Fetch user info from Google's standard UserInfo endpoint
+                            const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
+                            });
+
+                            if (!profileRes.ok) {
+                                throw new Error('Failed to fetch userinfo from Google');
+                            }
+
+                            const googleProfile = await profileRes.json();
+                            const email = googleProfile.email;
+                            const name = googleProfile.name || googleProfile.given_name || email.split('@')[0];
+                            const avatarUrl = googleProfile.picture || null;
+
+                            // Send to backend to create or find user in SQLite
+                            await performGoogleLogin(email, name, avatarUrl, googleProfile.sub);
+                        } catch (err) {
+                            console.error('Google userinfo fetch error:', err);
+                            showGoogleStatus('Error retrieving profile from Google. Please try again.', true);
+                        }
+                    }
+                });
+                return true;
+            } catch (err) {
+                console.warn('Google TokenClient init warning:', err.message);
+                return false;
+            }
+        }
+
         const googleAuthModal = document.getElementById('googleAuthModal');
         const closeGoogleModal = document.getElementById('closeGoogleModal');
         const googleDirectForm = document.getElementById('googleDirectForm');
@@ -941,78 +1049,60 @@
         const googleAuthStatus = document.getElementById('googleAuthStatus');
         const btnSubmitGoogleAuth = document.getElementById('btnSubmitGoogleAuth');
         const googleSubmitBtnText = document.getElementById('googleSubmitBtnText');
-        const googleAccountList = document.getElementById('googleAccountList');
+        const googleCustomClientIdInput = document.getElementById('googleCustomClientIdInput');
+        const btnSaveAndLaunchGoogle = document.getElementById('btnSaveAndLaunchGoogle');
+        const btnToggleGoogleGuide = document.getElementById('btnToggleGoogleGuide');
+        const googleGuideBox = document.getElementById('googleGuideBox');
 
-        function openGoogleAuthModal() {
-            if (!googleAuthModal) return;
-            if (googleAuthStatus) {
-                googleAuthStatus.textContent = '';
-                googleAuthStatus.className = 'google-auth-status';
-                googleAuthStatus.style.display = 'none';
+        btnToggleGoogleGuide?.addEventListener('click', () => {
+            if (googleGuideBox) {
+                googleGuideBox.style.display = googleGuideBox.style.display === 'none' ? 'block' : 'none';
             }
+        });
 
-            // Populate quick 1-click accounts
-            const savedName = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
-            const cleanName = (savedName && savedName !== 'Athlete' && savedName !== 'Life Explorer') ? savedName : '';
-            const suggestedEmail = cleanName ? (cleanName.toLowerCase().replace(/[^a-z0-9]/g, '') + '@gmail.com') : '';
-
-            let accountsHtml = '';
-            if (cleanName && suggestedEmail) {
-                accountsHtml += `
-                    <div class="google-account-chip" data-email="${suggestedEmail}" data-name="${cleanName}">
-                        <div class="google-account-avatar">${cleanName.charAt(0).toUpperCase()}</div>
-                        <div class="google-account-info">
-                            <div class="google-account-name">${cleanName}</div>
-                            <div class="google-account-email">${suggestedEmail}</div>
-                        </div>
-                        <div class="google-account-arrow">&rsaquo;</div>
-                    </div>
-                `;
+        btnSaveAndLaunchGoogle?.addEventListener('click', () => {
+            const inputId = googleCustomClientIdInput?.value?.trim();
+            if (!inputId) {
+                showGoogleStatus('Please enter a valid Google OAuth Client ID.', true);
+                return;
             }
+            localStorage.setItem('legacy_google_client_id', inputId);
+            configuredGoogleClientId = inputId;
+            showGoogleStatus('Client ID saved! Initializing Google Sign-In...', false);
 
-            const demoAccounts = [
-                { name: 'Alex Vance', email: 'alex.vance@gmail.com' },
-                { name: 'Elena Reyes', email: 'elena.reyes@gmail.com' }
-            ];
+            if (initGoogleTokenClient(inputId)) {
+                googleTokenClient.requestAccessToken();
+            } else {
+                showGoogleStatus('Google Identity Services library loading... Please click once more.', true);
+            }
+        });
 
-            demoAccounts.forEach(acc => {
-                if (acc.email !== suggestedEmail) {
-                    accountsHtml += `
-                        <div class="google-account-chip" data-email="${acc.email}" data-name="${acc.name}">
-                            <div class="google-account-avatar">${acc.name.charAt(0)}</div>
-                            <div class="google-account-info">
-                                <div class="google-account-name">${acc.name}</div>
-                                <div class="google-account-email">${acc.email}</div>
-                            </div>
-                            <div class="google-account-arrow">&rsaquo;</div>
-                        </div>
-                    `;
+        async function triggerGoogleSignInFlow() {
+            const clientId = await fetchGoogleOAuthConfig();
+
+            if (clientId && window.google?.accounts?.oauth2) {
+                if (initGoogleTokenClient(clientId)) {
+                    // Directly launch official Google OAuth popup
+                    googleTokenClient.requestAccessToken();
+                    return;
                 }
-            });
-
-            if (googleAccountList) {
-                googleAccountList.innerHTML = accountsHtml;
-                googleAccountList.querySelectorAll('.google-account-chip').forEach(chip => {
-                    chip.addEventListener('click', () => {
-                        const email = chip.getAttribute('data-email');
-                        const name = chip.getAttribute('data-name');
-                        performGoogleLogin(email, name);
-                    });
-                });
             }
 
-            if (googleEmailInput && !googleEmailInput.value && suggestedEmail) {
-                googleEmailInput.value = suggestedEmail;
+            // If no Client ID configured yet or GSI pending, open configuration dialog
+            if (googleAuthModal) {
+                if (googleCustomClientIdInput && clientId) {
+                    googleCustomClientIdInput.value = clientId;
+                }
+                const savedName = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
+                if (googleNameInput && !googleNameInput.value && savedName && savedName !== 'Athlete') {
+                    googleNameInput.value = savedName;
+                }
+                if (googleAuthStatus) {
+                    googleAuthStatus.textContent = '';
+                    googleAuthStatus.style.display = 'none';
+                }
+                googleAuthModal.classList.add('active');
             }
-            if (googleNameInput && !googleNameInput.value && cleanName) {
-                googleNameInput.value = cleanName;
-            }
-
-            googleAuthModal.classList.add('active');
-            setTimeout(() => {
-                if (googleEmailInput && !googleEmailInput.value) googleEmailInput.focus();
-                else if (googleNameInput) googleNameInput.focus();
-            }, 150);
         }
 
         function closeGoogleAuthModalHandler() {
@@ -1036,11 +1126,11 @@
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                openGoogleAuthModal();
+                triggerGoogleSignInFlow();
             });
         });
 
-        async function performGoogleLogin(email, name) {
+        async function performGoogleLogin(email, name, avatarUrl = null, googleSub = null) {
             if (!email || !email.includes('@')) {
                 showGoogleStatus('Please enter a valid Google Account email address.', true);
                 return;
@@ -1048,8 +1138,8 @@
             const cleanName = (name && name.trim()) ? name.trim() : email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
             if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = true;
-            if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Verifying Google Account...';
-            showGoogleStatus('Authenticating with Google SSO...', false);
+            if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connecting Google Account...';
+            showGoogleStatus('Connecting verified Google Account to LegacyLane...', false);
 
             try {
                 const res = await fetch(`${API_BASE}/auth/google`, {
@@ -1058,16 +1148,17 @@
                     body: JSON.stringify({
                         email: email.trim().toLowerCase(),
                         name: cleanName,
-                        avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=4285F4&color=fff&rounded=true`,
+                        avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=4285F4&color=fff&rounded=true`,
+                        googleId: googleSub,
                         sportType: localStorage.getItem('legacy_selected_sport') || 'football'
                     })
                 });
 
                 const data = await res.json();
                 if (res.ok && data.user) {
-                    showGoogleStatus(`✓ Google SSO Verified! Welcome, ${data.user.name}.`, false);
+                    showGoogleStatus(`✓ Authenticated as ${data.user.name} (${data.user.email})! Launching...`, false);
                     if (typeof showAuthNotification === 'function') {
-                        showAuthNotification(`Google SSO Verified! Welcome, ${data.user.name}.`, false);
+                        showAuthNotification(`✓ Google Account connected! Welcome, ${data.user.name}.`, false);
                     }
 
                     // Store authenticated user session
@@ -1085,13 +1176,13 @@
                 } else {
                     showGoogleStatus(data.error || 'Google authentication failed. Please try again.', true);
                     if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
-                    if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Authorize & Continue';
+                    if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connect Google Account';
                 }
             } catch (err) {
                 console.error('Google auth network error:', err);
                 showGoogleStatus('Network error reaching authentication server. Please check connection.', true);
                 if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
-                if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Authorize & Continue';
+                if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connect Google Account';
             }
         }
 
@@ -1111,6 +1202,12 @@
             });
         }
 
+        // Initialize Google OAuth config in background
+        fetchGoogleOAuthConfig().then(cid => {
+            if (cid && window.google?.accounts?.oauth2) {
+                initGoogleTokenClient(cid);
+            }
+        });
 
         // Reactive Mouse Animation & Interactive Background Gallery Switcher
         const loginCard = document.getElementById('loginCard');

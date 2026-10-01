@@ -237,6 +237,14 @@ async (req, res) => {
   }
 });
 
+// Google OAuth Client Configuration
+app.get('/api/auth/google/config', (req, res) => {
+  res.json({
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    configured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID.trim())
+  });
+});
+
 // Google Sign-In Authentication
 app.post('/api/auth/google', async (req, res) => {
   try {
@@ -264,6 +272,11 @@ app.post('/api/auth/google', async (req, res) => {
       `).run(profileId, userId, sportType || 'football', position || 'Attacking Midfielder (#10)', teamHistory || 'Legacy Academy', 10);
 
       userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
+    } else if (avatarUrl && !userRow.AvatarURL) {
+      try {
+        db.prepare('UPDATE Users SET AvatarURL = ? WHERE User_ID = ?').run(avatarUrl, userRow.User_ID);
+        userRow.AvatarURL = avatarUrl;
+      } catch (aErr) {}
     }
 
     const athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userRow.User_ID);
