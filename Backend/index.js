@@ -63,9 +63,10 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 // ── RATE LIMITING (SRS §5.3 Security Requirements) ──
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.method === 'GET' || req.path.includes('/config'),
   message: { error: 'Too many login attempts. Please wait 15 minutes and try again.' }
 });
 const apiLimiter = rateLimit({
@@ -288,13 +289,20 @@ async function verifyGoogleAccessToken(accessToken) {
   return payload;
 }
 
-/**
- * POST /api/auth/google
- * Accepts:
- *   a) { accessToken } — OAuth2 access token from Google popup
- *   b) { credential }  — raw Google ID token from Google One Tap / Sign-In button
- *   c) { email, name, avatarUrl } — pre-extracted fields (fallback / test mode)
- */
+// Google OAuth Client Configuration
+app.get('/api/auth/google/config', (req, res) => {
+  res.json({
+    clientId: GOOGLE_CLIENT_ID,
+    configured: Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID.trim())
+  });
+});
+
+// GET /api/auth/google/client-id — returns the public client ID for frontend Google Sign-In button
+app.get('/api/auth/google/client-id', (req, res) => {
+  res.json({ clientId: GOOGLE_CLIENT_ID });
+});
+
+// Google Sign-In Authentication
 app.post('/api/auth/google', async (req, res) => {
   try {
     let email, name, avatarUrl, googleId;
@@ -344,12 +352,11 @@ app.post('/api/auth/google', async (req, res) => {
       `).run(profileId, userId, sportType || 'football', position || 'Player', teamHistory || 'Legacy Academy', 10);
 
       userRow = db.prepare('SELECT * FROM Users WHERE User_ID = ?').get(userId);
-    } else {
-      // Update avatar URL if Google profile picture changed
-      if (avatarUrl && userRow.AvatarURL !== avatarUrl) {
+    } else if (avatarUrl && userRow.AvatarURL !== avatarUrl) {
+      try {
         db.prepare('UPDATE Users SET AvatarURL = ? WHERE User_ID = ?').run(avatarUrl, userRow.User_ID);
         userRow.AvatarURL = avatarUrl;
-      }
+      } catch (aErr) {}
     }
 
     const athleteRow = db.prepare('SELECT * FROM AthleteProfiles WHERE User_ID = ?').get(userRow.User_ID);

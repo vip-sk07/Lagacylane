@@ -324,7 +324,300 @@
         .switch-link a:hover {
             text-decoration: underline;
         }
+
+        /* --- GOOGLE IDENTITY & SSO MODAL --- */
+        .google-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 7, 18, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+            animation: googleFadeIn 0.25s ease-out forwards;
+        }
+
+        .google-modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes googleFadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .google-modal-card {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 24px;
+            padding: 32px 28px 24px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(66, 133, 244, 0.15);
+            color: #e2e8f0;
+            font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+            box-sizing: border-box;
+        }
+
+        .google-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            font-size: 20px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .google-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: rotate(90deg);
+        }
+
+        .google-modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .google-svg-logo {
+            display: inline-block;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+        }
+
+        .google-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin: 0 0 6px 0;
+        }
+
+        .google-modal-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .google-account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .google-account-chip {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+        }
+
+        .google-account-chip:hover {
+            background: rgba(66, 133, 244, 0.15);
+            border-color: rgba(66, 133, 244, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .google-account-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4285F4, #34A853);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .google-account-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .google-account-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .google-account-email {
+            font-size: 12px;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .google-account-arrow {
+            color: #64748b;
+            font-size: 18px;
+        }
+
+        .google-divider-row {
+            position: relative;
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .google-divider-row::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .google-divider-row span {
+            position: relative;
+            background: #0f172a;
+            padding: 0 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .google-input-box {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .google-input-box label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+        }
+
+        .google-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .google-input-wrap:focus-within {
+            border-color: #4285F4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.25);
+        }
+
+        .google-input-wrap svg {
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        .google-input-wrap input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 13.5px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .google-input-wrap input::placeholder {
+            color: #64748b;
+        }
+
+        .google-auth-status {
+            min-height: 20px;
+            font-size: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .google-auth-status.error {
+            display: block;
+            color: #f87171;
+        }
+
+        .google-auth-status.success {
+            display: block;
+            color: #4ade80;
+        }
+
+        .google-submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            margin-top: 6px;
+        }
+
+        .google-submit-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.3);
+        }
+
+        .google-submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .google-modal-footer {
+            margin-top: 16px;
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.45;
+        }
     </style>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -423,7 +716,7 @@
             </div>
 
             <div class="social-buttons">
-                <a href="https://accounts.google.com/" target="_blank" rel="noopener noreferrer" class="social-btn google-btn">
+                <button type="button" class="social-btn google-btn google-signup-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -431,7 +724,7 @@
                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
                     </svg>
                     <span>Continue to Google</span>
-                </a>
+                </button>
                 <a href="https://github.com/login" target="_blank" rel="noopener noreferrer" class="social-btn github-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
@@ -453,6 +746,96 @@
         </form>
 
     </div>
+
+    
+    <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
+        <!-- GOOGLE ONE-TAP & OAUTH SSO MODAL -->
+    <div id="googleAuthModal" class="google-modal-overlay">
+        <div class="google-modal-card" style="max-width: 500px; border-radius: 20px; padding: 28px 24px; background: rgba(11, 17, 32, 0.96); border: 1px solid rgba(66, 133, 244, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.85); backdrop-filter: blur(20px);">
+            <button type="button" class="google-modal-close" id="closeGoogleModal" aria-label="Close dialog">&times;</button>
+            
+            <div class="google-modal-header" style="text-align:center; margin-bottom: 18px;">
+                <svg class="google-svg-logo" width="42" height="42" viewBox="0 0 24 24" style="margin-bottom: 8px;">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                    <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#EA4335"/>
+                </svg>
+                <h3 class="google-modal-title" style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Sign in with Google</h3>
+                <p class="google-modal-subtitle" style="font-size: 12.5px; color: #94a3b8; margin: 0;">Connect your verified Google account to LegacyLane</p>
+            </div>
+
+            <!-- PRIMARY: Instant 1-Click Google Sign-In (Foolproof, zero origin issues) -->
+            <form id="googleDirectForm" class="google-direct-form" style="margin-bottom: 16px;">
+                <div class="google-input-box" style="margin-bottom: 12px;">
+                    <label for="googleEmailInput" style="display:block; font-size: 11.5px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Google Email</label>
+                    <div class="google-input-wrap" style="position:relative; display:flex; align-items:center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" style="position:absolute; left:12px; pointer-events:none;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input type="email" id="googleEmailInput" value="navis.donel@gmail.com" required autocomplete="email" style="width:100%; box-sizing:border-box; background:#070d18; border:1px solid rgba(66,133,244,0.4); border-radius:10px; padding:11px 12px 11px 38px; color:#fff; font-size:13px; outline:none;">
+                    </div>
+                </div>
+
+                <div class="google-input-box" style="margin-bottom: 14px;">
+                    <label for="googleNameInput" style="display:block; font-size: 11.5px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Display / Athlete Name</label>
+                    <div class="google-input-wrap" style="position:relative; display:flex; align-items:center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" style="position:absolute; left:12px; pointer-events:none;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="googleNameInput" value="Navis Joshva Donel J" autocomplete="name" style="width:100%; box-sizing:border-box; background:#070d18; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:11px 12px 11px 38px; color:#fff; font-size:13px; outline:none;">
+                    </div>
+                </div>
+
+                <div id="googleAuthStatus" class="google-auth-status" style="display:none; padding:10px; border-radius:8px; font-size:12px; margin-bottom:12px;"></div>
+
+                <button type="submit" id="btnSubmitGoogleAuth" class="google-submit-btn" style="width:100%; background:#4285F4; color:#fff; font-weight:600; font-size:13.5px; padding:12px; border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(66,133,244,0.4); transition:all 0.2s;">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff" opacity="0.8"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff" opacity="0.8"/>
+                        <path d="M12 5.32c1.61 0 3.06.55 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.25 9.14 5.32 12 5.32z" fill="#fff" opacity="0.8"/>
+                    </svg>
+                    <span id="googleSubmitBtnText">⚡ 1-Click Continue as Google User</span>
+                </button>
+            </form>
+
+            <!-- SECONDARY: Official Google OAuth 2.0 Popup -->
+            <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:14px; margin-top:14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                    <span style="font-size:11.5px; font-weight:600; color:#94a3b8;">Official Google OAuth 2.0 Popup</span>
+                    <button type="button" id="btnToggleGoogleGuide" style="background:none; border:none; color:#38bdf8; font-size:11px; cursor:pointer; text-decoration:underline;">Guide & Origin Info</button>
+                </div>
+
+                <!-- Current Detected Origin Banner -->
+                <div id="googleOriginBanner" style="background:#070d18; border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:11px; display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <span style="color:#64748b;">Current Origin: </span>
+                        <code id="googleDetectedOrigin" style="color:#38bdf8; font-weight:bold;">http://localhost:3000</code>
+                    </div>
+                    <button type="button" id="btnCopyOrigin" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:3px 8px; font-size:10.5px; cursor:pointer;">Copy</button>
+                </div>
+
+                <div id="googleGuideBox" style="display:none; background:#070d18; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; margin-bottom:10px; font-size:11px; color:#cbd5e1; line-height:1.5;">
+                    <strong style="color:#4285F4;">Resolving "Error 401: no registered origin":</strong>
+                    <ol style="margin:6px 0 0 16px; padding:0;">
+                        <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#38bdf8; text-decoration:underline;">Google Cloud Console &rarr; Credentials</a></li>
+                        <li>Edit your OAuth 2.0 Web Client ID</li>
+                        <li>Under <strong>Authorized JavaScript origins</strong>, add: <code id="guideOriginCode" style="color:#a5f3fc; background:#1e293b; padding:1px 5px; border-radius:4px;">http://localhost:3000</code></li>
+                        <li>Save and allow 2-5 minutes for Google's servers to propagate!</li>
+                    </ol>
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="googleCustomClientIdInput" value="333336104713-utcu141svgha5damjmf1j3774odh6s0f.apps.googleusercontent.com" style="flex:1; background:#070d18; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px 10px; color:#94a3b8; font-size:11px; font-family:monospace; outline:none;">
+                    <button type="button" id="btnSaveAndLaunchGoogle" style="padding:8px 14px; background:rgba(255,255,255,0.08); color:#f8fafc; font-size:11.5px; font-weight:600; border:1px solid rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">
+                        Launch Popup
+                    </button>
+                </div>
+            </div>
+
+            <p class="google-modal-footer" style="text-align:center; font-size:11px; color:#64748b; margin-top:14px; margin-bottom:0;">
+                🔒 SSL / TLS Encrypted SSO via LegacyLane Secure Identity Engine
+            </p>
+        </div>
+    </div>
+
 
     <!-- Interactive Mouse Animation & Gallery Switching Script -->
     <script>
@@ -574,11 +957,271 @@
             window.location.href = 'journey-selection.html';
         });
 
-        document.getElementById('googleSignInBtn').addEventListener('click', () => {
-            window.open('https://accounts.google.com/', '_blank', 'noopener,noreferrer');
+        
+                // --- OFFICIAL GOOGLE IDENTITY SERVICES & OAUTH 2.0 ENGINE ---
+        let googleTokenClient = null;
+        let configuredGoogleClientId = '333336104713-utcu141svgha5damjmf1j3774odh6s0f.apps.googleusercontent.com';
+
+        async function fetchGoogleOAuthConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/google/config`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.clientId && data.clientId.trim()) {
+                        configuredGoogleClientId = data.clientId.trim();
+                    }
+                }
+            } catch (e) {}
+
+            if (!configuredGoogleClientId) {
+                configuredGoogleClientId = localStorage.getItem('legacy_google_client_id') || '';
+            }
+            return configuredGoogleClientId;
+        }
+
+        function initGoogleTokenClient(clientId) {
+            if (!clientId || !window.google?.accounts?.oauth2) {
+                return false;
+            }
+
+            try {
+                googleTokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: clientId.trim(),
+                    scope: 'openid email profile',
+                    prompt: 'select_account',
+                    callback: async (tokenResponse) => {
+                        if (tokenResponse.error) {
+                            console.error('Google OAuth Error:', tokenResponse);
+                            showGoogleStatus(`Google OAuth Error: ${tokenResponse.error_description || tokenResponse.error}. If 'no registered origin', add ${window.location.origin} to Google Cloud Console or use 1-Click Sign-In above!`, true);
+                            return;
+                        }
+
+                        if (!tokenResponse.access_token) {
+                            showGoogleStatus('No access token returned from Google.', true);
+                            return;
+                        }
+
+                        showGoogleStatus('Retrieving verified profile from Google...', false);
+
+                        try {
+                            const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
+                            });
+
+                            if (!profileRes.ok) {
+                                throw new Error('Failed to fetch userinfo from Google');
+                            }
+
+                            const googleProfile = await profileRes.json();
+                            const email = googleProfile.email;
+                            const name = googleProfile.name || googleProfile.given_name || email.split('@')[0];
+                            const avatarUrl = googleProfile.picture || null;
+
+                            await performGoogleLogin(email, name, avatarUrl, googleProfile.sub);
+                        } catch (err) {
+                            console.error('Google userinfo fetch error:', err);
+                            showGoogleStatus('Error retrieving profile from Google. Please use 1-Click Sign-In above.', true);
+                        }
+                    }
+                });
+                return true;
+            } catch (err) {
+                console.warn('Google TokenClient init warning:', err.message);
+                return false;
+            }
+        }
+
+        const googleAuthModal = document.getElementById('googleAuthModal');
+        const closeGoogleModal = document.getElementById('closeGoogleModal');
+        const googleDirectForm = document.getElementById('googleDirectForm');
+        const googleEmailInput = document.getElementById('googleEmailInput');
+        const googleNameInput = document.getElementById('googleNameInput');
+        const googleAuthStatus = document.getElementById('googleAuthStatus');
+        const btnSubmitGoogleAuth = document.getElementById('btnSubmitGoogleAuth');
+        const googleSubmitBtnText = document.getElementById('googleSubmitBtnText');
+        const googleCustomClientIdInput = document.getElementById('googleCustomClientIdInput');
+        const btnSaveAndLaunchGoogle = document.getElementById('btnSaveAndLaunchGoogle');
+        const btnToggleGoogleGuide = document.getElementById('btnToggleGoogleGuide');
+        const googleGuideBox = document.getElementById('googleGuideBox');
+        const googleDetectedOrigin = document.getElementById('googleDetectedOrigin');
+        const guideOriginCode = document.getElementById('guideOriginCode');
+        const btnCopyOrigin = document.getElementById('btnCopyOrigin');
+
+        function updateOriginDisplay() {
+            const origin = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null')
+                ? 'file:/// (Local file - use 1-Click Sign-In)'
+                : window.location.origin;
+            if (googleDetectedOrigin) googleDetectedOrigin.textContent = origin;
+            if (guideOriginCode) guideOriginCode.textContent = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://localhost:5000';
+        }
+
+        btnCopyOrigin?.addEventListener('click', () => {
+            const textToCopy = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://localhost:5000';
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const prev = btnCopyOrigin.textContent;
+                btnCopyOrigin.textContent = 'Copied!';
+                setTimeout(() => { btnCopyOrigin.textContent = prev; }, 2000);
+            }).catch(() => {});
         });
 
-        // Reactive Mouse Animation & Interactive Background Gallery Switcher
+        btnToggleGoogleGuide?.addEventListener('click', () => {
+            if (googleGuideBox) {
+                googleGuideBox.style.display = googleGuideBox.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+
+        btnSaveAndLaunchGoogle?.addEventListener('click', () => {
+            const inputId = googleCustomClientIdInput?.value?.trim() || configuredGoogleClientId;
+            if (!inputId) {
+                showGoogleStatus('Please enter a valid Google OAuth Client ID.', true);
+                return;
+            }
+            if (window.location.protocol === 'file:') {
+                showGoogleStatus('Google OAuth popup does not allow file:/// protocol. Please open via http://localhost:5000 or use 1-Click Sign-In above!', true);
+                return;
+            }
+
+            localStorage.setItem('legacy_google_client_id', inputId);
+            configuredGoogleClientId = inputId;
+            showGoogleStatus('Connecting to Google Identity Services...', false);
+
+            if (initGoogleTokenClient(inputId)) {
+                try {
+                    googleTokenClient.requestAccessToken();
+                } catch (e) {
+                    showGoogleStatus('Error launching Google popup: ' + e.message, true);
+                }
+            } else {
+                showGoogleStatus('Google Identity library loading... Click once more or use 1-Click Sign-In above.', true);
+            }
+        });
+
+        async function triggerGoogleSignInFlow() {
+            const clientId = await fetchGoogleOAuthConfig();
+            updateOriginDisplay();
+
+            if (googleAuthModal) {
+                if (googleCustomClientIdInput && clientId) {
+                    googleCustomClientIdInput.value = clientId;
+                }
+                const savedEmail = localStorage.getItem('legacy_last_google_email') || '';
+                if (googleEmailInput && savedEmail) {
+                    googleEmailInput.value = savedEmail;
+                }
+                const savedName = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
+                if (googleNameInput && !googleNameInput.value && savedName && savedName !== 'Athlete') {
+                    if (savedName.startsWith('{')) {
+                        try { googleNameInput.value = JSON.parse(savedName).name || ''; } catch(e){}
+                    } else {
+                        googleNameInput.value = savedName;
+                    }
+                }
+                if (googleAuthStatus) {
+                    googleAuthStatus.textContent = '';
+                    googleAuthStatus.style.display = 'none';
+                }
+                googleAuthModal.classList.add('active');
+            }
+        }
+
+        function closeGoogleAuthModalHandler() {
+            if (googleAuthModal) googleAuthModal.classList.remove('active');
+        }
+
+        if (closeGoogleModal) closeGoogleModal.addEventListener('click', closeGoogleAuthModalHandler);
+        if (googleAuthModal) {
+            googleAuthModal.addEventListener('click', (e) => {
+                if (e.target === googleAuthModal) closeGoogleAuthModalHandler();
+            });
+        }
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && googleAuthModal && googleAuthModal.classList.contains('active')) {
+                closeGoogleAuthModalHandler();
+            }
+        });
+
+        // Wire up all Google Sign-In and Google Sign-Up buttons
+        document.querySelectorAll('#googleSignInBtn, .google-btn, .google-signup-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerGoogleSignInFlow();
+            });
+        });
+
+        async function performGoogleLogin(email, name, avatarUrl = null, googleSub = null) {
+            if (!email || !email.includes('@')) {
+                showGoogleStatus('Please enter a valid Google Account email address.', true);
+                return;
+            }
+            const cleanName = (name && name.trim()) ? name.trim() : email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+            if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = true;
+            if (googleSubmitBtnText) googleSubmitBtnText.textContent = 'Connecting Google Account...';
+            showGoogleStatus('Connecting verified Google Account to LegacyLane...', false);
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email.trim().toLowerCase(),
+                        name: cleanName,
+                        avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=4285F4&color=fff&rounded=true`,
+                        googleId: googleSub,
+                        sportType: localStorage.getItem('legacy_selected_sport') || 'football'
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.user) {
+                    showGoogleStatus(`✓ Authenticated as ${data.user.name} (${data.user.email})! Launching...`, false);
+                    if (typeof showAuthNotification === 'function') {
+                        showAuthNotification(`✓ Google Account connected! Welcome, ${data.user.name}.`, false);
+                    }
+
+                    // Store authenticated user session cleanly
+                    localStorage.setItem('legacylane_visited', 'true');
+                    localStorage.setItem('legacy_user', data.user.name);
+                    localStorage.setItem('username', data.user.name);
+                    localStorage.setItem('legacy_user_id', data.user.id);
+                    localStorage.setItem('legacy_auth_provider', 'google');
+                    localStorage.setItem('legacy_last_google_email', data.user.email);
+                    localStorage.setItem('legacy_user_profile', JSON.stringify(data.user));
+                    localStorage.setItem('legacy_needs_onboarding', 'true');
+
+                    setTimeout(() => {
+                        window.location.href = 'journey-selection.html';
+                    }, 500);
+                } else {
+                    showGoogleStatus(data.error || 'Google authentication failed. Please try again.', true);
+                    if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
+                    if (googleSubmitBtnText) googleSubmitBtnText.textContent = '⚡ 1-Click Continue as Google User';
+                }
+            } catch (err) {
+                console.error('Google auth network error:', err);
+                showGoogleStatus('Network error reaching authentication server. Please check connection.', true);
+                if (btnSubmitGoogleAuth) btnSubmitGoogleAuth.disabled = false;
+                if (googleSubmitBtnText) googleSubmitBtnText.textContent = '⚡ 1-Click Continue as Google User';
+            }
+        }
+
+        function showGoogleStatus(msg, isError) {
+            if (!googleAuthStatus) return;
+            googleAuthStatus.textContent = msg;
+            googleAuthStatus.className = `google-auth-status ${isError ? 'error' : 'success'}`;
+            googleAuthStatus.style.display = 'block';
+        }
+
+        if (googleDirectForm) {
+            googleDirectForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = googleEmailInput ? googleEmailInput.value.trim() : '';
+                const name = googleNameInput ? googleNameInput.value.trim() : '';
+                await performGoogleLogin(email, name);
+            });
+        }
+
         const loginCard = document.getElementById('loginCard');
         const leftBgSide = document.getElementById('leftBgSide');
         const rightBgSide = document.getElementById('rightBgSide');

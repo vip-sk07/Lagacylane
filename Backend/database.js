@@ -126,7 +126,18 @@ try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteeEmail TEXT;"); 
 try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN Relationship TEXT DEFAULT 'Family';"); } catch (e) {}
 try { db.exec("ALTER TABLE FamilyAccessControl ADD COLUMN InviteCode TEXT;"); } catch (e) {}
 try { db.exec("ALTER TABLE Users ADD COLUMN VaultPIN TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN JourneyType TEXT DEFAULT 'life';"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN Domain TEXT DEFAULT 'life';"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN Era TEXT DEFAULT 'Youth & Formative Years';"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN SentimentLabel TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN Location TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN People TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN IsFavorite INTEGER DEFAULT 0;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN IsInsight INTEGER DEFAULT 0;"); } catch (e) {}
 try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN IsVaultLocked INTEGER DEFAULT 0;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN PhotoCaption TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN VisualPerceptionJSON TEXT;"); } catch (e) {}
+try { db.exec("ALTER TABLE MemoryLogs ADD COLUMN UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP;"); } catch (e) {}
 
 console.log('✅ LegacyLane SQLite Database Initialized Successfully at', dbPath);
 
