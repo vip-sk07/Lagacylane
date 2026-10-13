@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Animate.css & Hover.css CDN for refined micro-interactions -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css"/>
 
     <style>
         /* ==========================================================================
@@ -1182,6 +1185,10 @@
         </a>
 
         <div class="system-status-group">
+            <a href="memory-ground.html" class="status-pill" style="text-decoration:none; color:var(--cyan-electric); border-color: rgba(0, 210, 255, 0.4);" title="Launch 3D Memory Ground Walk">
+                <span>🏟️</span>
+                <span>3D Memory Ground</span>
+            </a>
             <a href="LegacyLogin.html" class="status-pill" style="text-decoration:none; color:#f8fafc;" title="Sign In or Register">
                 <span>🔑</span>
                 <span>Account / Login</span>
@@ -1511,9 +1518,23 @@
             /* ------------------------------------------------------------------
                1. USER DISPLAY & STATE INITIALIZATION
                ------------------------------------------------------------------ */
-            const storedUser = localStorage.getItem('legacy_user') || localStorage.getItem('username');
-            if (storedUser) {
-                document.getElementById('user-display-name').textContent = storedUser;
+            function getCleanUserName() {
+                const raw = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
+                if (!raw) return '';
+                if (raw.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (parsed.name) return parsed.name;
+                        if (parsed.username) return parsed.username;
+                    } catch (e) {}
+                }
+                if (raw === 'Marcus Vance' || raw === 'usr_marcus') return '';
+                return raw;
+            }
+
+            const cleanDisplayName = getCleanUserName();
+            if (cleanDisplayName) {
+                document.getElementById('user-display-name').textContent = cleanDisplayName;
             }
 
             /* ------------------------------------------------------------------
@@ -1947,6 +1968,32 @@
                 if (nameInput && cleanUser) {
                     nameInput.value = cleanUser;
                 }
+
+                try {
+                    const rawUser = localStorage.getItem('legacy_user');
+                    if (rawUser && rawUser.startsWith('{')) {
+                        const u = JSON.parse(rawUser);
+                        if (u.position && document.getElementById('position-role')) {
+                            document.getElementById('position-role').value = u.position;
+                        }
+                        if (u.team && document.getElementById('team-history')) {
+                            document.getElementById('team-history').value = u.team;
+                        }
+                        if (u.jerseyNumber != null && document.getElementById('athlete-jersey')) {
+                            document.getElementById('athlete-jersey').value = u.jerseyNumber;
+                        }
+                        if (u.sport && sportSelect) {
+                            const matchedOpt = Array.from(sportSelect.options).find(o => o.value.toLowerCase() === u.sport.toLowerCase());
+                            if (matchedOpt) {
+                                sportSelect.value = matchedOpt.value;
+                                sportChips.forEach(c => {
+                                    c.classList.toggle('active', c.getAttribute('data-value').toLowerCase() === u.sport.toLowerCase());
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {}
+
                 athleteModal.classList.add('active');
                 playSynthSound(450, 'triangle', 0.3, 0.05);
             }

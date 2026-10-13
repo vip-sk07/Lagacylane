@@ -14,11 +14,18 @@
     <!-- Three.js & Plugins -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <!-- Canvas Confetti CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Chart.js for Wellness Insights (SRS §4.4) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Animate.css CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Hover.css CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css"/>
+    <!-- Anime.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -32,7 +39,15 @@
                             cyan: '#00e5ff',
                             amber: '#ffb300',
                             red: '#ff1744',
-                            border: 'rgba(0, 230, 118, 0.25)'
+                            border: 'rgba(0, 230, 118, 0.25)',
+                            glow: 'rgba(0, 230, 118, 0.35)'
+                        },
+                        archival: {
+                            gold: '#D4AF37',
+                            amber: '#F59E0B',
+                            canvas: '#0E0D0B',
+                            surface: '#171513',
+                            border: '#2C2621'
                         }
                     },
                     fontFamily: {
@@ -40,6 +55,20 @@
                         mono: ['"JetBrains Mono"', 'monospace'],
                         teko: ['"Teko"', 'sans-serif'],
                         display: ['"Cinzel"', 'serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'scale-in': 'scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                        'slide-up': 'slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'spring-pop': 'springPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                        'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        scaleIn: { '0%': { opacity: '0', transform: 'scale(0.92)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        springPop: { '0%': { opacity: '0', transform: 'scale(0.7)' }, '70%': { opacity: '1', transform: 'scale(1.08)' }, '100%': { transform: 'scale(1)' } },
+                        pulseGlow: { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '0.9' } }
                     }
                 }
             }
@@ -89,6 +118,28 @@
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.09);
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        /* Shadcn UI Card & Accessibility Primitives */
+        .shadcn-card {
+            background: rgba(14, 19, 28, 0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .shadcn-card:hover {
+            border-color: rgba(0, 230, 118, 0.35);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 230, 118, 0.12);
+        }
+
+        /* Radix Focus-Visible & A11y Standards */
+        button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+            outline: 2px solid #00e676 !important;
+            outline-offset: 2px !important;
         }
 
         /* Micro-hover lift transitions for interactive elements */
@@ -115,6 +166,17 @@
             pointer-events: none !important;
             visibility: hidden;
             transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+        }
+
+        /* Motion Spring Modal Animation (Radix / Framer Motion Physics) */
+        .drawer-overlay > div {
+            transform: scale(0.92) translateY(16px);
+            opacity: 0;
+            transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s ease;
+        }
+        .drawer-overlay.active > div {
+            transform: scale(1) translateY(0);
+            opacity: 1;
         }
 
         .drawer-overlay.active {
@@ -592,6 +654,14 @@
             <span class="sidebar-nav-label">Journey Hub</span>
         </a>
 
+        <!-- Trophy Room -->
+        <button id="btn-open-trophy-cabinet" type="button" class="sidebar-nav-item accent-amber">
+            <svg style="width:16px;height:16px;flex-shrink:0" class="text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 4v3a4 4 0 01-8 0V4M4 7h16M7 4h10M10 11v2a2 2 0 004 0v-2M9 20h6m-3-4v4" />
+            </svg>
+            <span class="sidebar-nav-label">Trophy Room</span>
+        </button>
+
         <!-- Settings & Privacy -->
         <button id="btn-open-settings-modal" type="button" class="sidebar-nav-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -679,6 +749,19 @@
                 <!-- Dynamically populated via JS -->
             </div>
 
+            <!-- View Mode Tabs: Stadium Arena vs 3D Trophy Cabinet -->
+            <div id="view-mode-tabs" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 shadow-sm border border-white/10">
+                <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Switch to 3D Stadium & Milestone Timeline">
+                    🏟️ Arena
+                </button>
+                <button id="tab-btn-view-cabinet" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-400 hover:text-stone-200 transition cursor-pointer" title="Switch to 3D Trophy Cabinet & Accolades">
+                    🏆 Trophy Room
+                </button>
+                <a href="memory-ground.html" id="tab-btn-memory-walk" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-cyan-400 hover:text-cyan-200 hover:bg-cyan-500/10 transition cursor-pointer flex items-center gap-1 border border-cyan-500/20" title="Launch Dedicated 3D Memory Ground Walk & Tour">
+                    🚶‍♂️ 3D Walk
+                </a>
+            </div>
+
             <!-- Right: Quick Actions (Theme Switcher + Add Memory CTA + Audio) -->
             <div class="flex items-center gap-2">
                 <!-- Light / Dark Mode Toggle -->
@@ -721,7 +804,7 @@
                         </span>
                     </div>
 
-                    <!-- Previous/Tour/Next Controls for Visiting Nodes -->
+                    <!-- Previous/Tour/Next Controls for Visiting Nodes & Free Walk -->
                     <div class="flex items-center gap-2">
                         <button id="btn-prev-play" title="Visit Previous Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
                         <button id="btn-tour-journey" title="Auto-Tour Chronological Nodes" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 flex items-center gap-1.5 font-bold text-xs border border-amber-500/30 transition shadow-sm">
@@ -729,6 +812,10 @@
                             <span id="tour-label">Tour Nodes</span>
                         </button>
                         <button id="btn-next-play" title="Visit Next Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❯</button>
+                        <button id="btn-free-walk-toggle" type="button" title="Toggle Free Walk Mode (WASD / Arrows) [Hotkey: F]" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 flex items-center gap-1.5 font-bold text-xs border border-cyan-500/30 transition shadow-sm cursor-pointer">
+                            <span id="free-walk-icon">🚶</span>
+                            <span id="free-walk-label" class="hidden sm:inline">Free Walk</span>
+                        </button>
                     </div>
                 </div>
 
@@ -758,6 +845,76 @@
             </div>
         </footer>
 
+    </div>
+
+    <!-- Free Walk Mode HUD Overlay -->
+    <div id="free-walk-hud" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-40 tactical-glass px-4 py-2.5 rounded-2xl border border-cyan-500/40 shadow-2xl flex items-center gap-3.5 pointer-events-auto">
+        <span class="text-base animate-bounce">🚶</span>
+        <div class="text-xs">
+            <span class="font-bold text-cyan-300 tracking-wide uppercase">Free Walk Active:</span>
+            <span class="text-stone-300 ml-1.5 font-medium">Use <kbd class="px-1.5 py-0.5 bg-black/50 border border-white/10 rounded text-cyan-200 font-mono text-[10px]">W</kbd><kbd class="px-1.5 py-0.5 bg-black/50 border border-white/10 rounded text-cyan-200 font-mono text-[10px]">A</kbd><kbd class="px-1.5 py-0.5 bg-black/50 border border-white/10 rounded text-cyan-200 font-mono text-[10px]">S</kbd><kbd class="px-1.5 py-0.5 bg-black/50 border border-white/10 rounded text-cyan-200 font-mono text-[10px]">D</kbd> or Arrows to explore • <kbd class="px-1.5 py-0.5 bg-black/50 border border-white/10 rounded text-cyan-200 font-mono text-[10px]">Shift</kbd> Sprint • Walk near nodes to inspect</span>
+        </div>
+        <button id="btn-exit-free-walk" type="button" class="ml-2 px-3 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-xs font-bold border border-cyan-500/40 transition cursor-pointer">
+            Exit [ESC]
+        </button>
+    </div>
+
+    <!-- 3D Trophy Inspection & Details Card -->
+    <div id="trophy-inspect-card" class="hidden fixed left-6 bottom-8 md:bottom-10 z-40 w-80 md:w-96 max-w-[calc(100vw-3rem)] tactical-glass-card p-5 rounded-3xl border border-amber-500/30 shadow-2xl space-y-3 pointer-events-auto">
+        <div class="flex items-center justify-between">
+            <span id="trophy-inspect-tier" class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">GOLD CUP</span>
+            <span id="trophy-inspect-year" class="text-xs font-mono text-stone-400 font-semibold">2024</span>
+        </div>
+        <h3 id="trophy-inspect-title" class="text-xl font-bold text-stone-100">Championship Cup</h3>
+        <p id="trophy-inspect-story" class="text-xs text-stone-300 italic leading-relaxed">Two goals in the final to seal the championship.</p>
+        <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <button id="btn-trophy-inspect-close" type="button" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 text-xs font-semibold transition cursor-pointer">
+                ← Cabinet Overview
+            </button>
+            <button id="btn-open-add-trophy" type="button" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-stone-950 text-xs font-bold transition shadow-md shadow-amber-500/20 cursor-pointer">
+                + Add Trophy
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Add New Trophy to Cabinet Shelf -->
+    <div id="modal-add-trophy" class="drawer-overlay">
+        <div class="w-full max-w-md tactical-glass-card rounded-3xl p-6 md:p-7 space-y-4 shadow-2xl relative border border-amber-500/30 pointer-events-auto">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold border border-amber-500/30">HONOR & ACCOLADE</span>
+                    <h3 class="text-lg font-bold text-stone-100 mt-1">Place Trophy on Shelf</h3>
+                </div>
+                <button id="btn-close-add-trophy" type="button" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition">✕</button>
+            </div>
+            <form id="form-add-trophy" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-medium text-stone-300 mb-1">Trophy / Award Title *</label>
+                    <input type="text" id="add-trophy-title" required placeholder="e.g. State Championship MVP" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Year *</label>
+                        <input type="number" id="add-trophy-year" required value="2025" min="1950" max="2099" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-stone-300 mb-1">Cup Tier</label>
+                        <select id="add-trophy-tier" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none">
+                            <option value="gold">🥇 Gold Cup</option>
+                            <option value="silver">🥈 Silver Cup</option>
+                            <option value="bronze">🥉 Bronze Cup</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-stone-300 mb-1">Achievement Story / Reflection</label>
+                    <textarea id="add-trophy-story" rows="3" placeholder="What memorable moment earned this trophy?" class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-stone-950 font-bold text-xs tracking-wide shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition">
+                    <span>Place on Shelf with Physics Drop 🏆</span>
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- ==========================================================================
@@ -2526,8 +2683,8 @@
                ------------------------------------------------------------------ */
             const canvas = document.getElementById('webgl-canvas');
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x04090d);
-            scene.fog = new THREE.FogExp2(0x04090d, 0.032);
+            scene.background = new THREE.Color(0x07111e);
+            scene.fog = new THREE.FogExp2(0x07111e, 0.0055);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             const defaultCamPos = new THREE.Vector3(0, 18, 24);
@@ -2540,22 +2697,32 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.25;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2.1;
+            controls.maxPolarAngle = Math.PI / 2.05;
 
-            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x1e3a8a : 0x1e293b, isLifeMode ? 1.4 : 1.3);
+            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x22384a : 0x2b394d, isLifeMode ? 1.6 : 1.5);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x38bdf8 : 0xffffff, isLifeMode ? 1.6 : 1.4);
-            dirLight.position.set(10, 30, 15);
+            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x7dd3fc : 0xffffff, isLifeMode ? 1.8 : 1.6);
+            dirLight.position.set(15, 45, 25);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.bias = -0.0001;
             scene.add(dirLight);
 
-            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 2.2 : 1.2, 60, Math.PI / 3.5, 0.5);
-            spotlight.position.set(0, 22, 0);
+            const fillLight = new THREE.DirectionalLight(0x64748b, 0.8);
+            fillLight.position.set(-25, 30, -25);
+            scene.add(fillLight);
+
+            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 2.5 : 1.6, 120, Math.PI / 3.0, 0.4);
+            spotlight.position.set(0, 35, 0);
             scene.add(spotlight);
 
             /* ------------------------------------------------------------------
@@ -4144,8 +4311,92 @@
                 scene.add(stadiumGroup);
             }
 
+            /* ------------------------------------------------------------------
+               4B. DYNAMIC BLENDER 3D MODEL LOADER & RUNTIME PIPELINE
+               ------------------------------------------------------------------ */
+            const FIELD_MODEL_MAP = {
+                'football': '/models/dynamic_field_football.glb',
+                'basketball': '/models/dynamic_field_basketball.glb',
+                'tennis': '/models/dynamic_field_tennis.glb',
+                'combat': '/models/dynamic_field_combat.glb',
+                'track': '/models/dynamic_field_track.glb',
+                'cricket': '/models/dynamic_field_cricket.glb',
+                'swimming': '/models/dynamic_field_swimming.glb',
+                'life': '/models/dynamic_field_life.glb'
+            };
+
+            let currentFieldModelGroup = null;
+            let fieldAnimationMixer = null;
+            const gltfLoader = (typeof THREE.GLTFLoader !== 'undefined') ? new THREE.GLTFLoader() : null;
+
+            function loadBlenderFieldModel(sport) {
+                const modelPath = FIELD_MODEL_MAP[sport] || FIELD_MODEL_MAP['football'];
+                if (!gltfLoader || !modelPath) return;
+
+                gltfLoader.load(
+                    modelPath,
+                    (gltf) => {
+                        if (currentFieldModelGroup) {
+                            scene.remove(currentFieldModelGroup);
+                        }
+
+                        currentFieldModelGroup = gltf.scene;
+                        currentFieldModelGroup.position.set(0, 0, 0);
+
+                        // Align coordinate space with timeline camera
+                        if (sport === 'football' || sport === 'track') {
+                            currentFieldModelGroup.rotation.y = Math.PI / 2;
+                        }
+
+                        // Activate PBR materials and emissive bloom
+                        currentFieldModelGroup.traverse((child) => {
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                                if (child.material) {
+                                    child.material.side = THREE.DoubleSide;
+                                    if (child.material.emissive && child.material.emissiveIntensity !== undefined) {
+                                        child.material.emissiveIntensity = 1.35;
+                                    }
+                                }
+                            }
+                        });
+
+                        scene.add(currentFieldModelGroup);
+
+                        // If 3D model loaded successfully, hide procedural placeholder ground and procedural stadium props
+                        if (fieldMesh) fieldMesh.visible = false;
+                        if (stadiumGroup) stadiumGroup.visible = false;
+                        if (benchGroup) benchGroup.visible = false;
+
+                        // Start 60-frame looping animations (fluttering flags, pulsing rings, beacon markers)
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            fieldAnimationMixer = new THREE.AnimationMixer(currentFieldModelGroup);
+                            gltf.animations.forEach((clip) => {
+                                const action = fieldAnimationMixer.clipAction(clip);
+                                action.play();
+                            });
+                        }
+
+                        console.log(`[LegacyLane] Successfully integrated 3D Blender field: ${modelPath}`);
+                    },
+                    (xhr) => {
+                        // Optional progress telemetry
+                    },
+                    (error) => {
+                        console.warn(`[LegacyLane] Could not load 3D GLB (${modelPath}), using procedural stadium fallback:`, error);
+                        if (fieldMesh) fieldMesh.visible = true;
+                    }
+                );
+            }
+
             function rebuildFieldMesh(sport) {
                 if (fieldMesh) scene.remove(fieldMesh);
+                if (currentFieldModelGroup) {
+                    scene.remove(currentFieldModelGroup);
+                    currentFieldModelGroup = null;
+                }
+                fieldAnimationMixer = null;
 
                 const tex = createFieldTexture(sport);
                 const fieldGeo = new THREE.PlaneGeometry(36, 90);
@@ -4197,6 +4448,9 @@
                 } else {
                     buildRealisticFootballStadium();
                 }
+
+                // Load and mount the full-fidelity Blender 3D asset with dynamic animation
+                loadBlenderFieldModel(sport);
             }
 
             rebuildFieldMesh(currentSport);
@@ -4289,6 +4543,7 @@
 
             benchGroup.add(subAvatarGroup);
             scene.add(benchGroup);
+            benchGroup.visible = false; // Hide legacy toy substitute bench so realistic 3D stadium renders cleanly
 
             /* ------------------------------------------------------------------
                6. 3D VOXEL ATHLETE / CHRONICLER AVATAR & SPLINE ENGINE
@@ -5577,6 +5832,63 @@
             });
 
             /* ------------------------------------------------------------------
+               REFINED MOTION & ACCESSIBILITY TOOLKIT (Anime.js + Boba.js + Radix A11y)
+               ------------------------------------------------------------------ */
+            window.LegacyMotion = {
+                // Boba.js / Anime.js Metric Rolling Ticker
+                animateTicker(targetElement, targetValue, duration = 800, decimals = 0, suffix = '') {
+                    const el = typeof targetElement === 'string' ? document.getElementById(targetElement) : targetElement;
+                    if (!el) return;
+                    const startVal = parseFloat(el.getAttribute('data-val') || el.textContent) || 0;
+                    const endVal = parseFloat(targetValue) || 0;
+                    if (window.anime) {
+                        const obj = { val: startVal };
+                        window.anime({
+                            targets: obj,
+                            val: endVal,
+                            round: decimals > 0 ? Math.pow(10, decimals) : 1,
+                            duration: duration,
+                            easing: 'easeOutExpo',
+                            update: () => {
+                                el.textContent = (decimals > 0 ? obj.val.toFixed(decimals) : Math.round(obj.val)) + suffix;
+                            },
+                            complete: () => {
+                                el.setAttribute('data-val', endVal);
+                                el.textContent = (decimals > 0 ? endVal.toFixed(decimals) : Math.round(endVal)) + suffix;
+                            }
+                        });
+                    } else {
+                        el.textContent = (decimals > 0 ? endVal.toFixed(decimals) : Math.round(endVal)) + suffix;
+                    }
+                },
+
+                // Anime.js Staggered Star Pop
+                animateStarReveal(containerSelector) {
+                    if (window.anime && document.querySelector(containerSelector)) {
+                        window.anime({
+                            targets: `${containerSelector} .star-icon, ${containerSelector} svg`,
+                            scale: [0, 1.35, 1],
+                            opacity: [0, 1],
+                            delay: window.anime.stagger(80, { start: 80 }),
+                            duration: 450,
+                            easing: 'spring(1, 80, 12, 0)'
+                        });
+                    }
+                },
+
+                // Radix UI Accessible Focus Trap
+                trapFocus(modalElement) {
+                    if (!modalElement) return;
+                    modalElement.setAttribute('role', 'dialog');
+                    modalElement.setAttribute('aria-modal', 'true');
+                    const focusable = modalElement.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+                    if (focusable.length) {
+                        setTimeout(() => focusable[0].focus(), 60);
+                    }
+                }
+            };
+
+            /* ------------------------------------------------------------------
                9. AUDIO ENGINE & GENTLE ACOUSTIC CHIMES
                ------------------------------------------------------------------ */
             let audioCtx = null;
@@ -6052,6 +6364,7 @@
                 document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Preserve Memory' : 'Log Match Milestone';
                 modalLogPlay.classList.add('active');
+                if (window.LegacyMotion) window.LegacyMotion.trapFocus(modalLogPlay);
                 playSoftSound('click');
                 setTimeout(() => {
                     document.getElementById('log-input-title')?.focus();
@@ -6670,6 +6983,10 @@
                 }
 
                 modalInspect.classList.add('active');
+                if (window.LegacyMotion) {
+                    window.LegacyMotion.trapFocus(modalInspect);
+                    window.LegacyMotion.animateStarReveal('#inspect-modal-stars');
+                }
                 playSoftSound('click');
             }
 
@@ -9639,6 +9956,7 @@
                 btnOpenWellness.addEventListener('click', () => {
                     modalWellness.classList.add('active');
                     playSoftSound('click');
+                    if (window.LegacyMotion) window.LegacyMotion.trapFocus(modalWellness);
                     renderWellnessModal();
                 });
             }
@@ -9694,7 +10012,13 @@
                     }
                 } catch (e) {}
 
-                if (totalMemoriesEl) totalMemoriesEl.textContent = sortedMemories.length;
+                if (totalMemoriesEl) {
+                    if (window.LegacyMotion?.animateTicker) {
+                        window.LegacyMotion.animateTicker(totalMemoriesEl, sortedMemories.length);
+                    } else {
+                        totalMemoriesEl.textContent = sortedMemories.length;
+                    }
+                }
 
                 // SRS 4.4.3 REQ-1 Alt: Sparse State Handling (< 3 memories)
                 if (sortedMemories.length < 3) {
@@ -9703,7 +10027,14 @@
                     if (sparseProgText) sparseProgText.textContent = `${sortedMemories.length} / 3`;
                     if (sparseProgBar) sparseProgBar.style.width = `${Math.round((sortedMemories.length / 3) * 100)}%`;
 
-                    if (resilienceScoreEl) resilienceScoreEl.textContent = sortedMemories.length > 0 ? `${Math.round(sortedMemories.reduce((a, m) => a + (m.sentiment || 85), 0) / sortedMemories.length)}%` : '--';
+                    const sparseScore = sortedMemories.length > 0 ? Math.round(sortedMemories.reduce((a, m) => a + (m.sentiment || 85), 0) / sortedMemories.length) : null;
+                    if (resilienceScoreEl) {
+                        if (sparseScore !== null && window.LegacyMotion?.animateTicker) {
+                            window.LegacyMotion.animateTicker(resilienceScoreEl, sparseScore, 600, 0, '%');
+                        } else {
+                            resilienceScoreEl.textContent = sparseScore !== null ? `${sparseScore}%` : '--';
+                        }
+                    }
                     if (resilienceTierEl) resilienceTierEl.textContent = sortedMemories.length === 0 ? 'No Data Yet' : 'Building Baseline';
                     if (recoveryCountEl) recoveryCountEl.textContent = '0';
                     if (burnoutRiskEl) {
@@ -9735,9 +10066,21 @@
                 const resTier = backendData?.resilienceTier || (resScore >= 85 ? 'Peak Transcendence 🌟' : resScore >= 70 ? 'Resilient & Focused 💪' : 'Rebuilding Strength 🌱');
                 const risk = backendData?.burnoutRisk || (avgScore < 45 ? 'High' : avgScore < 70 ? 'Moderate' : 'Low');
 
-                if (resilienceScoreEl) resilienceScoreEl.textContent = `${resScore}%`;
+                if (resilienceScoreEl) {
+                    if (window.LegacyMotion?.animateTicker) {
+                        window.LegacyMotion.animateTicker(resilienceScoreEl, resScore, 800, 0, '%');
+                    } else {
+                        resilienceScoreEl.textContent = `${resScore}%`;
+                    }
+                }
                 if (resilienceTierEl) resilienceTierEl.textContent = resTier;
-                if (recoveryCountEl) recoveryCountEl.textContent = recoveries;
+                if (recoveryCountEl) {
+                    if (window.LegacyMotion?.animateTicker) {
+                        window.LegacyMotion.animateTicker(recoveryCountEl, recoveries);
+                    } else {
+                        recoveryCountEl.textContent = recoveries;
+                    }
+                }
                 if (burnoutRiskEl) {
                     burnoutRiskEl.textContent = risk;
                     burnoutRiskEl.className = `font-teko text-3xl font-bold leading-tight ${risk === 'High' ? 'text-rose-400' : risk === 'Moderate' ? 'text-amber-300' : 'text-cyan-300'}`;
@@ -10468,7 +10811,7 @@
                 }
             }
 
-            // 3D Canvas Raycaster: click checkpoint rings to jump, or click bench to chat
+            // 3D Canvas Raycaster: click checkpoint rings to jump, or click bench to chat / trophy to inspect
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
 
@@ -10477,6 +10820,18 @@
                 mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                 mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                 raycaster.setFromCamera(mouse, camera);
+
+                // When in Trophy Cabinet mode, inspect clicked trophy
+                if (currentViewMode === 'cabinet') {
+                    if (trophyHitTargets.length > 0) {
+                        const tHits = raycaster.intersectObjects(trophyHitTargets, true);
+                        if (tHits.length > 0) {
+                            const idx = tHits[0].object.userData.trophyIndex;
+                            if (idx !== undefined) inspectTrophy(idx);
+                        }
+                    }
+                    return;
+                }
 
                 // Click on Younger Self substitute bench
                 const benchHits = raycaster.intersectObjects(benchGroup.children, true);
@@ -10509,6 +10864,15 @@
                 mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                 raycaster.setFromCamera(mouse, camera);
 
+                if (currentViewMode === 'cabinet') {
+                    if (trophyHitTargets.length > 0) {
+                        const tHits = raycaster.intersectObjects(trophyHitTargets, true);
+                        activeHoveredTrophyIndex = tHits.length > 0 ? tHits[0].object.userData.trophyIndex : -1;
+                        canvas.style.cursor = tHits.length > 0 ? 'pointer' : 'default';
+                    }
+                    return;
+                }
+
                 const interactiveObjects = [
                     ...checkpointRings.map(r => r.group),
                     ...activeGraphicDiscs.map(g => g.disc).filter(Boolean),
@@ -10519,6 +10883,687 @@
             });
 
             /* ------------------------------------------------------------------
+               13B. WASD FREE WALK ENGINE & THIRD-PERSON LOCOMOTION
+               ------------------------------------------------------------------ */
+            let isFreeWalkMode = false;
+            const keysDown = {};
+            const freeWalkSpeed = 7.5;
+            const freeWalkSprintSpeed = 13.5;
+
+            function toggleFreeWalkMode(enable) {
+                if (currentViewMode === 'cabinet') {
+                    switchViewMode('ground');
+                }
+                isFreeWalkMode = (enable !== undefined) ? enable : !isFreeWalkMode;
+                const hud = document.getElementById('free-walk-hud');
+                const btnLabel = document.getElementById('free-walk-label');
+                const btnIcon = document.getElementById('free-walk-icon');
+                const btnToggle = document.getElementById('btn-free-walk-toggle');
+
+                if (isFreeWalkMode) {
+                    if (hud) hud.classList.remove('hidden');
+                    if (btnLabel) btnLabel.textContent = 'Exit Walk';
+                    if (btnIcon) btnIcon.textContent = '⏹';
+                    if (btnToggle) {
+                        btnToggle.classList.remove('bg-cyan-500/15', 'text-cyan-200');
+                        btnToggle.classList.add('bg-cyan-500', 'text-stone-950');
+                    }
+                    camera.position.set(avatarGroup.position.x, avatarGroup.position.y + 4.5, avatarGroup.position.z + 8.5);
+                    controls.target.set(avatarGroup.position.x, avatarGroup.position.y + 1.4, avatarGroup.position.z);
+                    controls.enableRotate = true;
+                    controls.enablePan = false;
+                    playSoftSound('click');
+                } else {
+                    if (hud) hud.classList.add('hidden');
+                    if (btnLabel) btnLabel.textContent = 'Free Walk';
+                    if (btnIcon) btnIcon.textContent = '🚶';
+                    if (btnToggle) {
+                        btnToggle.classList.remove('bg-cyan-500', 'text-stone-950');
+                        btnToggle.classList.add('bg-cyan-500/15', 'text-cyan-200');
+                    }
+                    controls.enablePan = true;
+
+                    // Smoothly reset camera to default view overlooking the arena
+                    gsap.killTweensOf(camera.position);
+                    gsap.killTweensOf(controls.target);
+                    gsap.to(camera.position, {
+                        x: defaultCamPos.x,
+                        y: defaultCamPos.y,
+                        z: defaultCamPos.z,
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        onUpdate: () => controls.update()
+                    });
+                    gsap.to(controls.target, {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        onUpdate: () => controls.update()
+                    });
+                }
+            }
+
+            document.getElementById('btn-free-walk-toggle')?.addEventListener('click', () => toggleFreeWalkMode());
+            document.getElementById('btn-exit-free-walk')?.addEventListener('click', () => toggleFreeWalkMode(false));
+
+            window.addEventListener('keydown', (e) => {
+                keysDown[e.key.toLowerCase()] = true;
+                if (e.key === 'Escape' && isFreeWalkMode) {
+                    toggleFreeWalkMode(false);
+                }
+                if ((e.key === 'f' || e.key === 'F') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                    toggleFreeWalkMode();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keysDown[e.key.toLowerCase()] = false;
+            });
+
+            /* ------------------------------------------------------------------
+               13C. 3D TROPHY CABINET ARCHITECTURE & ACCREDITATION ENGINE
+               ------------------------------------------------------------------ */
+            let currentViewMode = 'ground'; // 'ground' or 'cabinet'
+            let isCabinetCamTweening = false;
+            const trophyCabinetGroup = new THREE.Group();
+            scene.add(trophyCabinetGroup);
+            trophyCabinetGroup.visible = false;
+            let trophyCabinetItems = [];
+            let trophyHitTargets = [];
+            let activeHoveredTrophyIndex = -1;
+            let activeSelectedTrophyIndex = -1;
+
+            function trophyBounceEase(t) {
+                const n1 = 7.5625, d1 = 2.75;
+                if (t < 1 / d1) return n1 * t * t;
+                if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75;
+                if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375;
+                return n1 * (t -= 2.625 / d1) * t + 0.984375;
+            }
+
+            function createTrophyCup(height, tier) {
+                const group = new THREE.Group();
+                const p = [
+                    [0, 0], [0.9, 0], [0.9, 0.1], [0.5, 0.22], [0.3, 0.35],
+                    [0.22, 0.7], [0.2, 1.1], [0.45, 1.2], [0.9, 1.55],
+                    [1.05, 2.05], [0.9, 2.15], [0.8, 2.1], [0.78, 2.0],
+                    [0.55, 1.6], [0.2, 1.35], [0, 1.3]
+                ].map(a => new THREE.Vector2(a[0], a[1]));
+
+                const tierColors = {
+                    gold:   { color: 0xe8b64a, metalness: 0.95, roughness: 0.22 },
+                    silver: { color: 0xc8d2dc, metalness: 0.95, roughness: 0.26 },
+                    bronze: { color: 0xb87333, metalness: 0.95, roughness: 0.32 }
+                };
+                const cInfo = tierColors[tier] || tierColors.gold;
+                const mat = new THREE.MeshStandardMaterial({
+                    color: cInfo.color,
+                    metalness: cInfo.metalness,
+                    roughness: cInfo.roughness
+                });
+
+                const body = new THREE.Mesh(new THREE.LatheGeometry(p, 48), mat);
+                body.castShadow = true;
+                group.add(body);
+
+                // Handles
+                [-1, 1].forEach(s => {
+                    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.07, 12, 32, Math.PI), mat);
+                    handle.rotation.z = s > 0 ? -Math.PI / 2 : Math.PI / 2;
+                    handle.position.set(s * 0.92, 1.75, 0);
+                    handle.scale.set(0.8, 1, 1);
+                    group.add(handle);
+                });
+
+                // Top finial
+                const crown = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 12), mat);
+                crown.position.y = 2.25;
+                group.add(crown);
+
+                group.scale.setScalar(height / 2.3);
+                return { group, mat };
+            }
+
+            function createPlaqueMesh(title, year) {
+                const cv = document.createElement('canvas');
+                cv.width = 512;
+                cv.height = 128;
+                const ctx = cv.getContext('2d');
+                ctx.fillStyle = '#b8893a';
+                ctx.fillRect(0, 0, 512, 128);
+                const g = ctx.createLinearGradient(0, 0, 512, 128);
+                g.addColorStop(0, 'rgba(255,255,255,0.4)');
+                g.addColorStop(0.5, 'rgba(255,255,255,0)');
+                g.addColorStop(1, 'rgba(0,0,0,0.3)');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, 512, 128);
+                ctx.fillStyle = '#241403';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 36px Georgia, serif';
+                ctx.fillText(title.length > 18 ? title.slice(0, 17) + '…' : title, 256, 54);
+                ctx.font = '600 28px Georgia, serif';
+                ctx.fillText(String(year), 256, 102);
+
+                const tex = new THREE.CanvasTexture(cv);
+                return new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.6, 0.4),
+                    new THREE.MeshStandardMaterial({ map: tex, metalness: 0.7, roughness: 0.35 })
+                );
+            }
+
+            function getStoredTrophies(sport) {
+                const raw = localStorage.getItem('legacylane_trophies_v2');
+                let store = {};
+                try { store = raw ? JSON.parse(raw) : {}; } catch (e) { store = {}; }
+                if (!store[sport] || store[sport].length === 0) {
+                    if (sport === 'football') {
+                        store[sport] = [
+                            { title: 'STATE CHAMPIONSHIP', year: 2024, tier: 'gold', story: 'Won the championship cup with teammates in the 89th minute.' },
+                            { title: 'DISTRICT CUP', year: 2022, tier: 'silver', story: 'Runners-up in the regional academy league.' },
+                            { title: 'GOLDEN BOOT AWARD', year: 2023, tier: 'gold', story: '22 goals across a stellar season.' },
+                            { title: 'FAIR PLAY TROPHY', year: 2020, tier: 'bronze', story: 'Sportsmanship honor awarded by the district board.' },
+                            { title: 'FIRST YOUTH CUP', year: 2018, tier: 'silver', story: 'First trophy I ever held in youth football.' }
+                        ];
+                    } else if (sport === 'basketball') {
+                        store[sport] = [
+                            { title: 'CITY LEAGUE TITLE', year: 2024, tier: 'gold', story: 'Buzzer-beater 3-pointer to seal the title.' },
+                            { title: 'SEASON MVP', year: 2023, tier: 'gold', story: 'Averaged 26.5 PPG in postseason run.' },
+                            { title: 'THREE-POINT CONTEST', year: 2022, tier: 'silver', story: 'Finalist in regional shooting showdown.' },
+                            { title: 'DEFENSIVE PLAYER', year: 2020, tier: 'bronze', story: 'Most steals and clutch stops.' }
+                        ];
+                    } else if (sport === 'cricket') {
+                        store[sport] = [
+                            { title: 'LEAGUE CHAMPIONS', year: 2024, tier: 'gold', story: 'Chased down 180 to lift the trophy.' },
+                            { title: 'MAN OF THE MATCH', year: 2023, tier: 'silver', story: 'Unbeaten century against top-seeded rivals.' },
+                            { title: 'SERIES MVP', year: 2021, tier: 'gold', story: 'Leading run scorer throughout tournament.' },
+                            { title: 'BEST BOWLER CUP', year: 2019, tier: 'bronze', story: '15 wickets across five test matches.' }
+                        ];
+                    } else if (sport === 'tennis') {
+                        store[sport] = [
+                            { title: 'GRAND SLAM FINALIST', year: 2024, tier: 'silver', story: 'Historic run to the major final.' },
+                            { title: 'MASTERS 1000 CUP', year: 2023, tier: 'gold', story: 'Straight-sets victory on center court.' },
+                            { title: 'ROOKIE OF THE YEAR', year: 2020, tier: 'gold', story: 'Breakthrough on the professional tour.' }
+                        ];
+                    } else {
+                        store[sport] = [
+                            { title: 'HONOR OF MERIT', year: 2024, tier: 'gold', story: 'Recognized for leadership and creative mastery.' },
+                            { title: 'BREAKTHROUGH ACCORD', year: 2022, tier: 'gold', story: 'First public milestone and community showcase.' },
+                            { title: 'RESILIENCE PINNACLE', year: 2020, tier: 'silver', story: 'Overcame major adversity with grit and quiet courage.' }
+                        ];
+                    }
+                    localStorage.setItem('legacylane_trophies_v2', JSON.stringify(store));
+                }
+                return store[sport];
+            }
+
+            function placeTrophyInCabinet(tData, i, animateDrop) {
+                const isTop = i >= 4;
+                const shelfBaseY = isTop ? 6.2 : 0.9;
+                const xList = isTop ? [-3.9, -2.6, -1.3, 0, 1.3, 2.6, 3.9] : [-3.2, -1.6, 0, 1.6, 3.2];
+                const xIdx = i % xList.length;
+                const x = xList[xIdx];
+                const plinthH = 0.35;
+                const cupH = 1.35;
+
+                const group = new THREE.Group();
+                group.position.set(x, shelfBaseY, 0);
+                trophyCabinetGroup.add(group);
+
+                const plinth = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.8, plinthH, 1.3),
+                    new THREE.MeshStandardMaterial({ color: 0x181a1f, roughness: 0.3, metalness: 0.2 })
+                );
+                plinth.position.y = plinthH / 2 + 0.05;
+                plinth.castShadow = true;
+                plinth.receiveShadow = true;
+                group.add(plinth);
+
+                const { group: cupGroup } = createTrophyCup(cupH, tData.tier || 'gold');
+                cupGroup.position.y = plinthH + 0.05;
+                cupGroup.userData.baseY = plinthH + 0.05;
+                group.add(cupGroup);
+
+                const plaque = createPlaqueMesh(tData.title, tData.year);
+                plaque.position.set(0, plinthH / 2 + 0.05, 0.66);
+                group.add(plaque);
+
+                const hitGeo = new THREE.BoxGeometry(2.0, cupH + plinthH + 0.4, 1.5);
+                const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+                hitMesh.position.y = (cupH + plinthH) / 2;
+                hitMesh.userData.trophyIndex = trophyCabinetItems.length;
+                group.add(hitMesh);
+                trophyHitTargets.push(hitMesh);
+
+                const itemObj = {
+                    group,
+                    cupMesh: cupGroup,
+                    x,
+                    y: shelfBaseY,
+                    title: tData.title,
+                    year: tData.year,
+                    tier: tData.tier || 'gold',
+                    story: tData.story || 'Honor preserved in LegacyLane archive.',
+                    hover: 0,
+                    drop: animateDrop ? { t: 0, from: shelfBaseY + 7.5 } : null
+                };
+
+                if (itemObj.drop) {
+                    group.position.y = shelfBaseY + 20;
+                }
+
+                trophyCabinetItems.push(itemObj);
+                return itemObj;
+            }
+
+            function buildSportEquipmentProps(sport, parentGroup) {
+                const mk = (geo, mat, x, y, z) => {
+                    const m = new THREE.Mesh(geo, mat);
+                    m.position.set(x, y, z);
+                    m.castShadow = true;
+                    parentGroup.add(m);
+                    return m;
+                };
+
+                if (sport === 'cricket') {
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.9, 0.14), new THREE.MeshStandardMaterial({ color: 0xd8b27a, roughness: 0.55 }));
+                    blade.position.y = 0.95;
+                    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.9), new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.7 }));
+                    handle.position.y = 2.35;
+                    const bat = new THREE.Group();
+                    bat.add(blade, handle);
+                    bat.position.set(-3.95, 3.85, 0.1);
+                    bat.rotation.z = -0.15;
+                    parentGroup.add(bat);
+
+                    const ball = mk(new THREE.SphereGeometry(0.32, 32, 24), new THREE.MeshStandardMaterial({ color: 0x9b111e, roughness: 0.35 }), -2.8, 3.85 + 0.32, 0.35);
+                    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.018, 8, 36), new THREE.MeshStandardMaterial({ color: 0xf5eedb, roughness: 0.8 }));
+                    ball.add(seam);
+
+                    [-0.22, 0, 0.22].forEach(dx => {
+                        mk(new THREE.CylinderGeometry(0.045, 0.045, 1.5), new THREE.MeshStandardMaterial({ color: 0xe2c391, roughness: 0.5 }), 3.9 + dx, 3.85 + 0.75, -0.2);
+                    });
+                    mk(new THREE.CylinderGeometry(0.03, 0.03, 0.55), new THREE.MeshStandardMaterial({ color: 0xe2c391 }), 3.9, 3.85 + 1.52, -0.2).rotation.z = Math.PI / 2;
+                    mk(new THREE.SphereGeometry(0.38, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.75 }), 2.6, 3.85, 0.35);
+                } else if (sport === 'basketball') {
+                    const bBallMat = new THREE.MeshStandardMaterial({ color: 0xd9631e, roughness: 0.7 });
+                    const bBall = mk(new THREE.SphereGeometry(0.48, 40, 28), bBallMat, -3.95, 3.85 + 0.48, 0.3);
+                    const seam1 = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.015, 6, 40), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+                    const seam2 = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.015, 6, 40), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+                    seam2.rotation.y = Math.PI / 2;
+                    bBall.add(seam1, seam2);
+                } else if (sport === 'tennis') {
+                    const racketMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.6, roughness: 0.3 });
+                    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.03, 12, 36), racketMat);
+                    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+                    grip.position.y = -0.85;
+                    const racket = new THREE.Group();
+                    racket.add(rim, grip);
+                    racket.position.set(-3.8, 4.3, 0.1);
+                    racket.rotation.z = -0.2;
+                    parentGroup.add(racket);
+                    mk(new THREE.SphereGeometry(0.25, 28, 20), new THREE.MeshStandardMaterial({ color: 0xccff00, roughness: 0.65 }), -2.8, 3.85 + 0.25, 0.3);
+                } else {
+                    const ball = mk(new THREE.SphereGeometry(0.44, 36, 24), new THREE.MeshStandardMaterial({ color: 0xf3f4f6, roughness: 0.45 }), -3.9, 3.85 + 0.44, 0.3);
+                    for (let i = 0; i < 8; i++) {
+                        const pent = new THREE.Mesh(new THREE.CircleGeometry(0.12, 5), new THREE.MeshBasicMaterial({ color: 0x111827 }));
+                        const ang = i * Math.PI / 4;
+                        pent.position.set(Math.cos(ang) * 0.43, Math.sin(ang) * 0.43, 0.15);
+                        pent.lookAt(0, 0, 0);
+                        ball.add(pent);
+                    }
+                }
+
+                // Hanging Medals on Top Tier
+                [-3.2, -2.4, -1.6, 1.6, 2.4, 3.2].forEach((mx, i) => {
+                    const medalGroup = new THREE.Group();
+                    const ribbon = new THREE.Mesh(
+                        new THREE.PlaneGeometry(0.24, 0.95),
+                        new THREE.MeshStandardMaterial({ color: (i % 2 === 0 ? 0x1e40af : 0xb91c1c), roughness: 0.8, side: THREE.DoubleSide })
+                    );
+                    ribbon.position.y = 0.48;
+                    medalGroup.add(ribbon);
+
+                    const medalDisc = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.34, 0.34, 0.06, 32),
+                        new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.22 })
+                    );
+                    medalDisc.rotation.x = Math.PI / 2;
+                    medalDisc.position.y = -0.05;
+                    medalGroup.add(medalDisc);
+
+                    medalGroup.position.set(mx, 5.85, -1.0);
+                    parentGroup.add(medalGroup);
+                });
+            }
+
+            function buildTrophyCabinet(sport) {
+                while (trophyCabinetGroup.children.length > 0) {
+                    const c = trophyCabinetGroup.children.pop();
+                    if (c.geometry) c.geometry.dispose();
+                }
+                trophyCabinetItems = [];
+                trophyHitTargets = [];
+
+                const W = 10.4, H = 8.6, D = 2.4, wt = 0.3;
+
+                const woodMat = new THREE.MeshStandardMaterial({
+                    color: 0x3d2212,
+                    roughness: 0.55,
+                    metalness: 0.08
+                });
+
+                const backWall = new THREE.Mesh(
+                    new THREE.PlaneGeometry(36, 22),
+                    new THREE.MeshStandardMaterial({ color: 0x070b10, roughness: 0.9 })
+                );
+                backWall.position.set(0, 4.5, -D / 2 - 0.1);
+                trophyCabinetGroup.add(backWall);
+
+                const floorMesh = new THREE.Mesh(
+                    new THREE.PlaneGeometry(36, 24),
+                    new THREE.MeshStandardMaterial({ color: 0x100c09, roughness: 0.65, metalness: 0.1 })
+                );
+                floorMesh.rotation.x = -Math.PI / 2;
+                floorMesh.position.set(0, -0.05, 5);
+                floorMesh.receiveShadow = true;
+                trophyCabinetGroup.add(floorMesh);
+
+                const addBox = (w, h, d, mat, x, y, z) => {
+                    const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                    b.position.set(x, y, z);
+                    b.castShadow = true;
+                    b.receiveShadow = true;
+                    trophyCabinetGroup.add(b);
+                    return b;
+                };
+
+                addBox(wt, H, D, woodMat, -W / 2, H / 2, 0);
+                addBox(wt, H, D, woodMat,  W / 2, H / 2, 0);
+                addBox(W + wt, wt, D + 0.2, woodMat, 0, H + wt / 2, 0);
+                addBox(W + wt, 0.9, D + 0.2, woodMat, 0, 0.45, 0.05);
+
+                const shelfY = [0.9, 3.8, 6.2];
+                const glassMat = new THREE.MeshStandardMaterial({
+                    color: 0xbedcf5,
+                    transparent: true,
+                    opacity: 0.32,
+                    roughness: 0.1,
+                    metalness: 0.1
+                });
+
+                shelfY.forEach((sy, idx) => {
+                    if (idx > 0) {
+                        const shelf = new THREE.Mesh(new THREE.BoxGeometry(W - wt, 0.1, D - 0.2), glassMat);
+                        shelf.position.set(0, sy, 0);
+                        trophyCabinetGroup.add(shelf);
+                    }
+                    const ledStrip = new THREE.Mesh(
+                        new THREE.BoxGeometry(W - 0.8, 0.04, 0.08),
+                        new THREE.MeshBasicMaterial({ color: 0xffe9b3 })
+                    );
+                    ledStrip.position.set(0, (shelfY[idx + 1] || H) - 0.08, D / 2 - 0.35);
+                    trophyCabinetGroup.add(ledStrip);
+
+                    [-3.2, 0, 3.2].forEach(sx => {
+                        const spot = new THREE.SpotLight(0xffeed0, 0.85, 12, Math.PI / 4.5, 0.65, 1.2);
+                        spot.position.set(sx, sy + 2.3, 0.8);
+                        spot.target.position.set(sx, sy, 0);
+                        trophyCabinetGroup.add(spot, spot.target);
+                    });
+                });
+
+                const headerPlaqueCanvas = document.createElement('canvas');
+                headerPlaqueCanvas.width = 1024;
+                headerPlaqueCanvas.height = 160;
+                const hctx = headerPlaqueCanvas.getContext('2d');
+                hctx.fillStyle = '#161a22';
+                hctx.fillRect(0, 0, 1024, 160);
+                hctx.strokeStyle = '#d7a94b';
+                hctx.lineWidth = 6;
+                hctx.strokeRect(8, 8, 1008, 144);
+                hctx.fillStyle = '#f59e0b';
+                hctx.font = 'bold 56px "Bricolage Grotesque", Georgia, serif';
+                hctx.textAlign = 'center';
+                hctx.fillText('LEGACYLANE TROPHY ROOM', 512, 105);
+                const headerPlaqueTex = new THREE.CanvasTexture(headerPlaqueCanvas);
+                const headerPlaque = new THREE.Mesh(
+                    new THREE.PlaneGeometry(5.2, 0.82),
+                    new THREE.MeshStandardMaterial({ map: headerPlaqueTex, metalness: 0.6, roughness: 0.3 })
+                );
+                headerPlaque.position.set(0, H - 0.08, D / 2 + 0.12);
+                trophyCabinetGroup.add(headerPlaque);
+
+                const trophies = getStoredTrophies(sport);
+                trophies.forEach((tData, i) => {
+                    placeTrophyInCabinet(tData, i, false);
+                });
+
+                buildSportEquipmentProps(sport, trophyCabinetGroup);
+            }
+
+            function inspectTrophy(idx) {
+                if (idx < 0 || idx >= trophyCabinetItems.length) return;
+                activeSelectedTrophyIndex = idx;
+                const it = trophyCabinetItems[idx];
+                const card = document.getElementById('trophy-inspect-card');
+                const tierEl = document.getElementById('trophy-inspect-tier');
+                const yearEl = document.getElementById('trophy-inspect-year');
+                const titleEl = document.getElementById('trophy-inspect-title');
+                const storyEl = document.getElementById('trophy-inspect-story');
+
+                if (tierEl) {
+                    tierEl.textContent = `${it.tier.toUpperCase()} ${it.tier === 'medal' ? 'MEDAL' : 'CUP'}`;
+                    tierEl.className = (it.tier === 'gold')
+                        ? 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30'
+                        : (it.tier === 'silver')
+                        ? 'px-2.5 py-0.5 rounded-full bg-slate-400/20 text-slate-200 font-mono text-[10px] font-bold border border-slate-400/30'
+                        : 'px-2.5 py-0.5 rounded-full bg-orange-700/20 text-orange-300 font-mono text-[10px] font-bold border border-orange-700/30';
+                }
+                if (yearEl) yearEl.textContent = String(it.year);
+                if (titleEl) titleEl.textContent = it.title;
+                if (storyEl) storyEl.textContent = it.story;
+                if (card) card.classList.remove('hidden');
+
+                gsap.killTweensOf(camera.position);
+                gsap.killTweensOf(controls.target);
+
+                const startCam = camera.position.clone();
+                const startTarget = controls.target.clone();
+                const destCam = new THREE.Vector3(it.x * 0.7, it.y + 0.8, 5.2);
+                const destTarget = new THREE.Vector3(it.x, it.y + 0.7, 0);
+
+                isCabinetCamTweening = true;
+                const tweenState = { t: 0 };
+                gsap.to(tweenState, {
+                    t: 1,
+                    duration: 0.85,
+                    ease: 'power2.inOut',
+                    onUpdate: () => {
+                        camera.position.lerpVectors(startCam, destCam, tweenState.t);
+                        controls.target.lerpVectors(startTarget, destTarget, tweenState.t);
+                        camera.lookAt(controls.target);
+                    },
+                    onComplete: () => {
+                        camera.position.copy(destCam);
+                        controls.target.copy(destTarget);
+                        camera.lookAt(destTarget);
+                        isCabinetCamTweening = false;
+                        controls.update();
+                    }
+                });
+                playSoftSound('chime');
+            }
+
+            function closeTrophyInspection() {
+                activeSelectedTrophyIndex = -1;
+                const card = document.getElementById('trophy-inspect-card');
+                if (card) card.classList.add('hidden');
+
+                gsap.killTweensOf(camera.position);
+                gsap.killTweensOf(controls.target);
+
+                const startCam = camera.position.clone();
+                const startTarget = controls.target.clone();
+                const destCam = new THREE.Vector3(0, 4.3, 11.2);
+                const destTarget = new THREE.Vector3(0, 4.3, 0);
+
+                isCabinetCamTweening = true;
+                const tweenState = { t: 0 };
+                gsap.to(tweenState, {
+                    t: 1,
+                    duration: 0.85,
+                    ease: 'power2.inOut',
+                    onUpdate: () => {
+                        camera.position.lerpVectors(startCam, destCam, tweenState.t);
+                        controls.target.lerpVectors(startTarget, destTarget, tweenState.t);
+                        camera.lookAt(controls.target);
+                    },
+                    onComplete: () => {
+                        camera.position.copy(destCam);
+                        controls.target.copy(destTarget);
+                        camera.lookAt(destTarget);
+                        isCabinetCamTweening = false;
+                        controls.update();
+                    }
+                });
+            }
+
+            document.getElementById('btn-trophy-inspect-close')?.addEventListener('click', closeTrophyInspection);
+
+            // Modal: Add Trophy
+            const modalAddTrophy = document.getElementById('modal-add-trophy');
+            document.getElementById('btn-open-add-trophy')?.addEventListener('click', () => {
+                if (modalAddTrophy) modalAddTrophy.classList.add('active');
+            });
+            document.getElementById('btn-close-add-trophy')?.addEventListener('click', () => {
+                if (modalAddTrophy) modalAddTrophy.classList.remove('active');
+            });
+
+            document.getElementById('form-add-trophy')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('add-trophy-title').value.trim() || 'New Award';
+                const year = parseInt(document.getElementById('add-trophy-year').value, 10) || new Date().getFullYear();
+                const tier = document.getElementById('add-trophy-tier').value || 'gold';
+                const story = document.getElementById('add-trophy-story').value.trim() || 'Achievement preserved on the legacy shelf.';
+
+                const trophyObj = { title, year, tier, story };
+                const raw = localStorage.getItem('legacylane_trophies_v2');
+                let store = {};
+                try { store = raw ? JSON.parse(raw) : {}; } catch (err) { store = {}; }
+                if (!store[currentSport]) store[currentSport] = [];
+                store[currentSport].push(trophyObj);
+                localStorage.setItem('legacylane_trophies_v2', JSON.stringify(store));
+
+                if (modalAddTrophy) modalAddTrophy.classList.remove('active');
+                placeTrophyInCabinet(trophyObj, trophyCabinetItems.length, true);
+                playSoftSound('celebrate');
+            });
+
+            function switchViewMode(mode) {
+                currentViewMode = mode;
+                const btnGround = document.getElementById('tab-btn-view-ground');
+                const btnCabinet = document.getElementById('tab-btn-view-cabinet');
+                const footerSnippet = document.querySelector('footer');
+                const trophyCard = document.getElementById('trophy-inspect-card');
+
+                if (mode === 'cabinet') {
+                    if (isFreeWalkMode) toggleFreeWalkMode(false);
+                    if (btnGround) {
+                        btnGround.classList.remove('bg-amber-500', 'text-stone-950');
+                        btnGround.classList.add('text-stone-400');
+                    }
+                    if (btnCabinet) {
+                        btnCabinet.classList.remove('text-stone-400');
+                        btnCabinet.classList.add('bg-amber-500', 'text-stone-950');
+                    }
+
+                    if (currentFieldModelGroup) currentFieldModelGroup.visible = false;
+                    if (fieldMesh) fieldMesh.visible = false;
+                    if (stadiumGroup) stadiumGroup.visible = false;
+                    if (splineTubeMesh) splineTubeMesh.visible = false;
+                    if (elevatedRibbonMesh) elevatedRibbonMesh.visible = false;
+                    elevatedConnectorLines.forEach(l => l.visible = false);
+                    checkpointRings.forEach(r => r.group.visible = false);
+                    yearLabelSprites.forEach(s => s.visible = false);
+                    avatarGroup.visible = false;
+
+                    buildTrophyCabinet(currentSport);
+                    trophyCabinetGroup.visible = true;
+
+                    // Cleanly stop any conflicting camera tweens or avatar following
+                    window.isCameraFollowingAvatar = false;
+                    if (window.camOffsetTween) window.camOffsetTween.kill();
+                    gsap.killTweensOf(camera.position);
+                    gsap.killTweensOf(controls.target);
+
+                    controls.maxPolarAngle = Math.PI / 1.95;
+                    controls.minDistance = 3.0;
+                    controls.maxDistance = 22.0;
+
+                    // Directly align OrbitControls and camera centered on cabinet
+                    controls.target.set(0, 4.3, 0);
+                    camera.position.set(0, 4.3, 11.2);
+                    camera.lookAt(0, 4.3, 0);
+                    controls.update();
+
+                    if (footerSnippet) footerSnippet.classList.add('hidden');
+                    playSoftSound('click');
+                } else {
+                    if (btnCabinet) {
+                        btnCabinet.classList.remove('bg-amber-500', 'text-stone-950');
+                        btnCabinet.classList.add('text-stone-400');
+                    }
+                    if (btnGround) {
+                        btnGround.classList.remove('text-stone-400');
+                        btnGround.classList.add('bg-amber-500', 'text-stone-950');
+                    }
+
+                    trophyCabinetGroup.visible = false;
+                    if (trophyCard) trophyCard.classList.add('hidden');
+
+                    if (currentFieldModelGroup) currentFieldModelGroup.visible = true;
+                    if (splineTubeMesh) splineTubeMesh.visible = true;
+                    if (elevatedRibbonMesh) elevatedRibbonMesh.visible = true;
+                    elevatedConnectorLines.forEach(l => l.visible = true);
+                    checkpointRings.forEach(r => r.group.visible = true);
+                    yearLabelSprites.forEach(s => s.visible = true);
+                    avatarGroup.visible = true;
+
+                    controls.maxPolarAngle = Math.PI / 2.05;
+                    controls.minDistance = 2.0;
+                    controls.maxDistance = 160.0;
+
+                    window.isCameraFollowingAvatar = false;
+                    if (window.camOffsetTween) window.camOffsetTween.kill();
+                    gsap.killTweensOf(camera.position);
+                    gsap.killTweensOf(controls.target);
+
+                    controls.target.set(0, 0, 0);
+                    camera.position.set(defaultCamPos.x, defaultCamPos.y, defaultCamPos.z);
+                    camera.lookAt(0, 0, 0);
+                    controls.update();
+
+                    if (footerSnippet) footerSnippet.classList.remove('hidden');
+                    playSoftSound('click');
+                }
+            }
+
+            document.getElementById('tab-btn-view-ground')?.addEventListener('click', () => switchViewMode('ground'));
+            document.getElementById('tab-btn-view-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
+            document.getElementById('btn-open-trophy-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
+
+            // Expose globally for accessibility & script access
+            window.inspectTrophy = inspectTrophy;
+            window.closeTrophyInspection = closeTrophyInspection;
+            window.switchViewMode = switchViewMode;
+            window.toggleFreeWalkMode = toggleFreeWalkMode;
+            window.camera = camera;
+            window.controls = controls;
+
+            /* ------------------------------------------------------------------
                14. 60FPS ANIMATION LOOP (TREES SWAYING & DRIFTING BREEZE)
                ------------------------------------------------------------------ */
             const clock = new THREE.Clock();
@@ -10526,10 +11571,8 @@
             function animate() {
                 requestAnimationFrame(animate);
 
-                // Pause rendering when tab is in background to conserve GPU & battery
                 if (document.hidden) return;
 
-                // Throttle rendering when full-screen modal overlay is active
                 const isModalOpen = Boolean(document.querySelector('.drawer-overlay.active'));
                 if (isModalOpen && (Math.floor(clock.getElapsedTime() * 60) % 3 !== 0)) {
                     return;
@@ -10538,56 +11581,139 @@
                 const delta = clock.getDelta();
                 const time = clock.getElapsedTime();
 
+                // ── MODE: 3D TROPHY CABINET ANIMATION ──
+                if (currentViewMode === 'cabinet') {
+                    trophyCabinetItems.forEach((it, i) => {
+                        if (it.drop) {
+                            it.drop.t += delta * 1.1;
+                            const t = Math.min(1, it.drop.t);
+                            it.group.position.y = (t < 0) ? (it.y + 12) : (it.y + (it.drop.from - it.y) * (1 - trophyBounceEase(t)));
+                            if (t >= 1) {
+                                it.group.position.y = it.y;
+                                it.drop = null;
+                            }
+                        }
+                        const isHv = (i === activeHoveredTrophyIndex || i === activeSelectedTrophyIndex) ? 1 : 0;
+                        it.hover += (isHv - it.hover) * Math.min(1, delta * 9);
+                        it.cupMesh.position.y = it.cupMesh.userData.baseY + it.hover * 0.22;
+                        it.cupMesh.rotation.y = it.hover * Math.sin(time * 2.2) * 0.45;
+                    });
+
+                    if (!isCabinetCamTweening) {
+                        controls.update();
+                    }
+                    renderer.render(scene, camera);
+                    return;
+                }
+
+                // Update Blender 3D field model dynamic animations (corner flags, beacons, rings)
+                if (fieldAnimationMixer) {
+                    fieldAnimationMixer.update(delta);
+                }
+
                 const memories = getActiveMemories();
 
-                // ── AVATAR: idle breathing + walk animation ──
+                // ── AVATAR: idle breathing ──
                 const breatheAmt = Math.sin(time * 2.1) * 0.018;
                 torsoMesh.position.y = 1.15 + breatheAmt;
                 headMesh.position.y  = 2.0  + breatheAmt * 0.6;
                 if (hairMesh) hairMesh.position.y = 2.32 + breatheAmt * 0.6;
 
-                // Walk cycle when avatar is moving along spline
-                const avatarMoving = splineCurve && memories.length > 1 && Math.abs(targetU - currentU) > 0.005;
-                if (avatarMoving) {
-                    const walkSpeed = 8;
-                    avatarLimbs.legLGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.55;
-                    avatarLimbs.legRGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.55;
-                    avatarLimbs.armLGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.38;
-                    avatarLimbs.armRGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.38;
+                // ── FREE WALK MODE LOCOMOTION (WASD) ──
+                if (isFreeWalkMode) {
+                    let mvX = 0;
+                    let mvZ = 0;
+                    if (keysDown['w'] || keysDown['arrowup']) mvZ -= 1;
+                    if (keysDown['s'] || keysDown['arrowdown']) mvZ += 1;
+                    if (keysDown['a'] || keysDown['arrowleft']) mvX -= 1;
+                    if (keysDown['d'] || keysDown['arrowright']) mvX += 1;
+
+                    const isMoving = (mvX !== 0 || mvZ !== 0);
+                    const speed = (keysDown['shift'] ? freeWalkSprintSpeed : freeWalkSpeed) * delta;
+
+                    if (isMoving) {
+                        const camDir = new THREE.Vector3();
+                        camera.getWorldDirection(camDir);
+                        camDir.y = 0;
+                        camDir.normalize();
+
+                        const camSide = new THREE.Vector3(-camDir.z, 0, camDir.x);
+                        const moveDir = new THREE.Vector3()
+                            .addScaledVector(camDir, -mvZ)
+                            .addScaledVector(camSide, mvX)
+                            .normalize();
+
+                        avatarGroup.position.addScaledVector(moveDir, speed);
+                        avatarGroup.position.x = Math.max(-42, Math.min(42, avatarGroup.position.x));
+                        avatarGroup.position.z = Math.max(-55, Math.min(55, avatarGroup.position.z));
+
+                        const targetRotY = Math.atan2(moveDir.x, moveDir.z);
+                        let diffRot = targetRotY - avatarGroup.rotation.y;
+                        diffRot = Math.atan2(Math.sin(diffRot), Math.cos(diffRot));
+                        avatarGroup.rotation.y += diffRot * Math.min(1, delta * 12);
+
+                        const legRate = keysDown['shift'] ? 16 : 10;
+                        avatarLimbs.legLGroup.rotation.x =  Math.sin(time * legRate) * 0.65;
+                        avatarLimbs.legRGroup.rotation.x = -Math.sin(time * legRate) * 0.65;
+                        avatarLimbs.armLGroup.rotation.x = -Math.sin(time * legRate) * 0.45;
+                        avatarLimbs.armRGroup.rotation.x =  Math.sin(time * legRate) * 0.45;
+                    } else {
+                        avatarLimbs.legLGroup.rotation.x *= 0.85;
+                        avatarLimbs.legRGroup.rotation.x *= 0.85;
+                        avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.05;
+                        avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.05;
+                    }
+
+                    const targetLookAt = new THREE.Vector3(avatarGroup.position.x, avatarGroup.position.y + 1.5, avatarGroup.position.z);
+                    controls.target.lerp(targetLookAt, Math.min(1, delta * 8));
+
+                    checkpointRings.forEach((r, idx) => {
+                        const dist = avatarGroup.position.distanceTo(r.group.position);
+                        if (dist < 3.2 && activeNodeIndex !== idx) {
+                            updateActiveNode(idx);
+                        }
+                    });
                 } else {
-                    // Return limbs to idle rest
-                    avatarLimbs.legLGroup.rotation.x *= 0.85;
-                    avatarLimbs.legRGroup.rotation.x *= 0.85;
-                    avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.06;
-                    avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.06;
-                }
+                    // Walk cycle when avatar is moving along spline
+                    const avatarMoving = splineCurve && memories.length > 1 && Math.abs(targetU - currentU) > 0.005;
+                    if (avatarMoving) {
+                        const walkSpeed = 8;
+                        avatarLimbs.legLGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.55;
+                        avatarLimbs.legRGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.55;
+                        avatarLimbs.armLGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.38;
+                        avatarLimbs.armRGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.38;
+                    } else {
+                        avatarLimbs.legLGroup.rotation.x *= 0.85;
+                        avatarLimbs.legRGroup.rotation.x *= 0.85;
+                        avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.06;
+                        avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.06;
+                    }
 
-                // ── SPLINE AVATAR FOLLOW: smooth lerp along path ──
-                if (splineCurve && memories.length > 1) {
-                    // Slower lerp = more visible walk
-                    currentU += (targetU - currentU) * 0.035;
-                    const pos = splineCurve.getPointAt(Math.min(Math.max(currentU, 0), 1));
-                    avatarGroup.position.set(pos.x, 0.4, pos.z);
+                    // ── SPLINE AVATAR FOLLOW: smooth lerp along path ──
+                    if (splineCurve && memories.length > 1) {
+                        currentU += (targetU - currentU) * 0.035;
+                        const pos = splineCurve.getPointAt(Math.min(Math.max(currentU, 0), 1));
+                        avatarGroup.position.set(pos.x, 0.4, pos.z);
 
-                    const tangent = splineCurve.getTangentAt(Math.min(Math.max(currentU, 0.001), 0.999));
-                    avatarGroup.rotation.y = Math.atan2(tangent.x, tangent.z);
+                        const tangent = splineCurve.getTangentAt(Math.min(Math.max(currentU, 0.001), 0.999));
+                        avatarGroup.rotation.y = Math.atan2(tangent.x, tangent.z);
 
-                    // ── CAMERA FOLLOWS AVATAR ──
-                    if (window.isCameraFollowingAvatar && window.currentCamOffset) {
-                        camera.position.set(
-                            pos.x + window.currentCamOffset.side,
-                            window.currentCamOffset.height,
-                            pos.z + window.currentCamOffset.dist
-                        );
-                        controls.target.set(
-                            pos.x,
-                            window.currentCamOffset.targetY,
-                            pos.z
-                        );
+                        // ── CAMERA FOLLOWS AVATAR ──
+                        if (window.isCameraFollowingAvatar && window.currentCamOffset) {
+                            camera.position.set(
+                                pos.x + window.currentCamOffset.side,
+                                window.currentCamOffset.height,
+                                pos.z + window.currentCamOffset.dist
+                            );
+                            controls.target.set(
+                                pos.x,
+                                window.currentCamOffset.targetY,
+                                pos.z
+                            );
 
-                        // Release camera when we reach destination
-                        if (Math.abs(targetU - currentU) < 0.001) {
-                            window.isCameraFollowingAvatar = false;
+                            if (Math.abs(targetU - currentU) < 0.001) {
+                                window.isCameraFollowingAvatar = false;
+                            }
                         }
                     }
                 }
