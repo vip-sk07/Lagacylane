@@ -592,7 +592,7 @@
   const COL = { win: 0xffc65a, train: 0x5fe0c8, hard: 0xe5637a, journal: 0x5fb4e8 };
   const TYPE = { win: 'Win or Award', train: 'Training', hard: 'Challenging Moment', journal: 'Journal Reflection' };
 
-  let MEM = [
+  const DEFAULT_DEMO_MEMORIES = [
     { y: 2012, age: 10, t: 'Backyard Football & Red Ball', type: 'journal', imp: 0.55, mood: 8.2, note: 'Appa gave me a red football. We kicked it until the streetlights flickered on.' },
     { y: 2014, age: 12, t: 'First School Team Striker', type: 'train', imp: 0.65, mood: 8.6, note: 'Selected for the first XI. Coach said I run like I am constantly late for something important.' },
     { y: 2016, age: 14, t: 'The Heartbreak Final (0-1)', type: 'hard', imp: 0.8, mood: 3.4, note: 'Conceded in the 89th minute. Cried silently in the bus, but reported for 6 AM drills next morning.' },
@@ -604,13 +604,91 @@
     { y: 2025, age: 23, t: 'National Championship Clutch', type: 'win', imp: 1.0, mood: 9.4, note: 'Stoppage-time match-winner in the final. I thought of the red ball in the backyard.' }
   ];
 
+  let MEM = [];
+
+  function convertRawMemoryToNode(raw, index, userProfile = {}) {
+    let y = 2024;
+    if (raw.date) {
+      const d = new Date(raw.date);
+      if (!isNaN(d.getFullYear())) y = d.getFullYear();
+    } else if (raw.y) {
+      y = parseInt(raw.y, 10) || 2024;
+    } else if (raw.EntryDate) {
+      const d = new Date(raw.EntryDate);
+      if (!isNaN(d.getFullYear())) y = d.getFullYear();
+    }
+
+    const birthYear = userProfile.birthYear || 2002;
+    let age = raw.age;
+    if (!age || isNaN(age)) {
+      age = Math.max(8, Math.min(45, y - birthYear));
+    }
+    if (isNaN(age) || age < 5) age = 10 + index * 2;
+
+    const t = raw.title || raw.t || `Milestone ${index + 1}`;
+
+    let type = raw.type || 'journal';
+    if (!raw.type) {
+      const textBlob = ((raw.title || '') + ' ' + (raw.journal || raw.content || raw.matchDetails || '') + ' ' + (raw.victoryMessage || '') + ' ' + (Array.isArray(raw.tags) ? raw.tags.join(' ') : '') + ' ' + (raw.sentimentLabel || '')).toLowerCase();
+      if (textBlob.includes('win') || textBlob.includes('champion') || textBlob.includes('trophy') || textBlob.includes('cup') || textBlob.includes('gold') || textBlob.includes('award') || textBlob.includes('medal') || textBlob.includes('title') || raw.stars >= 4) {
+        type = 'win';
+      } else if (textBlob.includes('train') || textBlob.includes('drill') || textBlob.includes('academy') || textBlob.includes('coach') || textBlob.includes('debut') || textBlob.includes('first') || textBlob.includes('starter') || textBlob.includes('selection')) {
+        type = 'train';
+      } else if (textBlob.includes('injur') || textBlob.includes('rehab') || textBlob.includes('heartbreak') || textBlob.includes('loss') || textBlob.includes('defeat') || textBlob.includes('pain') || textBlob.includes('tear') || (typeof raw.sentiment === 'number' && raw.sentiment < 40)) {
+        type = 'hard';
+      } else {
+        type = 'journal';
+      }
+    }
+
+    let imp = 0.75;
+    if (typeof raw.imp === 'number') imp = raw.imp;
+    else if (raw.isFavorite || raw.stars === 5) imp = 1.0;
+    else if (raw.stars) imp = +(raw.stars / 5).toFixed(2);
+    else if (type === 'win') imp = 0.95;
+
+    let mood = 8.0;
+    if (typeof raw.mood === 'number') mood = raw.mood;
+    else if (typeof raw.sentiment === 'number') mood = +(raw.sentiment / 10).toFixed(1);
+    else if (typeof raw.sentimentScore === 'number') mood = +(raw.sentimentScore / 10).toFixed(1);
+    if (type === 'hard' && mood > 5) mood = 3.6;
+
+    const note = raw.journal || raw.content || raw.matchDetails || raw.note || raw.victoryMessage || 'Milestone recorded in your personal athlete chronicle.';
+
+    let photo = raw.photo || raw.media || null;
+    if (!photo && Array.isArray(raw.photos) && raw.photos.length > 0) {
+      photo = typeof raw.photos[0] === 'string' ? raw.photos[0] : raw.photos[0].url;
+    }
+    if (!photo && Array.isArray(raw.mediaAssets) && raw.mediaAssets.length > 0) {
+      photo = raw.mediaAssets[0].url;
+    }
+
+    return {
+      id: raw.id || raw.Memory_ID || ('mem_' + index),
+      y,
+      age,
+      t,
+      type,
+      imp: clamp(imp, 0.45, 1.0),
+      mood: clamp(mood, 1.0, 10.0),
+      note,
+      era: raw.era || `Era · ${y}`,
+      photo,
+      location: raw.location || '',
+      people: raw.people || '',
+      raw
+    };
+  }
+
   function calcNodeCoords() {
+    const count = MEM.length;
+    if (count === 0) return;
+    const spacing = count > 1 ? Math.min(18, 140 / (count - 1)) : 18;
     MEM.forEach((m, i) => {
       m.x = (i % 2 ? 1 : -1) * (3.6 + (i % 3) * 1.5);
-      m.z = -10 - i * 14.5;
+      m.z = -10 - i * spacing;
     });
   }
-  calcNodeCoords();
 
   /* ------------------------------------------------------------------
      3. GROUND SCENE: STADIUM, PITCH, FLOODLIGHTS & BEACONS
@@ -725,36 +803,23 @@
     G.add(sp);
   }));
 
-  // Floating Era Banners along perimeter
-  const eras = [[0, 'ERA: ACADEMY DAYS · AGE 10–12'], [3, 'ERA: HIGH SCHOOL & DISTRICT · AGE 14–16'], [6, 'ERA: COLLEGE & REHAB · AGE 17–20'], [8, 'ERA: CHAMPIONSHIP · AGE 23']];
-  eras.forEach(([i, txt]) => {
-    if (MEM[i]) {
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: tex(512, 96, (x, w, h) => {
-          x.fillStyle = 'rgba(8,14,20,0)';
-          x.fillRect(0, 0, w, h);
-          x.fillStyle = 'rgba(255,255,255,0.65)';
-          x.font = '600 32px monospace';
-          x.textAlign = 'center';
-          x.fillText(txt, w / 2, 58);
-        }),
-        transparent: true,
-        depthWrite: false
-      }));
-      sp.scale.set(13, 2.2, 1);
-      sp.position.set(-25, 1.4, MEM[i].z + 4);
-      G.add(sp);
-    }
-  });
+  // Dynamic 3D Scene Groups for User Milestones, Pathway, and Eras
+  const milestonesGroup = new THREE.Group();
+  const eraSpritesGroup = new THREE.Group();
+  const pathwayGroup = new THREE.Group();
+  G.add(milestonesGroup);
+  G.add(eraSpritesGroup);
+  G.add(pathwayGroup);
 
   /* ------------------------------------------------------------------
      4. MILESTONE BEACONS, LABELS & PARTICLE FOUNTAINS
      ------------------------------------------------------------------ */
   const NODES = [];
+
   function labelSprite(m) {
     return new THREE.Sprite(new THREE.SpriteMaterial({
       map: tex(512, 128, (x, w, h) => {
-        x.fillStyle = 'rgba(8,14,20,0.85)';
+        x.fillStyle = 'rgba(8,14,20,0.88)';
         x.fillRect(0, 0, w, h);
         x.strokeStyle = '#' + COL[m.type].toString(16).padStart(6, '0');
         x.lineWidth = 4;
@@ -762,11 +827,12 @@
 
         x.fillStyle = '#92a5b3';
         x.font = '600 24px monospace';
-        x.fillText(m.y + ' · ' + TYPE[m.type].toUpperCase(), 18, 38);
+        x.fillText(m.y + ' · ' + (TYPE[m.type] || 'MILESTONE').toUpperCase(), 18, 38);
 
         x.fillStyle = '#ffffff';
         x.font = '800 36px sans-serif';
-        x.fillText(m.t.length > 24 ? m.t.slice(0, 23) + '…' : m.t, 18, 92);
+        const displayTitle = m.t || 'Milestone';
+        x.fillText(displayTitle.length > 24 ? displayTitle.slice(0, 23) + '…' : displayTitle, 18, 92);
       }),
       transparent: true,
       depthWrite: false
@@ -781,72 +847,128 @@
     x.fillRect(0, 0, w, h);
   });
 
-  MEM.forEach((m, i) => {
-    const c = COL[m.type], s = 0.7 + m.imp * 0.6, bh = 3.6 + m.imp * 5.2;
-    const g = new THREE.Group();
-    g.position.set(m.x, 0, m.z);
+  function rebuildGroundMilestones() {
+    // Clear old 3D milestone objects
+    while (milestonesGroup.children.length > 0) {
+      const c = milestonesGroup.children[0];
+      if (c.geometry) c.geometry.dispose();
+      milestonesGroup.remove(c);
+    }
+    while (pathwayGroup.children.length > 0) {
+      const c = pathwayGroup.children[0];
+      if (c.geometry) c.geometry.dispose();
+      pathwayGroup.remove(c);
+    }
+    while (eraSpritesGroup.children.length > 0) {
+      const c = eraSpritesGroup.children[0];
+      if (c.material && c.material.map) c.material.map.dispose();
+      eraSpritesGroup.remove(c);
+    }
+    NODES.length = 0;
 
-    const disk = new THREE.Mesh(new THREE.CircleGeometry(1.8 * s, 48), new THREE.MeshBasicMaterial({ map: glowT, color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.65 }));
-    disk.rotation.x = -Math.PI / 2;
-    disk.position.y = 0.04;
-    g.add(disk);
+    if (!MEM || MEM.length === 0) {
+      buildList();
+      return;
+    }
 
-    const rings = [1.2, 1.6].map((r, k) => {
-      const o = new THREE.Mesh(new THREE.TorusGeometry(r * s, 0.05 * s, 8, 64), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: k ? 0.45 : 1 }));
-      o.rotation.x = -Math.PI / 2;
-      o.position.y = 0.06;
-      g.add(o);
-      return o;
+    // Recompute 3D field coordinates
+    calcNodeCoords();
+
+    // 1. Build Beacons, Light Pillars, Particle Fountains
+    MEM.forEach((m, i) => {
+      const c = COL[m.type] || COL.journal, s = 0.7 + m.imp * 0.6, bh = 3.6 + m.imp * 5.2;
+      const g = new THREE.Group();
+      g.position.set(m.x, 0, m.z);
+
+      const disk = new THREE.Mesh(new THREE.CircleGeometry(1.8 * s, 48), new THREE.MeshBasicMaterial({ map: glowT, color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.65 }));
+      disk.rotation.x = -Math.PI / 2;
+      disk.position.y = 0.04;
+      g.add(disk);
+
+      const rings = [1.2, 1.6].map((r, k) => {
+        const o = new THREE.Mesh(new THREE.TorusGeometry(r * s, 0.05 * s, 8, 64), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: k ? 0.45 : 1 }));
+        o.rotation.x = -Math.PI / 2;
+        o.position.y = 0.06;
+        g.add(o);
+        return o;
+      });
+
+      const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.9 * s, 1.15 * s, bh, 32, 1, true), new THREE.MeshBasicMaterial({ map: beamT, color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 0.55 }));
+      beam.scale.y = -1;
+      beam.position.y = bh / 2;
+      g.add(beam);
+
+      const N = 65, pos = new Float32Array(N * 3), ph = [];
+      for (let k = 0; k < N; k++) {
+        const a = Math.random() * 6.28, r = Math.random() * 0.9 * s;
+        pos[k * 3] = Math.cos(a) * r;
+        pos[k * 3 + 1] = Math.random() * bh;
+        pos[k * 3 + 2] = Math.sin(a) * r;
+        ph.push(0.4 + Math.random() * 0.85);
+      }
+      const pg = new THREE.BufferGeometry();
+      pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const pts = new THREE.Points(pg, new THREE.PointsMaterial({ color: c, size: 0.13, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      g.add(pts);
+
+      const pl = new THREE.PointLight(c, 0.85, 9 * s, 2);
+      pl.position.y = 1;
+      g.add(pl);
+
+      const lab = labelSprite(m);
+      lab.scale.set(4.6, 1.15, 1);
+      lab.position.y = bh + 0.9;
+      g.add(lab);
+
+      const hit = new THREE.Mesh(new THREE.CylinderGeometry(1.8 * s, 1.8 * s, bh + 2, 12), new THREE.MeshBasicMaterial({ visible: false }));
+      hit.position.y = (bh + 2) / 2;
+      hit.userData.i = i;
+      g.add(hit);
+
+      milestonesGroup.add(g);
+      NODES.push({ g, m, disk, rings, beam, pts, pos, ph, lab, hit, bh, s, pl, scale: 1, tgt: 1 });
     });
 
-    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.9 * s, 1.15 * s, bh, 32, 1, true), new THREE.MeshBasicMaterial({ map: beamT, color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 0.55 }));
-    beam.scale.y = -1;
-    beam.position.y = bh / 2;
-    g.add(beam);
-
-    const N = 65, pos = new Float32Array(N * 3), ph = [];
-    for (let k = 0; k < N; k++) {
-      const a = Math.random() * 6.28, r = Math.random() * 0.9 * s;
-      pos[k * 3] = Math.cos(a) * r;
-      pos[k * 3 + 1] = Math.random() * bh;
-      pos[k * 3 + 2] = Math.sin(a) * r;
-      ph.push(0.4 + Math.random() * 0.85);
-    }
-    const pg = new THREE.BufferGeometry();
-    pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const pts = new THREE.Points(pg, new THREE.PointsMaterial({ color: c, size: 0.13, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-    g.add(pts);
-
-    const pl = new THREE.PointLight(c, 0.85, 9 * s, 2);
-    pl.position.y = 1;
-    g.add(pl);
-
-    const lab = labelSprite(m);
-    lab.scale.set(4.6, 1.15, 1);
-    lab.position.y = bh + 0.9;
-    g.add(lab);
-
-    const hit = new THREE.Mesh(new THREE.CylinderGeometry(1.8 * s, 1.8 * s, bh + 2, 12), new THREE.MeshBasicMaterial({ visible: false }));
-    hit.position.y = (bh + 2) / 2;
-    hit.userData.i = i;
-    g.add(hit);
-
-    G.add(g);
-    NODES.push({ g, m, disk, rings, beam, pts, pos, ph, lab, hit, bh, s, pl, scale: 1, tgt: 1 });
-  });
-
-  // Dotted pathway connecting memories sequentially
-  {
-    const d = [];
-    for (let i = 0; i < MEM.length - 1; i++) {
-      const a = MEM[i], b = MEM[i + 1];
-      for (let k = 0; k < 1; k += 0.05) {
-        d.push(a.x + (b.x - a.x) * k, 0.07, a.z + (b.z - a.z) * k);
+    // 2. Build Dotted Pathway connecting sequential memories
+    if (MEM.length > 1) {
+      const d = [];
+      for (let i = 0; i < MEM.length - 1; i++) {
+        const a = MEM[i], b = MEM[i + 1];
+        for (let k = 0; k < 1; k += 0.05) {
+          d.push(a.x + (b.x - a.x) * k, 0.07, a.z + (b.z - a.z) * k);
+        }
       }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(d, 3));
+      pathwayGroup.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffe6a8, size: 0.22, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.85 })));
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(d, 3));
-    G.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffe6a8, size: 0.22, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.85 })));
+
+    // 3. Build Sideline Era Banners
+    const seenEras = new Set();
+    MEM.forEach((m, i) => {
+      const eraKey = (m.era || `${m.y} · AGE ${m.age}`).toUpperCase();
+      if (!seenEras.has(eraKey)) {
+        seenEras.add(eraKey);
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: tex(512, 96, (x, w, h) => {
+            x.fillStyle = 'rgba(8,14,20,0)';
+            x.fillRect(0, 0, w, h);
+            x.fillStyle = 'rgba(255,255,255,0.7)';
+            x.font = '600 30px monospace';
+            x.textAlign = 'center';
+            x.fillText(eraKey.length > 28 ? eraKey.slice(0, 27) + '…' : eraKey, w / 2, 58);
+          }),
+          transparent: true,
+          depthWrite: false
+        }));
+        sp.scale.set(13, 2.2, 1);
+        sp.position.set(-25, 1.4, m.z + 4);
+        eraSpritesGroup.add(sp);
+      }
+    });
+
+    // 4. Update UI List
+    buildList();
   }
 
   /* ------------------------------------------------------------------
@@ -918,41 +1040,51 @@
 
   function arrive() {
     walking = false;
+    if (sel < 0 || sel >= MEM.length || !MEM[sel]) return;
     const m = MEM[sel];
     const c = $('#gcard');
     c.hidden = false;
 
+    const photoMarkup = m.photo
+      ? `<div style="margin-bottom:12px; border-radius:10px; overflow:hidden; max-height:220px; border:1px solid rgba(255,255,255,0.15);">
+           <img src="${m.photo}" alt="${m.t}" style="width:100%; height:180px; object-fit:cover; display:block;" onerror="this.parentElement.style.display='none';">
+         </div>`
+      : `<canvas id="ph" width="640" height="240"></canvas>`;
+
     c.innerHTML = `
       <div class="row">
-        <span class="tag" style="color:#${COL[m.type].toString(16).padStart(6, '0')}">${TYPE[m.type]}</span>
+        <span class="tag" style="color:#${COL[m.type].toString(16).padStart(6, '0')}">${TYPE[m.type] || 'Milestone'}</span>
         <span class="lbl">Milestone ${sel + 1} of ${MEM.length} · Age ${m.age} · ${m.y}</span>
       </div>
-      <canvas id="ph" width="640" height="240"></canvas>
+      ${photoMarkup}
       <h3>${m.t}</h3>
       <p>${m.note}</p>
-      <div class="row" style="margin-top:4px;">
+      ${m.location ? `<div style="font-size:12px; color:var(--teal); margin-top:4px;">📍 ${m.location}</div>` : ''}
+      <div class="row" style="margin-top:8px;">
         <span class="tag" style="color:${m.mood > 6 ? '#5fe0c8' : '#e5637a'}">Performance Mood: ${m.mood}/10</span>
         <a href="timeline.html" class="btn" style="text-decoration:none; padding:6px 12px; font-size:12px;">📊 View Timeline</a>
         <a href="chat.html" class="btn pri" style="text-decoration:none; padding:6px 14px; font-size:12px;">💬 Ask Age-${m.age} Self</a>
       </div>
     `;
 
-    // 2D Mood/Milestone graphic visualization
-    const x = $('#ph').getContext('2d');
-    const gr = x.createLinearGradient(0, 0, 0, 240);
-    gr.addColorStop(0, '#1d3557');
-    gr.addColorStop(0.58, '#e08a4a');
-    gr.addColorStop(0.6, '#287233');
-    gr.addColorStop(1, '#1b4d24');
-    x.fillStyle = gr;
-    x.fillRect(0, 0, 640, 240);
+    // Draw canvas mood graphic if no photo
+    if (!m.photo && $('#ph')) {
+      const x = $('#ph').getContext('2d');
+      const gr = x.createLinearGradient(0, 0, 0, 240);
+      gr.addColorStop(0, '#1d3557');
+      gr.addColorStop(0.58, '#e08a4a');
+      gr.addColorStop(0.6, '#287233');
+      gr.addColorStop(1, '#1b4d24');
+      x.fillStyle = gr;
+      x.fillRect(0, 0, 640, 240);
 
-    x.fillStyle = '#0a1018';
-    for (let k = 0; k < 13; k++) {
-      x.beginPath();
-      x.arc(38 + k * 46, 140 + (k % 3) * 5, 11, 0, 7);
-      x.fill();
-      x.fillRect(30 + k * 46, 150, 16, 50);
+      x.fillStyle = '#0a1018';
+      for (let k = 0; k < 13; k++) {
+        x.beginPath();
+        x.arc(38 + k * 46, 140 + (k % 3) * 5, 11, 0, 7);
+        x.fill();
+        x.fillRect(30 + k * 46, 150, 16, 50);
+      }
     }
 
     if (!reduce) {
@@ -966,6 +1098,30 @@
   }
 
   function buildList() {
+    if (!MEM || MEM.length === 0) {
+      $('#list').innerHTML = `
+        <div style="padding:16px; text-align:center; color:var(--mute); font-size:13px;">
+          <div style="font-size:26px; margin-bottom:8px;">🏟️</div>
+          <div style="font-weight:700; color:#fff; margin-bottom:4px; font-size:14px;">No Memories Recorded Yet</div>
+          <p style="margin:0 0 12px 0; font-size:12px; line-height:1.4; color:#94a3b8;">
+            Log matches, training drills, or awards in the timeline to build your personal 3D ground.
+          </p>
+          <a href="timeline.html" class="btn pri" style="text-decoration:none; display:inline-block; padding:8px 14px; font-size:12px; border-radius:8px; font-weight:700;">
+            + Log Milestone in Timeline
+          </a>
+          <button type="button" class="btn" id="btn-load-template" style="margin-top:10px; font-size:11px; padding:6px 12px; width:100%;">
+            Load Starter Template
+          </button>
+        </div>
+      `;
+      $('#btn-load-template')?.addEventListener('click', () => {
+        MEM = DEFAULT_DEMO_MEMORIES.slice();
+        rebuildGroundMilestones();
+        toast('Loaded starter career milestones');
+      });
+      return;
+    }
+
     $('#list').innerHTML = MEM.map((m, i) => `
       <button class="item ${i === sel ? 'on' : ''}" data-i="${i}">
         <span class="dot" style="color:#${COL[m.type].toString(16).padStart(6, '0')}"></span>
@@ -983,7 +1139,101 @@
       };
     });
   }
-  buildList();
+
+  /* ------------------------------------------------------------------
+     6B. REAL USER MEMORY ASYNC LOADER (ZERO HARDCODES)
+     ------------------------------------------------------------------ */
+  async function loadUserMemories() {
+    const uid = localStorage.getItem('legacy_user_id') || (userSession && (userSession.id || userSession.User_ID)) || 'usr_default';
+    const sport = activeSport || 'football';
+    const API_BASE = window.location.origin ? (window.location.origin + '/api') : 'http://localhost:5000/api';
+
+    let localFound = false;
+
+    // 1. Instant Synchronous Load from localStorage
+    try {
+      const storedRaw = localStorage.getItem('legacylane_memories_v2');
+      if (storedRaw) {
+        const store = JSON.parse(storedRaw);
+        let list = (store && Array.isArray(store[sport]) && store[sport].length > 0) ? store[sport] : null;
+        if (!list) {
+          for (const k of Object.keys(store || {})) {
+            if (Array.isArray(store[k]) && store[k].length > 0) {
+              list = store[k];
+              break;
+            }
+          }
+        }
+        if (list && list.length > 0) {
+          MEM = list.map((item, idx) => convertRawMemoryToNode(item, idx, userSession || {}));
+          localFound = true;
+          rebuildGroundMilestones();
+          populateTrophiesFromMemories();
+        }
+      }
+    } catch (e) {
+      console.warn('localStorage memories parse error:', e);
+    }
+
+    // 2. Asynchronous Live Fetch from Backend
+    try {
+      const isLife = sport === 'life';
+      const jType = isLife ? 'life' : 'sports';
+      let res = await fetch(`${API_BASE}/memories/${encodeURIComponent(uid)}?journeyType=${jType}&domain=${encodeURIComponent(sport)}&limit=100`);
+      if (res.ok) {
+        let data = await res.json();
+        let serverMems = Array.isArray(data.memories) ? data.memories : [];
+
+        // If none found with strict domain filter, fetch user memories across all domains
+        if (serverMems.length === 0) {
+          const fallbackRes = await fetch(`${API_BASE}/memories/${encodeURIComponent(uid)}?limit=100`);
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (Array.isArray(fallbackData.memories) && fallbackData.memories.length > 0) {
+              serverMems = fallbackData.memories;
+            }
+          }
+        }
+
+        if (serverMems.length > 0) {
+          // Sort chronologically by date
+          serverMems.sort((a, b) => new Date(a.date || a.EntryDate || 0) - new Date(b.date || b.EntryDate || 0));
+
+          // Sync into localStorage
+          try {
+            const store = JSON.parse(localStorage.getItem('legacylane_memories_v2')) || {};
+            store[sport] = serverMems;
+            localStorage.setItem('legacylane_memories_v2', JSON.stringify(store));
+          } catch (e) {}
+
+          MEM = serverMems.map((item, idx) => convertRawMemoryToNode(item, idx, userSession || {}));
+          rebuildGroundMilestones();
+          populateTrophiesFromMemories();
+          toast(`Loaded ${MEM.length} personalized milestones for ${athleteName}`);
+          return;
+        }
+      }
+    } catch (fetchErr) {
+      console.warn('Backend fetch error:', fetchErr);
+    }
+
+    // 3. Fallback if user has no saved memories anywhere
+    if (!localFound || MEM.length === 0) {
+      if (athleteName.includes('Morgan') || athleteName.includes('Williams') || uid === 'usr_default') {
+        MEM = DEFAULT_DEMO_MEMORIES.slice();
+      } else {
+        MEM = [];
+      }
+      rebuildGroundMilestones();
+      populateTrophiesFromMemories();
+    }
+  }
+
+  function populateTrophiesFromMemories() {
+    if (typeof rebuildCabinetTrophies === 'function') {
+      rebuildCabinetTrophies();
+    }
+  }
 
   function stopTour() {
     if (tourT) {
@@ -1299,7 +1549,23 @@
     });
 
     TOPX.slice(0, 5).forEach((x, i) => {
-      const it = placeItem(x, 6.05, 1.15 + (i % 2) * 0.2, topTier[i], 'MEMORY ' + (i + 1), 2015 + i, 'A memory trophy linked to your timeline.', 0.25, animate);
+      let tName = 'MEMORY ' + (i + 1);
+      let tYear = 2024;
+      let tStory = 'A memory trophy linked to your timeline.';
+      let tTier = topTier[i];
+
+      if (MEM && MEM.length > 0) {
+        const memIdx = i < MEM.length ? i : (i % MEM.length);
+        const m = MEM[memIdx];
+        tName = (m.t || 'MILESTONE ' + (i + 1)).toUpperCase();
+        tYear = m.y || 2024;
+        tStory = m.note || 'Career milestone from your athlete chronicle.';
+        if (m.type === 'win') tTier = 'gold';
+        else if (m.type === 'train') tTier = 'silver';
+        else tTier = 'bronze';
+      }
+
+      const it = placeItem(x, 6.05, 1.15 + (i % 2) * 0.2, tTier, tName, tYear, tStory, 0.25, animate);
       if (animate && it.drop) it.drop.t = -(6 + i) * 0.14;
     });
 
@@ -1462,11 +1728,18 @@
   }
   $('#back').onclick = closeTrophy;
 
+  // Initial build and asynchronous user memory loader
   buildCabinet(curSport, false);
+  loadUserMemories();
+
   $('#sport').onchange = e => {
-    buildCabinet(e.target.value, true);
+    const newSport = e.target.value;
+    curSport = newSport;
+    try { localStorage.setItem('legacy_selected_sport', newSport); } catch (err) {}
+    buildCabinet(newSport, true);
+    loadUserMemories();
     hoverI = -1;
-    toast(SPORT[e.target.value].name + ' trophy hall loaded');
+    toast((SPORT[newSport]?.name || newSport) + ' trophy hall & memories loaded');
   };
 
   $('#addT').onclick = () => {
@@ -1713,7 +1986,9 @@
       }
     },
     setView: v => $(`#tab-${v}`).click(),
-    add: () => $('#addT').click()
+    add: () => $('#addT').click(),
+    loadUserMemories: () => loadUserMemories(),
+    getMemories: () => MEM
   };
 })();
 </script>
