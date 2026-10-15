@@ -451,7 +451,7 @@
     <!-- TABS -->
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-v="ground" id="tab-ground">
-        🏟️ Memory ground
+        🏟️ 3D Walk
       </button>
       <button role="tab" aria-selected="false" data-v="cabinet" id="tab-cabinet">
         🏆 Trophy cabinet
@@ -527,8 +527,9 @@
   </div>
 </div>
 
-<!-- THREE.JS RUNTIME -->
+<!-- THREE.JS RUNTIME & 3D LOADERS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
 (function() {
@@ -839,6 +840,47 @@
   cc.rotation.x = -Math.PI / 2;
   cc.position.set(0, 0.02, -80);
   G.add(cc);
+
+  // 3D GLB Stadium/Field Model Loader (Tailored strictly to user's active athlete sport)
+  const SPORT_MODEL_MAP = {
+    football: '/models/dynamic_field_football.glb',
+    basketball: '/models/dynamic_field_basketball.glb',
+    tennis: '/models/dynamic_field_tennis.glb',
+    combat: '/models/dynamic_field_combat.glb',
+    track: '/models/dynamic_field_track.glb',
+    cricket: '/models/dynamic_field_cricket.glb',
+    swimming: '/models/dynamic_field_swimming.glb',
+    life: '/models/dynamic_field_life.glb'
+  };
+
+  let dynamicFieldGroup = null;
+  const gltfLoader = (typeof THREE.GLTFLoader !== 'undefined') ? new THREE.GLTFLoader() : null;
+
+  function loadSportFieldModel(sportKey) {
+    if (!gltfLoader) return;
+    const modelPath = SPORT_MODEL_MAP[sportKey];
+    if (!modelPath) return;
+
+    gltfLoader.load(modelPath, (gltf) => {
+      if (dynamicFieldGroup) {
+        G.remove(dynamicFieldGroup);
+      }
+      dynamicFieldGroup = gltf.scene;
+      dynamicFieldGroup.position.set(0, 0.05, -80);
+      dynamicFieldGroup.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      G.add(dynamicFieldGroup);
+    }, undefined, (err) => {
+      console.warn('Sport GLB model notice (using procedural fallback):', err);
+    });
+  }
+
+  // Load 3D model for athlete's active sport
+  loadSportFieldModel(activeSport);
 
   // Lighting: Hemisphere ambient, Moon key, and Dynamic Follow Spotlight
   G.add(new THREE.HemisphereLight(0x6f8fb8, 0x080f16, 0.6));
@@ -1898,6 +1940,7 @@
     curSport = newSport;
     try { localStorage.setItem('legacy_selected_sport', newSport); } catch (err) {}
     buildCabinet(newSport, true);
+    loadSportFieldModel(newSport);
     loadUserMemories();
     hoverI = -1;
     toast((SPORT[newSport]?.name || newSport) + ' trophy hall & memories loaded');
