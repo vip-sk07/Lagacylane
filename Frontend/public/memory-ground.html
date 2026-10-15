@@ -438,7 +438,11 @@
       <a href="timeline.html" class="brand" aria-label="LegacyLane Timeline">
         Legacy<i>Lane</i>
       </a>
-      <div class="athlete-badge" id="athlete-badge">
+      <div class="athlete-badge" id="athlete-badge" style="display:flex;align-items:center;gap:8px;">
+        <div id="mg-avatar-wrap" style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:2px solid #00d2ff;display:flex;align-items:center;justify-content:center;background:#0d1117;flex-shrink:0;box-shadow:0 0 10px rgba(0,210,255,0.4);">
+          <img id="mg-avatar-img" src="" alt="Avatar" style="width:100%;height:100%;object-fit:cover;display:none;">
+          <span id="mg-avatar-fallback" style="font-size:11px;font-weight:bold;color:#fff;font-family:monospace;">10</span>
+        </div>
         <span class="dot-live"></span>
         <span id="athlete-info">Athlete · #10</span>
       </div>
@@ -496,6 +500,11 @@
         <option value="football">⚽ Football</option>
         <option value="cricket">🏏 Cricket</option>
         <option value="basketball">🏀 Basketball</option>
+        <option value="track">🏃 Track & Field</option>
+        <option value="tennis">🎾 Tennis</option>
+        <option value="combat">🥊 Combat Sports</option>
+        <option value="swimming">🏊 Swimming</option>
+        <option value="life">🌿 Life Sanctuary</option>
       </select>
       <span class="lbl" style="margin-top:6px">Place New Accolade</span>
       <input id="tn" placeholder="Title, e.g. Regional Cup" value="Regional Cup">
@@ -528,21 +537,59 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canvas = $('#gl'), app = $('#app');
 
-  // Load session info from localStorage
+  // Load session and URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const sportFromUrl = urlParams.get('sport');
+  const userFromUrl = urlParams.get('user');
+
   let userSession = null;
   try {
     const raw = localStorage.getItem('legacy_user');
     if (raw) userSession = JSON.parse(raw);
   } catch (e) {}
 
-  const activeSport = localStorage.getItem('legacy_selected_sport') || (userSession && userSession.sport) || 'football';
-  const athleteName = localStorage.getItem('username') || (userSession && userSession.name) || 'Alex Morgan';
-  const jerseyNumber = (userSession && userSession.jerseyNumber) ? String(userSession.jerseyNumber) : '10';
+  if (sportFromUrl) {
+    try { localStorage.setItem('legacy_selected_sport', sportFromUrl); } catch (e) {}
+  }
 
-  // Update header badge
-  const sportEmoji = { football: '⚽', cricket: '🏏', basketball: '🏀', track: '🏃', tennis: '🎾', combat: '🥊', swimming: '🏊', life: '🌿' }[activeSport] || '⚡';
-  $('#athlete-info').textContent = `${sportEmoji} ${athleteName} · #${jerseyNumber}`;
-  if ($('#sport')) $('#sport').value = (['football', 'cricket', 'basketball'].includes(activeSport) ? activeSport : 'football');
+  const activeSport = (sportFromUrl && sportFromUrl.trim()) || localStorage.getItem('legacy_selected_sport') || (userSession && userSession.sport) || 'football';
+  const athleteName = (userFromUrl && !userFromUrl.startsWith('usr_')) ? userFromUrl : (localStorage.getItem('username') || (userSession && userSession.name) || 'Athlete');
+  const jerseyNumber = (userSession && userSession.jerseyNumber) ? String(userSession.jerseyNumber) : '10';
+  const userAvatar = localStorage.getItem('legacy_user_avatar') || (userSession && (userSession.avatarUrl || userSession.AvatarURL)) || '';
+  const userAura = localStorage.getItem('legacy_avatar_aura') || '#00d2ff';
+
+  // Update header badge with avatar & aura
+  const sportEmoji = { football: '⚽', cricket: '🏏', basketball: '🏀', soccer: '🥅', track: '🏃', tennis: '🎾', combat: '🥊', swimming: '🏊', life: '🌿' }[activeSport] || '⚡';
+  const sportNames = { football: 'Football', cricket: 'Cricket', basketball: 'Basketball', soccer: 'Soccer', track: 'Track & Field', tennis: 'Tennis', combat: 'Combat Sports', swimming: 'Swimming', life: 'Life Journey' };
+  $('#athlete-info').textContent = `${sportEmoji} ${athleteName} · #${jerseyNumber} (${sportNames[activeSport] || activeSport})`;
+
+  const mgAvatarWrap = $('#mg-avatar-wrap');
+  const mgAvatarImg = $('#mg-avatar-img');
+  const mgAvatarFallback = $('#mg-avatar-fallback');
+  if (mgAvatarWrap) {
+    mgAvatarWrap.style.borderColor = userAura;
+    mgAvatarWrap.style.boxShadow = `0 0 12px ${userAura}88`;
+  }
+  if (mgAvatarFallback) {
+    mgAvatarFallback.textContent = (activeSport === 'life') ? '✦' : (jerseyNumber || '10');
+  }
+  if (mgAvatarImg && mgAvatarFallback) {
+    if (userAvatar) {
+      mgAvatarImg.src = userAvatar;
+      mgAvatarImg.style.display = 'block';
+      mgAvatarFallback.style.display = 'none';
+    } else {
+      mgAvatarImg.style.display = 'none';
+      mgAvatarFallback.style.display = 'block';
+    }
+  }
+
+  if ($('#sport')) {
+    const supportedSports = ['football', 'cricket', 'basketball', 'track', 'tennis', 'combat', 'swimming', 'life'];
+    if (supportedSports.includes(activeSport)) {
+      $('#sport').value = activeSport;
+    }
+  }
 
   /* ------------------------------------------------------------------
      1. THREE.JS RENDERER & SCENE SETUP
@@ -700,15 +747,64 @@
 
   const gcam = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
 
-  // Striped regulation pitch turf
+  // Ground surface texture customized per athlete sport
   const turf = tex(512, 512, (x, w, h) => {
-    for (let i = 0; i < 8; i++) {
-      x.fillStyle = i % 2 ? '#246b34' : '#2d7a3d';
-      x.fillRect(0, i * h / 8, w, h / 8);
-    }
-    for (let i = 0; i < 22000; i++) {
-      x.fillStyle = `rgba(${15 + Math.random() * 30 | 0}, ${80 + Math.random() * 70 | 0}, 35, 0.18)`;
-      x.fillRect(Math.random() * w, Math.random() * h, 2, 5);
+    if (activeSport === 'basketball') {
+      for (let i = 0; i < 16; i++) {
+        x.fillStyle = i % 2 ? '#b45309' : '#d97706';
+        x.fillRect(0, i * h / 16, w, h / 16);
+      }
+      for (let i = 0; i < 9000; i++) {
+        x.fillStyle = `rgba(120, 53, 15, ${Math.random() * 0.2})`;
+        x.fillRect(Math.random() * w, Math.random() * h, 3, 2);
+      }
+    } else if (activeSport === 'track') {
+      for (let i = 0; i < 8; i++) {
+        x.fillStyle = i % 2 ? '#991b1b' : '#b91c1c';
+        x.fillRect(0, i * h / 8, w, h / 8);
+      }
+    } else if (activeSport === 'tennis') {
+      x.fillStyle = '#1e3a8a';
+      x.fillRect(0, 0, w, h);
+      for (let i = 0; i < 12000; i++) {
+        x.fillStyle = `rgba(30, 58, 138, ${Math.random() * 0.15})`;
+        x.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+      }
+    } else if (activeSport === 'combat') {
+      x.fillStyle = '#111827';
+      x.fillRect(0, 0, w, h);
+      for (let i = 0; i < 15000; i++) {
+        x.fillStyle = `rgba(31, 41, 55, ${Math.random() * 0.25})`;
+        x.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+      }
+    } else if (activeSport === 'swimming') {
+      const grad = x.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(1, '#0369a1');
+      x.fillStyle = grad;
+      x.fillRect(0, 0, w, h);
+      for (let i = 0; i < 16000; i++) {
+        x.fillStyle = `rgba(56, 189, 248, ${Math.random() * 0.35})`;
+        x.fillRect(Math.random() * w, Math.random() * h, 2, 4);
+      }
+    } else if (activeSport === 'life') {
+      for (let i = 0; i < 8; i++) {
+        x.fillStyle = i % 2 ? '#14532d' : '#166534';
+        x.fillRect(0, i * h / 8, w, h / 8);
+      }
+      for (let i = 0; i < 22000; i++) {
+        x.fillStyle = `rgba(74, 222, 128, ${Math.random() * 0.18})`;
+        x.fillRect(Math.random() * w, Math.random() * h, 2, 5);
+      }
+    } else {
+      for (let i = 0; i < 8; i++) {
+        x.fillStyle = i % 2 ? '#246b34' : '#2d7a3d';
+        x.fillRect(0, i * h / 8, w, h / 8);
+      }
+      for (let i = 0; i < 22000; i++) {
+        x.fillStyle = `rgba(${15 + Math.random() * 30 | 0}, ${80 + Math.random() * 70 | 0}, 35, 0.18)`;
+        x.fillRect(Math.random() * w, Math.random() * h, 2, 5);
+      }
     }
   });
   turf.wrapS = turf.wrapT = THREE.RepeatWrapping;
@@ -1501,6 +1597,71 @@
         [3.95, 3.95, 1.0, 'gold', 'FINALS MVP', 2020, 'Recognized as Most Valuable Player.', 0.3]
       ],
       f1: 'Court Diagram · 2019', f2: jerseyNumber, f2t: 'MATCH JERSEY'
+    },
+    track: {
+      name: 'Track & Field',
+      back: '#2d1512',
+      items: [
+        [0, 0.9, 2.35, 'gold', 'STATE 100M GOLD', 2020, '10.42s personal best under floodlights.', 0.45],
+        [-2.9, 0.9, 1.8, 'silver', 'REGIONAL 200M', 2018, 'Silver medal in regional youth athletics.', 0.4],
+        [2.9, 0.9, 1.8, 'gold', '4X100M ANCHOR', 2021, 'Anchored the championship relay team.', 0.4],
+        [-1.45, 0.9, 1.1, 'bronze', 'INDOOR SPRINT', 2017, 'Bronze in junior indoor championships.', 0.3],
+        [1.45, 0.9, 1.1, 'silver', 'ACADEMY RIBBON', 2016, 'First sprint recognition award.', 0.3],
+        [3.95, 3.95, 1.0, 'gold', 'ATHLETE OF YEAR', 2022, 'Awarded varsity athlete of the year.', 0.3]
+      ],
+      f1: 'Sprint Heat · 10.42s', f2: jerseyNumber, f2t: 'TRACK SINGLET'
+    },
+    tennis: {
+      name: 'Tennis',
+      back: '#0e263d',
+      items: [
+        [0, 0.9, 2.35, 'gold', 'OPEN CHAMPION', 2021, 'Straight sets victory in the city singles final.', 0.45],
+        [-2.9, 0.9, 1.8, 'silver', 'DOUBLES FINALIST', 2019, 'Tie-break finish in regional doubles.', 0.4],
+        [2.9, 0.9, 1.8, 'gold', 'ACE RECORD', 2022, 'Served 18 aces in a single tournament match.', 0.4],
+        [-1.45, 0.9, 1.1, 'bronze', 'CLUB TROPHY', 2018, 'Semifinalist trophy at tennis academy.', 0.3],
+        [1.45, 0.9, 1.1, 'silver', 'RISING STAR', 2016, 'Most improved junior player.', 0.3],
+        [3.95, 3.95, 1.0, 'gold', 'CIRCUIT MVP', 2023, 'Ranked #1 in summer tennis tour.', 0.3]
+      ],
+      f1: 'Championship Match Point', f2: jerseyNumber, f2t: 'POLO SHIRT'
+    },
+    combat: {
+      name: 'Combat Sports',
+      back: '#2e0f19',
+      items: [
+        [0, 0.9, 2.35, 'gold', 'DIVISION BELT', 2022, 'Won the title fight by unanimous decision.', 0.45],
+        [-2.9, 0.9, 1.8, 'silver', 'STATE GOLDEN GLOVES', 2019, 'Runner-up in featherweight division.', 0.4],
+        [2.9, 0.9, 1.8, 'gold', 'KO OF THE YEAR', 2021, 'First round technical finish.', 0.4],
+        [-1.45, 0.9, 1.1, 'bronze', 'GRAPPLING OPEN', 2018, 'Podium finish in inter-gym tournament.', 0.3],
+        [1.45, 0.9, 1.1, 'silver', 'WARRIOR CUP', 2017, 'Fighter of the night accolade.', 0.3],
+        [3.95, 3.95, 1.0, 'gold', 'UNDISPUTED MVP', 2023, 'Recognized champion across divisions.', 0.3]
+      ],
+      f1: 'Championship Bout · Octagon', f2: jerseyNumber, f2t: 'FIGHT SHORTS'
+    },
+    swimming: {
+      name: 'Swimming',
+      back: '#062638',
+      items: [
+        [0, 0.9, 2.35, 'gold', '100M FREESTYLE GOLD', 2021, '48.9s Olympic trial qualification.', 0.45],
+        [-2.9, 0.9, 1.8, 'silver', '50M BUTTERFLY', 2019, 'Silver medal at national aquatic trials.', 0.4],
+        [2.9, 0.9, 1.8, 'gold', 'RELAY MEDLEY CUP', 2022, 'Anchored the gold-winning freestyle leg.', 0.4],
+        [-1.45, 0.9, 1.1, 'bronze', 'DISTANCE 400M', 2018, 'Bronze in junior distance championship.', 0.3],
+        [1.45, 0.9, 1.1, 'silver', 'AQUATIC BADGE', 2016, 'First regional competition medal.', 0.3],
+        [3.95, 3.95, 1.0, 'gold', 'SWIMMER OF THE YEAR', 2023, 'Top ranked aquatic athlete.', 0.3]
+      ],
+      f1: 'Aquatics Center · 48.9s', f2: jerseyNumber, f2t: 'CAP & GOGGLES'
+    },
+    life: {
+      name: 'Life Journey',
+      back: '#10231c',
+      items: [
+        [0, 0.9, 2.35, 'gold', 'CREATIVE BREAKTHROUGH', 2022, 'Completed my first major independent chronicle.', 0.45],
+        [-2.9, 0.9, 1.8, 'silver', 'LEADERSHIP MILESTONE', 2020, 'Guided my team through a pivotal transition.', 0.4],
+        [2.9, 0.9, 1.8, 'gold', 'INNER SERENITY', 2023, 'Discovered enduring focus and daily clarity.', 0.4],
+        [-1.45, 0.9, 1.1, 'bronze', 'COMMUNITY CITATION', 2019, 'Honored for community mentorship work.', 0.3],
+        [1.45, 0.9, 1.1, 'silver', 'SCHOLAR MEDAL', 2017, 'Graduated with highest academic honors.', 0.3],
+        [3.95, 3.95, 1.0, 'gold', 'LIFE HARMONY AWARD', 2024, 'Balance of mind, craft, and relationships.', 0.3]
+      ],
+      f1: 'Reflective Sanctuary Journal', f2: '✦', f2t: 'SACRED KEEPSAKE'
     }
   };
 
