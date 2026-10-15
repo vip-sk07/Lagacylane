@@ -1639,7 +1639,7 @@
     /* ------------------------------------------------------------------
        9. FORM SUBMISSION HANDLERS (BACKEND API INTEGRATION)
        ------------------------------------------------------------------ */
-    function completeUserAuth(userPayload, sport = 'football') {
+    function completeUserAuth(userPayload, sport = 'football', isNewUser = false) {
         const keep = $('#signin-keep')?.checked ?? true;
         const serialized = JSON.stringify(userPayload);
         
@@ -1653,14 +1653,47 @@
         }
         localStorage.setItem('legacylane_visited', 'true');
         localStorage.setItem('username', userPayload.name || 'Athlete');
-        localStorage.setItem('legacy_user_id', userPayload.id || 'usr_default');
-        localStorage.setItem('legacy_selected_sport', sport);
+        const uid = userPayload.id || 'usr_default';
+        localStorage.setItem('legacy_user_id', uid);
+
+        const chosenSport = userPayload.sport || sport || localStorage.getItem('legacy_selected_sport') || 'football';
+        localStorage.setItem('legacy_selected_sport', chosenSport);
 
         toast(`Welcome, ${userPayload.name}! Entering your chronicle...`);
         closeAuthModal();
 
+        if (isNewUser) {
+            sessionStorage.setItem('legacy_is_new_signup', 'true');
+        } else {
+            sessionStorage.removeItem('legacy_is_new_signup');
+        }
+
+        // Smart routing: existing/returning users go straight to timeline without redundant journey/details prompt
+        const isJourneyConfigured = localStorage.getItem('legacy_journey_configured_' + uid) === 'true';
+        const hasAthleteProfile = Boolean(localStorage.getItem('legacy_athlete_profile'));
+        const hasLifeProfile = Boolean(localStorage.getItem('legacy_life_profile'));
+        const currentMode = (localStorage.getItem('legacy_journey_mode') || '').toUpperCase();
+
+        const isReturningUser = !isNewUser && (
+            isJourneyConfigured ||
+            (userPayload.role && userPayload.role === 'Athlete') ||
+            (userPayload.sport && userPayload.sport !== 'unselected') ||
+            (userPayload.memoriesCount != null && userPayload.memoriesCount > 0) ||
+            hasAthleteProfile ||
+            hasLifeProfile
+        );
+
         setTimeout(() => {
-            window.location.href = 'journey-selection.html';
+            if (isReturningUser) {
+                localStorage.setItem('legacy_journey_configured_' + uid, 'true');
+                if (currentMode === 'LIFE' && hasLifeProfile) {
+                    window.location.href = `timeline.html?mode=life&sport=life&name=${encodeURIComponent(userPayload.name || 'Chronicler')}`;
+                } else {
+                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}&name=${encodeURIComponent(userPayload.name || 'Athlete')}`;
+                }
+            } else {
+                window.location.href = 'journey-selection.html';
+            }
         }, 450);
     }
 
@@ -1769,10 +1802,10 @@
                 return;
             }
             const user = data.user || { id: 'usr_' + Date.now(), name, email };
-            completeUserAuth(user);
+            completeUserAuth(user, 'football', true);
         } catch (err) {
             console.warn('Backend register fallback:', err);
-            completeUserAuth({ id: 'usr_' + Date.now(), name, email });
+            completeUserAuth({ id: 'usr_' + Date.now(), name, email }, 'football', true);
         }
     });
 

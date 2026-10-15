@@ -1185,6 +1185,10 @@
         </a>
 
         <div class="system-status-group">
+            <a href="memory-ground.html" class="status-pill" style="text-decoration:none; color:var(--cyan-electric); border-color: rgba(0, 210, 255, 0.4);" title="Launch 3D Memory Ground Walk">
+                <span>🏟️</span>
+                <span>3D Memory Ground</span>
+            </a>
             <a href="LegacyLogin.html" class="status-pill" style="text-decoration:none; color:#f8fafc;" title="Sign In or Register">
                 <span>🔑</span>
                 <span>Account / Login</span>
@@ -1524,7 +1528,7 @@
                         if (parsed.username) return parsed.username;
                     } catch (e) {}
                 }
-                if (raw === 'Marcus Vance' || raw === 'usr_marcus') return '';
+                if (raw === 'usr_marcus') return 'Marcus Vance';
                 return raw;
             }
 
@@ -1761,12 +1765,71 @@
                 });
             });
 
-            // Life Journey Selection -> Opens Life Profile Setup Modal
+            // State detection for returning / already configured users
+            let userObj = {};
+            try {
+                const rawUser = localStorage.getItem('legacy_user');
+                if (rawUser && rawUser.startsWith('{')) {
+                    userObj = JSON.parse(rawUser);
+                }
+            } catch (e) {}
+
+            const currentUserId = userObj.id || localStorage.getItem('legacy_user_id') || getOrCreateUserId();
+            const existingSport = (userObj.sport || localStorage.getItem('legacy_selected_sport') || 'football').toLowerCase();
+            const existingAthleteProfile = localStorage.getItem('legacy_athlete_profile');
+            const existingLifeProfile = localStorage.getItem('legacy_life_profile');
+            const currentJourneyMode = (localStorage.getItem('legacy_journey_mode') || '').toUpperCase();
+
+            const isNewSignup = sessionStorage.getItem('legacy_is_new_signup') === 'true';
+            const isUserConfigured = !isNewSignup && (
+                localStorage.getItem('legacy_journey_configured_' + currentUserId) === 'true' ||
+                Boolean(existingAthleteProfile) ||
+                Boolean(userObj.sport && userObj.sport !== 'unselected') ||
+                Boolean(userObj.role && userObj.role === 'Athlete')
+            );
+
+            // Personalize card CTA buttons if user already has an active profile
             const lifeCard = document.getElementById('card-life');
             const lifeBtn = lifeCard.querySelector('.card-cta-btn');
+            const sportsCard = document.getElementById('card-sports');
+            const sportsBtn = sportsCard.querySelector('.card-cta-btn');
 
+            if (sportsBtn && (existingAthleteProfile || isUserConfigured)) {
+                sportsBtn.innerHTML = `Continue to Sports Archive (${existingSport.toUpperCase()}) →`;
+                const editOpt = document.createElement('div');
+                editOpt.style.cssText = 'text-align:center; margin-top:8px;';
+                editOpt.innerHTML = `<span id="sports-change-btn" style="font-size:0.75rem; color:#94a3b8; text-decoration:underline; cursor:pointer; pointer-events:auto;">Switch Sport or Edit Profile Details</span>`;
+                sportsCard.appendChild(editOpt);
+                document.getElementById('sports-change-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openAthleteModal();
+                });
+            }
+
+            if (lifeBtn && (existingLifeProfile || (isUserConfigured && currentJourneyMode === 'LIFE'))) {
+                lifeBtn.innerHTML = `Continue to Life Vault →`;
+                const editOpt = document.createElement('div');
+                editOpt.style.cssText = 'text-align:center; margin-top:8px;';
+                editOpt.innerHTML = `<span id="life-change-btn" style="font-size:0.75rem; color:#94a3b8; text-decoration:underline; cursor:pointer; pointer-events:auto;">Edit Life Focus & Motto</span>`;
+                lifeCard.appendChild(editOpt);
+                document.getElementById('life-change-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openLifeModal();
+                });
+            }
+
+            // Life Journey Selection -> 1-click continuation if configured, otherwise opens setup modal
             function handleLifeSelect(e) {
                 if (e) e.stopPropagation();
+                if (existingLifeProfile && !window.location.search.includes('edit=true')) {
+                    playSynthSound(920, 'sine', 0.4, 0.1);
+                    document.getElementById('wipe-overlay').classList.add('active');
+                    const enteredName = getCleanUserName() || 'Life Chronicler';
+                    setTimeout(() => {
+                        window.location.href = `timeline.html?mode=life&sport=life&name=${encodeURIComponent(enteredName)}`;
+                    }, 350);
+                    return;
+                }
                 playSynthSound(680, 'sine', 0.25, 0.08);
                 openLifeModal();
             }
@@ -1774,12 +1837,18 @@
             lifeCard.addEventListener('click', handleLifeSelect);
             if (lifeBtn) lifeBtn.addEventListener('click', handleLifeSelect);
 
-            // Sports Journey Selection -> Opens Stage 3 Modal
-            const sportsCard = document.getElementById('card-sports');
-            const sportsBtn = sportsCard.querySelector('.card-cta-btn');
-
+            // Sports Journey Selection -> 1-click continuation if configured, otherwise opens setup modal
             function handleSportsSelect(e) {
                 if (e) e.stopPropagation();
+                if ((existingAthleteProfile || isUserConfigured) && !window.location.search.includes('edit=true')) {
+                    playSynthSound(920, 'sine', 0.4, 0.1);
+                    document.getElementById('wipe-overlay').classList.add('active');
+                    const enteredName = getCleanUserName() || 'Athlete';
+                    setTimeout(() => {
+                        window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(existingSport)}&name=${encodeURIComponent(enteredName)}`;
+                    }, 350);
+                    return;
+                }
                 playSynthSound(780, 'sine', 0.25, 0.08);
                 openAthleteModal();
             }
@@ -1819,26 +1888,30 @@
                 });
             });
 
-            function getCleanUserName() {
-                const raw = localStorage.getItem('username') || localStorage.getItem('legacy_user') || '';
-                if (!raw) return '';
-                if (raw.startsWith('{')) {
-                    try {
-                        const parsed = JSON.parse(raw);
-                        if (parsed.name) return parsed.name;
-                        if (parsed.username) return parsed.username;
-                    } catch (e) {}
-                }
-                if (raw === 'Marcus Vance' || raw === 'usr_marcus') return '';
-                return raw;
-            }
-
             function openLifeModal() {
                 const cleanUser = getCleanUserName();
                 const nameInput = document.getElementById('life-name');
                 if (nameInput && cleanUser) {
                     nameInput.value = cleanUser;
                 }
+
+                try {
+                    const rawProfile = localStorage.getItem('legacy_life_profile');
+                    if (rawProfile && rawProfile.startsWith('{')) {
+                        const lp = JSON.parse(rawProfile);
+                        if (lp.focus && lifeFocusSelect) {
+                            lifeFocusSelect.value = lp.focus;
+                            lifeChips.forEach(c => c.classList.toggle('active', c.getAttribute('data-value') === lp.focus));
+                        }
+                        if (lp.phase && document.getElementById('life-phase')) {
+                            document.getElementById('life-phase').value = lp.phase;
+                        }
+                        if (lp.motto && document.getElementById('life-motto')) {
+                            document.getElementById('life-motto').value = lp.motto;
+                        }
+                    }
+                } catch (e) {}
+
                 lifeModal.classList.add('active');
                 playSynthSound(520, 'sine', 0.3, 0.06);
             }
@@ -1876,7 +1949,19 @@
                 const enteredName = (document.getElementById('life-name')?.value || '').trim() || getCleanUserName() || 'Life Chronicler';
                 const userId = getOrCreateUserId(enteredName);
 
-                localStorage.setItem('legacy_user', enteredName);
+                // Preserve user JSON structure
+                let userObj = {};
+                try {
+                    const rawUser = localStorage.getItem('legacy_user');
+                    if (rawUser && rawUser.startsWith('{')) {
+                        userObj = JSON.parse(rawUser);
+                    }
+                } catch (e) {}
+                userObj.name = enteredName;
+                userObj.id = userId;
+                userObj.lifeFocus = lifeFocus;
+
+                localStorage.setItem('legacy_user', JSON.stringify(userObj));
                 localStorage.setItem('username', enteredName);
                 localStorage.setItem('legacy_user_id', userId);
 
@@ -1890,6 +1975,9 @@
 
                 localStorage.setItem('legacy_journey_mode', 'LIFE');
                 localStorage.setItem('legacy_life_profile', JSON.stringify(lifeProfile));
+                localStorage.setItem('legacy_journey_configured_' + userId, 'true');
+                localStorage.setItem('legacy_needs_onboarding', 'false');
+                sessionStorage.removeItem('legacy_is_new_signup');
 
                 lifeLaunchBtn.innerHTML = `Synchronizing Profile...`;
                 lifeLaunchBtn.disabled = true;
@@ -1966,24 +2054,37 @@
                 }
 
                 try {
+                    let u = null;
                     const rawUser = localStorage.getItem('legacy_user');
                     if (rawUser && rawUser.startsWith('{')) {
-                        const u = JSON.parse(rawUser);
+                        u = JSON.parse(rawUser);
+                    }
+                    if (!u) {
+                        const rawProfile = localStorage.getItem('legacy_athlete_profile');
+                        if (rawProfile && rawProfile.startsWith('{')) {
+                            u = JSON.parse(rawProfile);
+                        }
+                    }
+                    if (u) {
+                        if (u.name && nameInput) {
+                            nameInput.value = u.name;
+                        }
                         if (u.position && document.getElementById('position-role')) {
                             document.getElementById('position-role').value = u.position;
                         }
                         if (u.team && document.getElementById('team-history')) {
                             document.getElementById('team-history').value = u.team;
                         }
-                        if (u.jerseyNumber != null && document.getElementById('athlete-jersey')) {
-                            document.getElementById('athlete-jersey').value = u.jerseyNumber;
+                        if ((u.jerseyNumber != null || u.jersey != null) && document.getElementById('athlete-jersey')) {
+                            document.getElementById('athlete-jersey').value = u.jerseyNumber || u.jersey;
                         }
-                        if (u.sport && sportSelect) {
-                            const matchedOpt = Array.from(sportSelect.options).find(o => o.value.toLowerCase() === u.sport.toLowerCase());
+                        const targetSport = u.sport || localStorage.getItem('legacy_selected_sport');
+                        if (targetSport && sportSelect) {
+                            const matchedOpt = Array.from(sportSelect.options).find(o => o.value.toLowerCase() === targetSport.toLowerCase());
                             if (matchedOpt) {
                                 sportSelect.value = matchedOpt.value;
                                 sportChips.forEach(c => {
-                                    c.classList.toggle('active', c.getAttribute('data-value').toLowerCase() === u.sport.toLowerCase());
+                                    c.classList.toggle('active', c.getAttribute('data-value').toLowerCase() === targetSport.toLowerCase());
                                 });
                             }
                         }
@@ -2029,12 +2130,30 @@
                     updatedAt: new Date().toISOString()
                 };
 
-                localStorage.setItem('legacy_user', enteredName);
+                // Safely update user JSON object without destroying data
+                let userObj = {};
+                try {
+                    const rawUser = localStorage.getItem('legacy_user');
+                    if (rawUser && rawUser.startsWith('{')) {
+                        userObj = JSON.parse(rawUser);
+                    }
+                } catch (e) {}
+                userObj.name = enteredName;
+                userObj.sport = chosenSport;
+                userObj.position = positionRole;
+                userObj.team = teamHistory;
+                userObj.jerseyNumber = enteredJersey;
+                userObj.id = userId;
+
+                localStorage.setItem('legacy_user', JSON.stringify(userObj));
                 localStorage.setItem('username', enteredName);
                 localStorage.setItem('legacy_user_id', userId);
                 localStorage.setItem('legacy_journey_mode', 'SPORTS');
                 localStorage.setItem('legacy_athlete_profile', JSON.stringify(athleteProfile));
                 localStorage.setItem('legacy_selected_sport', chosenSport);
+                localStorage.setItem('legacy_journey_configured_' + userId, 'true');
+                localStorage.setItem('legacy_needs_onboarding', 'false');
+                sessionStorage.removeItem('legacy_is_new_signup');
 
                 launchBtn.innerHTML = `Synchronizing Profile...`;
                 launchBtn.disabled = true;

@@ -757,6 +757,9 @@
                 <button id="tab-btn-view-cabinet" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-400 hover:text-stone-200 transition cursor-pointer" title="Switch to 3D Trophy Cabinet & Accolades">
                     🏆 Trophy Room
                 </button>
+                <a href="memory-ground.html" id="tab-btn-memory-walk" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-cyan-400 hover:text-cyan-200 hover:bg-cyan-500/10 transition cursor-pointer flex items-center gap-1 border border-cyan-500/20" title="Launch Dedicated 3D Memory Ground Walk & Tour">
+                    🚶‍♂️ 3D Walk
+                </a>
             </div>
 
             <!-- Right: Quick Actions (Theme Switcher + Add Memory CTA + Audio) -->
@@ -2450,7 +2453,14 @@
                 const urlName = urlParams.get('name') || urlParams.get('user');
                 if (urlName && urlName.trim()) {
                     const clean = urlName.trim();
-                    localStorage.setItem('legacy_user', clean);
+                    try {
+                        const raw = localStorage.getItem('legacy_user');
+                        if (raw && raw.startsWith('{')) {
+                            const u = JSON.parse(raw);
+                            u.name = clean;
+                            localStorage.setItem('legacy_user', JSON.stringify(u));
+                        }
+                    } catch (e) {}
                     localStorage.setItem('username', clean);
                     return clean;
                 }
@@ -2462,8 +2472,14 @@
                 if (lifeProfile && lifeProfile.name && lifeProfile.name.trim()) {
                     return lifeProfile.name.trim();
                 }
-                const stored = localStorage.getItem('legacy_user') || localStorage.getItem('username');
+                const stored = localStorage.getItem('username') || localStorage.getItem('legacy_user');
                 if (stored && stored.trim()) {
+                    if (stored.startsWith('{')) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (parsed.name) return parsed.name;
+                        } catch (e) {}
+                    }
                     return stored.trim();
                 }
                 return isLifeMode ? 'Life Explorer' : 'Athlete';
@@ -9623,7 +9639,14 @@
                     const newName = document.getElementById('edit-profile-name').value.trim() || 'Athlete';
                     const userId = getUserId();
 
-                    localStorage.setItem('legacy_user', newName);
+                    try {
+                        const rawU = localStorage.getItem('legacy_user');
+                        if (rawU && rawU.startsWith('{')) {
+                            const u = JSON.parse(rawU);
+                            u.name = newName;
+                            localStorage.setItem('legacy_user', JSON.stringify(u));
+                        }
+                    } catch (e) {}
                     localStorage.setItem('username', newName);
 
                     const payload = { name: newName };
