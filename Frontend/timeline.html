@@ -755,15 +755,15 @@
                 <!-- Dynamically populated via JS -->
             </div>
 
-            <!-- View Mode Tabs: Timeline Archive vs 3D Trophy Cabinet vs 3D Stadium Walk -->
+            <!-- View Mode Tabs: Arena HQ vs 3D Trophy Room vs Dedicated 3D Walk -->
             <div id="view-mode-tabs" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 shadow-sm border border-white/10">
-                <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Switch to Milestone Chronicle Timeline">
-                    📜 Timeline
+                <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Athlete Home Arena & Customization HQ">
+                    🏟️ Arena HQ
                 </button>
                 <button id="tab-btn-view-cabinet" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-400 hover:text-stone-200 transition cursor-pointer" title="Switch to 3D Trophy Cabinet & Accolades">
                     🏆 Trophy Room
                 </button>
-                <a href="memory-ground.html" id="tab-btn-memory-walk" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 hover:text-white bg-cyan-500/15 hover:bg-cyan-500/25 transition cursor-pointer flex items-center gap-1.5 border border-cyan-400/30 shadow-sm" title="Launch Dedicated 3D Ground Walk tailored to your athlete sport">
+                <a href="memory-ground.html" id="tab-btn-memory-walk" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 hover:text-white bg-cyan-500/15 hover:bg-cyan-500/25 transition cursor-pointer flex items-center gap-1.5 border border-cyan-400/30 shadow-sm" title="Launch Dedicated 3D Live Walk tailored to your athlete sport">
                     <span id="walk-sport-icon">🚶‍♂️</span>
                     <span id="walk-tab-label">3D Walk</span>
                     <span class="px-1.5 py-0.2 rounded-full bg-cyan-400/25 text-[9px] font-mono font-bold text-cyan-200">LIVE</span>
@@ -812,17 +812,18 @@
                         </span>
                     </div>
 
-                    <!-- Previous/Tour/Next Controls for Visiting Nodes & Free Walk -->
+                    <!-- Action Controls: Edit Character & 3D Live Walk & Memory Navigation -->
                     <div class="flex items-center gap-2">
-                        <button id="btn-prev-play" title="Visit Previous Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
-                        <button id="btn-tour-journey" title="Auto-Tour Chronological Nodes" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 flex items-center gap-1.5 font-bold text-xs border border-amber-500/30 transition shadow-sm">
-                            <span id="tour-icon">▶</span>
-                            <span id="tour-label">Tour Nodes</span>
+                        <button id="btn-customize-character" type="button" title="Customize 3D Character (Jersey, Persona, Aura Glow & Profile)" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 flex items-center gap-1.5 font-bold text-xs border border-amber-500/40 transition shadow-sm cursor-pointer">
+                            <span>✏️</span>
+                            <span>Edit Character</span>
                         </button>
+                        <button id="btn-prev-play" title="Visit Previous Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
                         <button id="btn-next-play" title="Visit Next Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❯</button>
-                        <button id="btn-free-walk-toggle" type="button" title="Walk freely in the dedicated 3D Ground for your athlete [Hotkey: F]" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 flex items-center gap-1.5 font-bold text-xs border border-cyan-500/30 transition shadow-sm cursor-pointer">
+                        <button id="btn-free-walk-toggle" type="button" title="Walk freely through chronological memories in dedicated 3D Live Walk" class="btn-hover-lift px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 flex items-center gap-1.5 font-bold text-xs border border-cyan-500/40 transition shadow-sm cursor-pointer">
                             <span id="free-walk-icon">🚶‍♂️</span>
-                            <span id="free-walk-label" class="hidden sm:inline">3D Walk</span>
+                            <span id="free-walk-label" class="hidden sm:inline">Walk Memories</span>
+                            <span class="px-1.5 py-0.2 rounded-full bg-cyan-400/25 text-[9px] font-mono font-bold text-cyan-200">3D LIVE</span>
                         </button>
                     </div>
                 </div>
@@ -2953,11 +2954,11 @@
             scene.fog = new THREE.FogExp2(0x07111e, 0.0055);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const defaultCamPos = new THREE.Vector3(0, 18, 24);
+            const defaultCamPos = new THREE.Vector3(0, 2.4, 6.8);
             
             // Start elevated for cinematic intro animation
-            camera.position.set(0, 46, 52);
-            camera.lookAt(0, 0, 0);
+            camera.position.set(0, 5.0, 11.0);
+            camera.lookAt(0, 1.25, 0);
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -2970,6 +2971,9 @@
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
+            controls.target.set(0, 1.25, 0);
+            controls.minDistance = 1.8;
+            controls.maxDistance = 60.0;
             controls.maxPolarAngle = Math.PI / 2.05;
 
             const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x22384a : 0x2b394d, isLifeMode ? 1.6 : 1.5);
@@ -5047,9 +5051,9 @@
                     ctx.font = '17px "Plus Jakarta Sans", sans-serif';
                     ctx.fillText('🛡️ ' + team, 28, 172);
 
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = '13px monospace';
-                    ctx.fillText('ACTIVE LEGACY LANE SQUAD MEMBER', 28, 206);
+                    ctx.fillStyle = '#00e5ff';
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillText('✏️ CLICK ATHLETE TO CUSTOMIZE JERSEY & AURA', 28, 206);
                 } else {
                     // --- LIFE CHRONICLER CARD ---
                     ctx.beginPath();
@@ -5096,9 +5100,9 @@
                     const displayMotto = motto.length > 42 ? `"${motto.slice(0, 42)}..."` : `"${motto}"`;
                     ctx.fillText(displayMotto, 28, 172);
 
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = '13px monospace';
-                    ctx.fillText('PERSONAL ARCHIVE • LIVING CHRONICLE', 28, 206);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillText('✏️ CLICK SEEKER TO CUSTOMIZE SANCTUARY & AURA', 28, 206);
                 }
 
                 const texture = new THREE.CanvasTexture(canvas);
@@ -5201,9 +5205,92 @@
                 transparent: true,
                 depthTest: false
             }));
-            tacticalCardSprite.position.set(0, 3.4, 0);
-            tacticalCardSprite.scale.set(2.4, 1.15, 1);
+            tacticalCardSprite.position.set(1.85, 1.35, 0);
+            tacticalCardSprite.scale.set(1.85, 0.88, 1);
             avatarGroup.add(tacticalCardSprite);
+
+            // ------------------------------------------------------------------
+            // 6B. ILLUMINATED CHAMPION PEDESTAL & ARENA ATHLETE SHOWCASE
+            // ------------------------------------------------------------------
+            let championPedestalGroup = null;
+            let pedestalAuraRing = null;
+            let pedestalSpotlight = null;
+
+            function buildChampionPedestal() {
+                if (championPedestalGroup) {
+                    scene.remove(championPedestalGroup);
+                }
+                championPedestalGroup = new THREE.Group();
+                championPedestalGroup.position.set(0, 0, 0);
+
+                const rawAura = getAvatarAura() || '#00d2ff';
+                const auraHex = parseInt(rawAura.replace('#', ''), 16) || 0x00d2ff;
+
+                // 1. Tier 1 Base Platform (Dark Carbon / Obsidian)
+                const baseGeo = new THREE.CylinderGeometry(2.2, 2.5, 0.16, 48);
+                const baseMat = new THREE.MeshStandardMaterial({
+                    color: isLifeMode ? 0x0f2027 : 0x0a101d,
+                    metalness: 0.85,
+                    roughness: 0.25
+                });
+                const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+                baseMesh.position.y = 0.08;
+                baseMesh.receiveShadow = true;
+                championPedestalGroup.add(baseMesh);
+
+                // 2. Tier 2 Center Stage
+                const stageGeo = new THREE.CylinderGeometry(1.8, 2.0, 0.12, 48);
+                const stageMat = new THREE.MeshStandardMaterial({
+                    color: isLifeMode ? 0x1a2e35 : 0x131f33,
+                    metalness: 0.9,
+                    roughness: 0.2
+                });
+                const stageMesh = new THREE.Mesh(stageGeo, stageMat);
+                stageMesh.position.y = 0.20;
+                stageMesh.receiveShadow = true;
+                championPedestalGroup.add(stageMesh);
+
+                // 3. Glowing Dynamic Energy Aura Ring
+                const auraGeo = new THREE.RingGeometry(1.5, 1.75, 48);
+                const auraMat = new THREE.MeshStandardMaterial({
+                    color: auraHex,
+                    emissive: auraHex,
+                    emissiveIntensity: 2.2,
+                    side: THREE.DoubleSide
+                });
+                pedestalAuraRing = new THREE.Mesh(auraGeo, auraMat);
+                pedestalAuraRing.rotation.x = -Math.PI / 2;
+                pedestalAuraRing.position.y = 0.265;
+                championPedestalGroup.add(pedestalAuraRing);
+
+                // 4. Inner Cybernetic Accent Ring
+                const innerRingGeo = new THREE.RingGeometry(0.7, 0.78, 32);
+                const innerRingMat = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.7,
+                    side: THREE.DoubleSide
+                });
+                const innerRingMesh = new THREE.Mesh(innerRingGeo, innerRingMat);
+                innerRingMesh.rotation.x = -Math.PI / 2;
+                innerRingMesh.position.y = 0.266;
+                championPedestalGroup.add(innerRingMesh);
+
+                // 5. Overhead Vertical Champion Spotlight
+                if (!pedestalSpotlight) {
+                    pedestalSpotlight = new THREE.SpotLight(auraHex, 2.8, 32, Math.PI / 4.2, 0.35, 1.2);
+                    pedestalSpotlight.position.set(0, 15, 0);
+                    pedestalSpotlight.target = avatarGroup;
+                    pedestalSpotlight.castShadow = true;
+                    scene.add(pedestalSpotlight);
+                } else {
+                    pedestalSpotlight.color.setHex(auraHex);
+                }
+
+                scene.add(championPedestalGroup);
+            }
+
+            buildChampionPedestal();
 
             function update3DJerseyAndCard() {
                 if (torsoMesh) {
@@ -5213,23 +5300,35 @@
                     tacticalCardSprite.material.map = createTacticalCardTexture();
                     tacticalCardSprite.material.needsUpdate = true;
                 }
+                const rawAura = getAvatarAura() || '#00d2ff';
+                const auraHex = parseInt(rawAura.replace('#', ''), 16) || 0x00d2ff;
+                if (pedestalAuraRing) {
+                    pedestalAuraRing.material.color.setHex(auraHex);
+                    pedestalAuraRing.material.emissive.setHex(auraHex);
+                }
+                if (selectionRingMesh) {
+                    selectionRingMesh.material.color.setHex(auraHex);
+                }
+                if (pedestalSpotlight) {
+                    pedestalSpotlight.color.setHex(auraHex);
+                }
             }
 
-            const selectionRingGeo = new THREE.RingGeometry(0.9, 1.2, 32);
+            const selectionRingGeo = new THREE.RingGeometry(0.95, 1.25, 32);
             const selectionRingMat = new THREE.MeshBasicMaterial({
-                color: isLifeMode ? 0x06b6d4 : 0x00e5ff,
+                color: parseInt((getAvatarAura() || '#00d2ff').replace('#', ''), 16) || 0x00d2ff,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.8
+                opacity: 0.85
             });
             const selectionRingMesh = new THREE.Mesh(selectionRingGeo, selectionRingMat);
             selectionRingMesh.rotation.x = Math.PI / 2;
             selectionRingMesh.position.y = 0.05;
             avatarGroup.add(selectionRingMesh);
 
-            // Default Starting Position
-            const homeKickoffPos = new THREE.Vector3(0, 0.4, 30);
-            avatarGroup.position.copy(homeKickoffPos);
+            // Center Arena Position (Pedestal center)
+            avatarGroup.position.set(0, 0.25, 0);
+            avatarGroup.rotation.y = 0;
             scene.add(avatarGroup);
 
             /* ------------------------------------------------------------------
@@ -5512,6 +5611,16 @@
                 yearLabelSprites.forEach(s => scene.remove(s));
                 yearLabelSprites = [];
 
+                splineCurve = null;
+                if (travelDotMesh) travelDotMesh.visible = false;
+                travelDotActive = false;
+
+                // Center 3D athlete on champion pedestal in the center of the arena
+                avatarGroup.position.set(0, 0.25, 0);
+                avatarGroup.rotation.y = 0;
+                buildChampionPedestal();
+                update3DJerseyAndCard();
+
                 // ── CHRONOLOGICAL SORT: always present memories in date order ──
                 const memories = getActiveMemories().slice().sort((a, b) => {
                     const da = a.date ? new Date(a.date).getTime() : 0;
@@ -5520,420 +5629,18 @@
                 });
 
                 if (memories.length === 0) {
-                    gsap.to(avatarGroup.position, { x: 0, y: 0.4, z: 30, duration: 1 });
                     updateHUDEmptyState();
                     updateSubBenchWidget();
                     return;
                 }
 
-                // ── TEMPORAL SPACING: nodes spaced proportionally to date delta ──
-                const dates = memories.map(m => m.date ? new Date(m.date).getTime() : 0);
-                const minDate = Math.min(...dates);
-                const maxDate = Math.max(...dates);
-                const dateRange = maxDate - minDate || 1;
-
-                const points = [];
-                memories.forEach((mem, idx) => {
-                    const t = dates[idx] ? (dates[idx] - minDate) / dateRange : idx / Math.max(1, memories.length - 1);
-                    const z = 32 - t * 64;
-                    const x = Math.sin(idx * 0.95) * 11;
-                    points.push(new THREE.Vector3(x, 0.3, z));
-                });
-
-                if (points.length >= 2) {
-                    splineCurve = new THREE.CatmullRomCurve3(points);
-                    const tubeGeo = new THREE.TubeGeometry(splineCurve, 120, 0.18, 12, false);
-                    const tubeMat = new THREE.MeshStandardMaterial({
-                        color: isLifeMode ? 0x06b6d4 : 0x00e676,
-                        emissive: isLifeMode ? 0x0891b2 : 0x00b359,
-                        emissiveIntensity: 0.8,
-                        roughness: 0.3
-                    });
-                    splineTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
-                    scene.add(splineTubeMesh);
-
-                    // Elevated Constellation Ribbon connecting memory nodes at eye level (y = 1.6)
-                    const elevatedPoints = points.map(p => new THREE.Vector3(p.x, 1.6, p.z));
-                    const elevatedCurve = new THREE.CatmullRomCurve3(elevatedPoints);
-                    const elevatedTubeGeo = new THREE.TubeGeometry(elevatedCurve, 120, 0.05, 8, false);
-                    const elevatedTubeMat = new THREE.MeshStandardMaterial({
-                        color: isLifeMode ? 0x38bdf8 : 0x34d399,
-                        emissive: isLifeMode ? 0x0ea5e9 : 0x10b981,
-                        emissiveIntensity: 1.1,
-                        transparent: true,
-                        opacity: 0.82,
-                        roughness: 0.2
-                    });
-                    elevatedRibbonMesh = new THREE.Mesh(elevatedTubeGeo, elevatedTubeMat);
-                    scene.add(elevatedRibbonMesh);
-
-                    // Visual Dashed Memory Bridges between consecutive nodes
-                    for (let i = 0; i < points.length - 1; i++) {
-                        const p1 = elevatedPoints[i];
-                        const p2 = elevatedPoints[i + 1];
-                        const lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-                        const lineMat = new THREE.LineDashedMaterial({
-                            color: isLifeMode ? 0x7dd3fc : 0x6ee7b7,
-                            linewidth: 2,
-                            scale: 1,
-                            dashSize: 0.5,
-                            gapSize: 0.25,
-                            transparent: true,
-                            opacity: 0.65
-                        });
-                        const bridgeLine = new THREE.Line(lineGeo, lineMat);
-                        bridgeLine.computeLineDistances();
-                        elevatedConnectorLines.push(bridgeLine);
-                        scene.add(bridgeLine);
-                    }
-                } else {
-                    splineCurve = null;
-                }
-
-                // ── YEAR LABELS: floating year pill sprites above each node ──
-                let lastYear = null;
-                points.forEach((pt, idx) => {
-                    const mem = memories[idx];
-                    const year = mem.date ? new Date(mem.date).getFullYear() : null;
-                    if (year && year !== lastYear) {
-                        lastYear = year;
-                        const isLandmark = Boolean(mem.isFavorite);
-                        const sprite = createYearLabelSprite(String(year), isLandmark);
-                        sprite.position.set(pt.x, 3.5, pt.z);
-                        scene.add(sprite);
-                        yearLabelSprites.push(sprite);
-                    }
-                });
-
-                // Render Checkpoint Ring & 3D Crystal Keepsake Meshes
-                points.forEach((pt, idx) => {
-                    const ringGroup = new THREE.Group();
-                    ringGroup.position.copy(pt);
-
-                    const mem = memories[idx];
-                    const isAIInsight = Boolean(mem?.isInsight || (Array.isArray(mem?.tags) && mem.tags.includes('#AIInsight')) || (mem?.Memory_ID && String(mem.Memory_ID).startsWith('mem_insight_')));
-
-                    const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
-                    const themeColor = isAIInsight ? 0xf59e0b : (isLifeMode ? 0x06b6d4 : 0x00e676);
-                    const activeHighlight = isAIInsight ? 0xfcd34d : 0x38bdf8;
-                    const ringMat = new THREE.MeshStandardMaterial({
-                        color: idx === activeNodeIndex ? activeHighlight : themeColor,
-                        emissive: idx === activeNodeIndex ? activeHighlight : themeColor,
-                        emissiveIntensity: isAIInsight ? 1.4 : 1
-                    });
-                    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-                    ringMesh.rotation.x = Math.PI / 2;
-                    ringGroup.add(ringMesh);
-
-                    if (isAIInsight) {
-                        // 3D Procedural Golden Crystal Polyhedron (SRS 4.3.1)
-                        const crystalGeo = new THREE.OctahedronGeometry(0.72, 0);
-                        const crystalMat = new THREE.MeshStandardMaterial({
-                            color: 0xffb703,
-                            emissive: 0xf59e0b,
-                            emissiveIntensity: 0.9,
-                            metalness: 0.88,
-                            roughness: 0.18
-                        });
-                        const crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
-                        crystalMesh.position.y = 1.6;
-                        ringGroup.add(crystalMesh);
-
-                        // Holographic Glowing Wireframe Aura
-                        const wireGeo = new THREE.OctahedronGeometry(0.85, 0);
-                        const wireMat = new THREE.MeshBasicMaterial({
-                            color: 0xfff3b0,
-                            wireframe: true,
-                            transparent: true,
-                            opacity: 0.7
-                        });
-                        const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-                        wireMesh.position.y = 1.6;
-                        ringGroup.add(wireMesh);
-
-                        // Orbiting Starlight Ring
-                        const orbitGeo = new THREE.TorusGeometry(1.15, 0.035, 16, 32);
-                        const orbitMat = new THREE.MeshBasicMaterial({
-                            color: 0xfcd34d,
-                            transparent: true,
-                            opacity: 0.85
-                        });
-                        const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
-                        orbitMesh.rotation.x = Math.PI / 2.8;
-                        orbitMesh.position.y = 1.6;
-                        ringGroup.add(orbitMesh);
-
-                        // Warm Golden Radiance Light
-                        const pLight = new THREE.PointLight(0xf59e0b, 1.8, 8, 2);
-                        pLight.position.y = 1.6;
-                        ringGroup.add(pLight);
-
-                        // Pulsing Starlight Vertical Pillar
-                        const beaconGeo = new THREE.CylinderGeometry(0.35, 0.75, 5.5, 16, 1, true);
-                        const beaconMat = new THREE.MeshBasicMaterial({
-                            color: 0xf59e0b,
-                            transparent: true,
-                            opacity: 0.3,
-                            side: THREE.DoubleSide
-                        });
-                        const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-                        beaconMesh.position.y = 2.75;
-                        ringGroup.add(beaconMesh);
-
-                        activeInsightCrystals.push({
-                            crystal: crystalMesh,
-                            wireframe: wireMesh,
-                            orbitRing: orbitMesh,
-                            pointLight: pLight,
-                            baseY: 1.6,
-                            phase: idx * 1.5
-                        });
-                    } else if (mem?.isFavorite) {
-                        // Standard Landmark Golden Halo
-                        const starHaloGeo = new THREE.RingGeometry(1.2, 1.45, 32);
-                        const starHaloMat = new THREE.MeshBasicMaterial({
-                            color: 0xf59e0b,
-                            side: THREE.DoubleSide,
-                            transparent: true,
-                            opacity: 0.85
-                        });
-                        const starHaloMesh = new THREE.Mesh(starHaloGeo, starHaloMat);
-                        starHaloMesh.rotation.x = Math.PI / 2;
-                        starHaloMesh.position.y = 0.08;
-                        ringGroup.add(starHaloMesh);
-
-                        // Floating Landmark Memory Orb
-                        const orbGeo = new THREE.SphereGeometry(0.48, 24, 24);
-                        const orbMat = new THREE.MeshStandardMaterial({
-                            color: 0xffd166,
-                            emissive: 0xf59e0b,
-                            emissiveIntensity: 1.1,
-                            metalness: 0.6,
-                            roughness: 0.2
-                        });
-                        const orbMesh = new THREE.Mesh(orbGeo, orbMat);
-                        orbMesh.position.y = 1.6;
-                        ringGroup.add(orbMesh);
-
-                        const orbRingGeo = new THREE.TorusGeometry(0.78, 0.03, 12, 24);
-                        const orbRingMat = new THREE.MeshBasicMaterial({
-                            color: 0xfde68a,
-                            transparent: true,
-                            opacity: 0.9
-                        });
-                        const orbRingMesh = new THREE.Mesh(orbRingGeo, orbRingMat);
-                        orbRingMesh.position.y = 1.6;
-                        orbRingMesh.rotation.x = Math.PI / 3;
-                        ringGroup.add(orbRingMesh);
-
-                        const beamGeo = new THREE.CylinderGeometry(0.08, 0.25, 2.8, 16, 1, true);
-                        const beamMat = new THREE.MeshBasicMaterial({
-                            color: 0xf59e0b,
-                            transparent: true,
-                            opacity: 0.28,
-                            side: THREE.DoubleSide
-                        });
-                        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                        beamMesh.position.y = 1.4;
-                        ringGroup.add(beamMesh);
-
-                        activeMemoryOrbs.push({
-                            orb: orbMesh,
-                            ring: orbRingMesh,
-                            baseY: 1.6,
-                            phase: idx * 1.3
-                        });
-                    } else {
-                        // Standard Memory Node: Floating luminous memory core
-                        const orbGeo = new THREE.SphereGeometry(0.42, 24, 24);
-                        const orbMat = new THREE.MeshStandardMaterial({
-                            color: themeColor,
-                            emissive: themeColor,
-                            emissiveIntensity: 0.9,
-                            metalness: 0.3,
-                            roughness: 0.2
-                        });
-                        const orbMesh = new THREE.Mesh(orbGeo, orbMat);
-                        orbMesh.position.y = 1.6;
-                        ringGroup.add(orbMesh);
-
-                        // Orbiting starlight ring
-                        const orbRingGeo = new THREE.TorusGeometry(0.68, 0.025, 12, 24);
-                        const orbRingMat = new THREE.MeshBasicMaterial({
-                            color: isLifeMode ? 0x7dd3fc : 0x86efac,
-                            transparent: true,
-                            opacity: 0.85
-                        });
-                        const orbRingMesh = new THREE.Mesh(orbRingGeo, orbRingMat);
-                        orbRingMesh.position.y = 1.6;
-                        orbRingMesh.rotation.x = Math.PI / 3;
-                        ringGroup.add(orbRingMesh);
-
-                        // Luminous vertical light tether
-                        const beamGeo = new THREE.CylinderGeometry(0.06, 0.2, 2.6, 16, 1, true);
-                        const beamMat = new THREE.MeshBasicMaterial({
-                            color: themeColor,
-                            transparent: true,
-                            opacity: 0.3,
-                            side: THREE.DoubleSide
-                        });
-                        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-                        beamMesh.position.y = 1.3;
-                        ringGroup.add(beamMesh);
-
-                        activeMemoryOrbs.push({
-                            orb: orbMesh,
-                            ring: orbRingMesh,
-                            baseY: 1.6,
-                            phase: idx * 1.3
-                        });
-                    }
-
-                    // Check if node is secured in Encrypted Vault (SRS 4.1 & 71)
-                    if (mem?.isVaultLocked) {
-                        // Iridescent violet security orbit torus
-                        const vOrbitGeo = new THREE.TorusGeometry(1.35, 0.05, 16, 32);
-                        const vOrbitMat = new THREE.MeshStandardMaterial({
-                            color: 0xc084fc,
-                            emissive: 0x9333ea,
-                            emissiveIntensity: 1.5,
-                            roughness: 0.15,
-                            metalness: 0.8
-                        });
-                        const vOrbitMesh = new THREE.Mesh(vOrbitGeo, vOrbitMat);
-                        vOrbitMesh.rotation.x = Math.PI / 2.3;
-                        vOrbitMesh.position.y = 1.3;
-                        ringGroup.add(vOrbitMesh);
-
-                        // Floating obsidian-violet security seal polyhedron
-                        const sealGeo = new THREE.DodecahedronGeometry(0.48, 0);
-                        const sealMat = new THREE.MeshStandardMaterial({
-                            color: 0xa855f7,
-                            emissive: 0x581c87,
-                            emissiveIntensity: 1.2,
-                            roughness: 0.2,
-                            metalness: 0.9
-                        });
-                        const sealMesh = new THREE.Mesh(sealGeo, sealMat);
-                        sealMesh.position.y = 1.8;
-                        ringGroup.add(sealMesh);
-
-                        // Glowing wireframe aura
-                        const sealWireGeo = new THREE.DodecahedronGeometry(0.58, 0);
-                        const sealWireMat = new THREE.MeshBasicMaterial({
-                            color: 0xe9d5ff,
-                            wireframe: true,
-                            transparent: true,
-                            opacity: 0.65
-                        });
-                        const sealWireMesh = new THREE.Mesh(sealWireGeo, sealWireMat);
-                        sealWireMesh.position.y = 1.8;
-                        ringGroup.add(sealWireMesh);
-
-                        // Protective Violet Laser Beacon
-                        const vBeaconGeo = new THREE.CylinderGeometry(0.4, 0.9, 6.0, 16, 1, true);
-                        const vBeaconMat = new THREE.MeshBasicMaterial({
-                            color: 0x9333ea,
-                            transparent: true,
-                            opacity: 0.28,
-                            side: THREE.DoubleSide
-                        });
-                        const vBeaconMesh = new THREE.Mesh(vBeaconGeo, vBeaconMat);
-                        vBeaconMesh.position.y = 3.0;
-                        ringGroup.add(vBeaconMesh);
-
-                        activeVaultMeshes.push({
-                            ring: vOrbitMesh,
-                            seal: sealMesh,
-                            wire: sealWireMesh,
-                            beacon: vBeaconMesh,
-                            baseY: 1.8,
-                            phase: idx * 1.6
-                        });
-                    }
-
-                    // ── HIGH-RES 3D GRAPHIC MEDALLION & BILLBOARD DISC ──
-                    const isLightMode = document.body.classList.contains('theme-light');
-                    const graphicTex = createNodeGraphicTexture(mem, idx, isLightMode);
-                    const discGeo = new THREE.PlaneGeometry(2.3, 2.3);
-                    const discMat = new THREE.MeshBasicMaterial({
-                        map: graphicTex,
-                        transparent: true,
-                        side: THREE.DoubleSide,
-                        depthWrite: false
-                    });
-                    const discMesh = new THREE.Mesh(discGeo, discMat);
-                    discMesh.position.y = 2.4;
-                    discMesh.userData = { nodeIndex: idx, isMemoryDisc: true };
-                    ringGroup.add(discMesh);
-
-                    // Animated Glowing Corona Ring around Medallion
-                    const coronaColor = mem.isFavorite ? 0xf59e0b : (mem.isVaultLocked ? 0xa855f7 : (isLifeMode ? 0x06b6d4 : 0x00e676));
-                    const coronaGeo = new THREE.RingGeometry(1.18, 1.34, 32);
-                    const coronaMat = new THREE.MeshBasicMaterial({
-                        color: coronaColor,
-                        side: THREE.DoubleSide,
-                        transparent: true,
-                        opacity: 0.82
-                    });
-                    const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
-                    coronaMesh.position.y = 2.4;
-                    coronaMesh.userData = { nodeIndex: idx };
-                    ringGroup.add(coronaMesh);
-
-                    // Ground Ripple Wave Ring
-                    const waveGeo = new THREE.RingGeometry(0.85, 1.15, 32);
-                    const waveMat = new THREE.MeshBasicMaterial({
-                        color: coronaColor,
-                        side: THREE.DoubleSide,
-                        transparent: true,
-                        opacity: 0.35
-                    });
-                    const waveMesh = new THREE.Mesh(waveGeo, waveMat);
-                    waveMesh.rotation.x = Math.PI / 2;
-                    waveMesh.position.y = 0.05;
-                    ringGroup.add(waveMesh);
-
-                    activeGraphicDiscs.push({
-                        disc: discMesh,
-                        corona: coronaMesh,
-                        wave: waveMesh,
-                        baseY: 2.4,
-                        phase: idx * 1.4,
-                        idx
-                    });
-
-                    // Floating 3D Title & Date Pill Sprite
-                    const labelSprite = createMemoryLabelSprite(mem, idx, isLightMode);
-                    labelSprite.position.set(0, 3.85, 0);
-                    ringGroup.add(labelSprite);
-
-                    ringGroup.userData = { nodeIndex: idx };
-                    scene.add(ringGroup);
-                    checkpointRings.push({ group: ringGroup, mesh: ringMesh });
-                });
-
+                // The arena is kept clean without cluttered floating memory nodes;
+                // Chronological memory exploration takes place in dedicated 3D Live Walk.
                 if (activeNodeIndex < 0 || activeNodeIndex >= memories.length) {
                     activeNodeIndex = memories.length - 1;
                 }
                 updateActiveNode(activeNodeIndex);
                 updateSubBenchWidget();
-
-                // After rebuild, sync travel dot and seed currentU so avatar walks IN smoothly
-                if (splineCurve && memories.length > 1) {
-                    const finalU = activeNodeIndex / Math.max(1, memories.length - 1);
-                    // Seed currentU one node behind targetU so the avatar walks forward visibly
-                    const oneNodeBack = Math.max(0, finalU - 1 / Math.max(1, memories.length - 1));
-                    currentU = oneNodeBack;
-                    // Travel dot starts where the avatar starts
-                    travelDotU = oneNodeBack;
-                    travelDotTargetU = finalU;
-                    travelDotActive = false;
-                    travelDotMesh.visible = false;
-                } else if (memories.length === 1) {
-                    // Single node — snap to its spline-equivalent starting position
-                    currentU = 0;
-                }
             }
 
             function updateHUDEmptyState() {
@@ -6022,21 +5729,8 @@
                 document.getElementById('snippet-progress-text').textContent = `${activeNodeIndex + 1} / ${memories.length} ${modeWord}`;
                 document.getElementById('plays-count-display').textContent = `${memories.length} Preserved ${modeWord} • ${isLifeMode ? 'Life Sanctuary' : 'Career Ledger'}`;
 
-                const activeHighlightColor = isLifeMode ? 0x38bdf8 : 0x00e5ff;
-                const standardColor = isLifeMode ? 0x06b6d4 : 0x00e676;
-
-                checkpointRings.forEach((r, idx) => {
-                    r.mesh.material.color.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
-                    r.mesh.material.emissive.setHex(idx === activeNodeIndex ? activeHighlightColor : standardColor);
-                });
-
-                if (splineCurve && memories.length > 1) {
-                    const pt = splineCurve.getPointAt(targetU);
-                    spotlight.target.position.copy(pt);
-                    spotlight.position.set(pt.x, 16, pt.z + 5);
-                } else if (memories.length === 1) {
-                    const pt = new THREE.Vector3(0, 0.3, 32);
-                    gsap.to(avatarGroup.position, { x: pt.x, y: 0.4, z: pt.z, duration: 1 });
+                if (pedestalAuraRing) {
+                    pedestalAuraRing.material.emissiveIntensity = 2.4;
                 }
             }
 
@@ -6932,103 +6626,35 @@
                 const isLandmark = Boolean(mem && mem.isFavorite);
                 const isVault    = Boolean(mem && mem.isVaultLocked);
 
-                // Compute node position using same temporal-spaced formula
-                const dates = memories.map(m => m.date ? new Date(m.date).getTime() : 0);
-                const minDate = Math.min(...dates);
-                const maxDate = Math.max(...dates);
-                const dateRange = maxDate - minDate || 1;
-                const t = dates[index] ? (dates[index] - minDate) / dateRange : index / Math.max(1, memories.length - 1);
-                const targetZ = 32 - t * 64;
-                const targetX = Math.sin(index * 0.95) * 11;
-                const nodePos = new THREE.Vector3(targetX, 0.4, targetZ);
+                const dur = instant ? 0.3 : 0.85;
 
-                // Camera profile per node type
-                let camHeight, camDist, camSide;
-                if (isVault) {
-                    // Dramatic overhead swoop for vault memories
-                    camHeight = 14;
-                    camDist   = 6;
-                    camSide   = targetX > 0 ? -5 : 5;
-                } else if (isLandmark) {
-                    // Tighter, cinematic low angle for landmark moments
-                    camHeight = 5;
-                    camDist   = 9;
-                    camSide   = targetX > 0 ? -6 : 6;
-                } else {
-                    // Standard 3/4 isometric view
-                    camHeight = 8;
-                    camDist   = 12;
-                    camSide   = targetX > 0 ? -9 : 9;
-                }
+                // Smoothly focus on 3D character in arena center with subtle angle variation
+                const angle = (index * 0.45) % (Math.PI * 2);
+                const camX = Math.sin(angle) * 1.5;
+                const camZ = 5.8 + Math.cos(angle) * 0.6;
+                const camY = isLandmark ? 2.2 : 2.55;
 
-                const dur = instant ? 0.4 : 1.6;
-
-                // NOTE: The camera now strictly follows the avatar ("this guy") along the spline
-                if (!window.currentCamOffset) {
-                    window.currentCamOffset = {
-                        side: camera.position.x - controls.target.x,
-                        height: camera.position.y,
-                        dist: camera.position.z - controls.target.z,
-                        targetY: controls.target.y
-                    };
-                }
-
-                window.isCameraFollowingAvatar = true;
-                if (window.camOffsetTween) window.camOffsetTween.kill();
-
-                window.camOffsetTween = gsap.to(window.currentCamOffset, {
-                    side: camSide,
-                    height: camHeight,
-                    dist: camDist,
-                    targetY: isVault ? 4 : 1.4,
+                gsap.to(camera.position, {
+                    x: camX,
+                    y: camY,
+                    z: camZ,
                     duration: dur,
-                    ease: 'power2.out'
+                    ease: 'power2.out',
+                    onUpdate: () => controls.update()
                 });
-
-                // Fallback for single node (no spline)
-                if (!splineCurve || memories.length <= 1) {
-                    gsap.to(camera.position, {
-                        x: targetX + camSide,
-                        y: camHeight,
-                        z: targetZ + camDist,
-                        duration: dur,
-                        ease: 'power3.inOut'
-                    });
-                    gsap.to(controls.target, {
-                        x: targetX,
-                        y: isVault ? 4 : 1.4,
-                        z: targetZ,
-                        duration: dur,
-                        ease: 'power3.inOut'
-                    });
-                    window.isCameraFollowingAvatar = false;
-                }
-
-                // Fire travel dot along spline path
-                if (splineCurve && memories.length > 1) {
-                    const newU = memories.length > 1 ? index / (memories.length - 1) : 0;
-                    travelDotTargetU = newU;
-                    if (Math.abs(newU - travelDotU) > 0.01) {
-                        travelDotMesh.visible = true;
-                        travelDotActive = true;
-                        setTimeout(() => {
-                            travelDotActive = false;
-                            travelDotMesh.visible = false;
-                        }, dur * 1100);
-                    }
-                }
-
-                // Spotlight follows node
-                if (splineCurve && memories.length > 1) {
-                    const newU = memories.length > 1 ? index / (memories.length - 1) : 0;
-                    const pt = splineCurve.getPointAt(newU);
-                    gsap.to(spotlight.position, { x: pt.x, y: 22, z: pt.z + 5, duration: dur, ease: 'power2.out' });
-                }
+                gsap.to(controls.target, {
+                    x: 0,
+                    y: 1.25,
+                    z: 0,
+                    duration: dur,
+                    ease: 'power2.out',
+                    onUpdate: () => controls.update()
+                });
 
                 playSoftSound(isLandmark ? 'harmonic' : 'chime');
 
                 if (openModal) {
-                    setTimeout(() => openInspectModalForNode(index), dur * 900);
+                    setTimeout(() => openInspectModalForNode(index), dur * 800);
                 }
             }
 
@@ -10147,6 +9773,9 @@
                             } catch (e) {}
 
                             updateAvatarDisplay();
+                            if (typeof update3DJerseyAndCard === 'function') {
+                                update3DJerseyAndCard();
+                            }
 
                             try {
                                 const uid = getUserId();
@@ -11264,6 +10893,14 @@
                 duration: 2.2,
                 ease: 'power3.out'
             });
+            gsap.to(controls.target, {
+                x: 0,
+                y: 1.25,
+                z: 0,
+                duration: 2.2,
+                ease: 'power3.out',
+                onUpdate: () => controls.update()
+            });
 
             // UI Breeze slow-mo leaves overlay generator for Life Sanctuary
             if (isLifeMode) {
@@ -11292,7 +10929,7 @@
                 }
             }
 
-            // 3D Canvas Raycaster: click checkpoint rings to jump, or click bench to chat / trophy to inspect
+            // 3D Canvas Raycaster: click 3D character to customize, bench to chat, or trophy to inspect
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
 
@@ -11314,27 +10951,22 @@
                     return;
                 }
 
+                // Click on 3D Character Avatar or Pedestal in Arena center to open Customization Studio
+                const avatarTargets = [avatarGroup];
+                if (championPedestalGroup) avatarTargets.push(championPedestalGroup);
+                const avatarHits = raycaster.intersectObjects(avatarTargets, true);
+                if (avatarHits.length > 0) {
+                    if (typeof openProfileEditor === 'function') {
+                        openProfileEditor('avatar');
+                    }
+                    return;
+                }
+
                 // Click on Younger Self substitute bench
                 const benchHits = raycaster.intersectObjects(benchGroup.children, true);
                 if (benchHits.length > 0) {
                     btnAICompanion.click();
                     return;
-                }
-
-                // Click on checkpoint rings & 3D graphic discs
-                const interactiveObjects = [
-                    ...checkpointRings.map(r => r.group),
-                    ...activeGraphicDiscs.map(g => g.disc).filter(Boolean)
-                ];
-                const ringHits = raycaster.intersectObjects(interactiveObjects, true);
-                if (ringHits.length > 0) {
-                    let hitObj = ringHits[0].object;
-                    while (hitObj && hitObj.userData.nodeIndex === undefined && hitObj.parent) {
-                        hitObj = hitObj.parent;
-                    }
-                    if (hitObj && hitObj.userData.nodeIndex !== undefined) {
-                        visitNode(hitObj.userData.nodeIndex, true);
-                    }
                 }
             });
 
@@ -11354,13 +10986,21 @@
                     return;
                 }
 
-                const interactiveObjects = [
-                    ...checkpointRings.map(r => r.group),
-                    ...activeGraphicDiscs.map(g => g.disc).filter(Boolean),
-                    benchGroup
-                ];
-                const hits = raycaster.intersectObjects(interactiveObjects, true);
-                canvas.style.cursor = hits.length > 0 ? 'pointer' : 'default';
+                const avatarTargets = [avatarGroup];
+                if (championPedestalGroup) avatarTargets.push(championPedestalGroup);
+                const avatarHits = raycaster.intersectObjects(avatarTargets, true);
+                if (avatarHits.length > 0) {
+                    canvas.style.cursor = 'pointer';
+                    return;
+                }
+
+                const benchHits = raycaster.intersectObjects(benchGroup.children, true);
+                if (benchHits.length > 0) {
+                    canvas.style.cursor = 'pointer';
+                    return;
+                }
+
+                canvas.style.cursor = 'default';
             });
 
             /* ------------------------------------------------------------------
@@ -11417,7 +11057,7 @@
                     });
                     gsap.to(controls.target, {
                         x: 0,
-                        y: 0,
+                        y: 1.25,
                         z: 0,
                         duration: 1.2,
                         ease: 'power2.out',
@@ -11431,6 +11071,7 @@
                 window.location.href = targetUrl;
             }
 
+            document.getElementById('btn-customize-character')?.addEventListener('click', () => openProfileEditor('avatar'));
             document.getElementById('btn-free-walk-toggle')?.addEventListener('click', launchDedicated3DWalk);
             document.getElementById('btn-exit-free-walk')?.addEventListener('click', () => toggleFreeWalkMode(false));
 
@@ -11975,6 +11616,8 @@
                     checkpointRings.forEach(r => r.group.visible = false);
                     yearLabelSprites.forEach(s => s.visible = false);
                     avatarGroup.visible = false;
+                    if (championPedestalGroup) championPedestalGroup.visible = false;
+                    if (pedestalSpotlight) pedestalSpotlight.visible = false;
 
                     buildTrophyCabinet(currentSport);
                     trophyCabinetGroup.visible = true;
@@ -12017,19 +11660,21 @@
                     checkpointRings.forEach(r => r.group.visible = true);
                     yearLabelSprites.forEach(s => s.visible = true);
                     avatarGroup.visible = true;
+                    if (championPedestalGroup) championPedestalGroup.visible = true;
+                    if (pedestalSpotlight) pedestalSpotlight.visible = true;
 
                     controls.maxPolarAngle = Math.PI / 2.05;
-                    controls.minDistance = 2.0;
-                    controls.maxDistance = 160.0;
+                    controls.minDistance = 1.8;
+                    controls.maxDistance = 60.0;
 
                     window.isCameraFollowingAvatar = false;
                     if (window.camOffsetTween) window.camOffsetTween.kill();
                     gsap.killTweensOf(camera.position);
                     gsap.killTweensOf(controls.target);
 
-                    controls.target.set(0, 0, 0);
+                    controls.target.set(0, 1.25, 0);
                     camera.position.set(defaultCamPos.x, defaultCamPos.y, defaultCamPos.z);
-                    camera.lookAt(0, 0, 0);
+                    camera.lookAt(0, 1.25, 0);
                     controls.update();
 
                     if (footerSnippet) footerSnippet.classList.remove('hidden');
@@ -12048,6 +11693,8 @@
             window.toggleFreeWalkMode = toggleFreeWalkMode;
             window.camera = camera;
             window.controls = controls;
+            window.avatarGroup = avatarGroup;
+            window.championPedestalGroup = championPedestalGroup;
 
             /* ------------------------------------------------------------------
                14. 60FPS ANIMATION LOOP (TREES SWAYING & DRIFTING BREEZE)
@@ -12153,72 +11800,33 @@
                     const targetLookAt = new THREE.Vector3(avatarGroup.position.x, avatarGroup.position.y + 1.5, avatarGroup.position.z);
                     controls.target.lerp(targetLookAt, Math.min(1, delta * 8));
 
-                    checkpointRings.forEach((r, idx) => {
-                        const dist = avatarGroup.position.distanceTo(r.group.position);
-                        if (dist < 3.2 && activeNodeIndex !== idx) {
-                            updateActiveNode(idx);
-                        }
-                    });
                 } else {
-                    // Walk cycle when avatar is moving along spline
-                    const avatarMoving = splineCurve && memories.length > 1 && Math.abs(targetU - currentU) > 0.005;
-                    if (avatarMoving) {
-                        const walkSpeed = 8;
-                        avatarLimbs.legLGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.55;
-                        avatarLimbs.legRGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.55;
-                        avatarLimbs.armLGroup.rotation.x = -Math.sin(time * walkSpeed) * 0.38;
-                        avatarLimbs.armRGroup.rotation.x =  Math.sin(time * walkSpeed) * 0.38;
-                    } else {
-                        avatarLimbs.legLGroup.rotation.x *= 0.85;
-                        avatarLimbs.legRGroup.rotation.x *= 0.85;
-                        avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.06;
-                        avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.06;
+                    // Avatar stays rooted on champion pedestal in arena center
+                    avatarLimbs.legLGroup.rotation.x *= 0.85;
+                    avatarLimbs.legRGroup.rotation.x *= 0.85;
+                    avatarLimbs.armLGroup.rotation.x = Math.sin(time * 1.8) * 0.06;
+                    avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.06;
+
+                    if (!isFreeWalkMode) {
+                        avatarGroup.position.set(0, 0.25, 0);
                     }
 
-                    // ── SPLINE AVATAR FOLLOW: smooth lerp along path ──
-                    if (splineCurve && memories.length > 1) {
-                        currentU += (targetU - currentU) * 0.035;
-                        const pos = splineCurve.getPointAt(Math.min(Math.max(currentU, 0), 1));
-                        avatarGroup.position.set(pos.x, 0.4, pos.z);
-
-                        const tangent = splineCurve.getTangentAt(Math.min(Math.max(currentU, 0.001), 0.999));
-                        avatarGroup.rotation.y = Math.atan2(tangent.x, tangent.z);
-
-                        // ── CAMERA FOLLOWS AVATAR ──
-                        if (window.isCameraFollowingAvatar && window.currentCamOffset) {
-                            camera.position.set(
-                                pos.x + window.currentCamOffset.side,
-                                window.currentCamOffset.height,
-                                pos.z + window.currentCamOffset.dist
-                            );
-                            controls.target.set(
-                                pos.x,
-                                window.currentCamOffset.targetY,
-                                pos.z
-                            );
-
-                            if (Math.abs(targetU - currentU) < 0.001) {
-                                window.isCameraFollowingAvatar = false;
-                            }
-                        }
+                    // Tactical Card gentle bobbing
+                    if (tacticalCardSprite) {
+                        tacticalCardSprite.position.y = 1.35 + Math.sin(time * 2.0) * 0.04;
                     }
-                }
 
-                // ── TRAVEL DOT: slide along spline between nodes ──
-                if (travelDotActive && splineCurve && memories.length > 1) {
-                    travelDotU += (travelDotTargetU - travelDotU) * 0.055;
-                    const dotPos = splineCurve.getPointAt(Math.min(Math.max(travelDotU, 0), 1));
-                    travelDotMesh.position.set(dotPos.x, 1.0, dotPos.z);
-                    // Pulse glow
-                    travelDotMat.emissiveIntensity = 1.5 + Math.sin(time * 12) * 0.5;
-                    if (Math.abs(travelDotU - travelDotTargetU) < 0.005) {
-                        travelDotActive = false;
-                        travelDotMesh.visible = false;
+                    // Champion Pedestal aura rotation & subtle pulse
+                    if (pedestalAuraRing) {
+                        pedestalAuraRing.rotation.z = time * 0.4;
+                        pedestalAuraRing.material.emissiveIntensity = 2.0 + Math.sin(time * 4.0) * 0.35;
                     }
                 }
 
                 // Selection Ring Pulse
-                selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
+                if (selectionRingMesh) {
+                    selectionRingMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.08);
+                }
                 checkpointRings.forEach((r, idx) => {
                     r.mesh.rotation.z = time * 0.5 + idx;
                     // Boost active node ring
@@ -12344,11 +11952,6 @@
                     stadiumCornerFlags.forEach((flag, idx) => {
                         flag.rotation.y = Math.sin(time * 3.5 + idx * 1.5) * 0.22;
                     });
-                }
-
-                // FLOATING 3D TACTICAL CARD GENTLE HOVER
-                if (tacticalCardSprite) {
-                    tacticalCardSprite.position.y = 3.4 + Math.sin(time * 2.5) * 0.05;
                 }
 
                 controls.update();
