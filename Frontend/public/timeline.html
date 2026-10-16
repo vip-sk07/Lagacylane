@@ -3272,7 +3272,7 @@
             scene.fog = new THREE.FogExp2(0x07111e, 0.0055);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const defaultCamPos = new THREE.Vector3(0, 2.4, 6.8);
+            const defaultCamPos = new THREE.Vector3(0, 1.75, 4.6);
             
             // Start elevated for cinematic intro animation
             camera.position.set(0, 5.0, 11.0);
@@ -4079,11 +4079,12 @@
                     roughness: 0.2,
                     metalness: 0.3
                 });
-                const goalNetMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
+                const goalNetMat = new THREE.MeshBasicMaterial({
+                    color: 0x64748b,
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.45
+                    opacity: 0.12,
+                    depthWrite: false
                 });
 
                 // 1. Stadium Grass Apron / Perimeter Surround
@@ -4941,7 +4942,46 @@
                             if (child.isMesh) {
                                 child.castShadow = true;
                                 child.receiveShadow = true;
-                                if (child.material) {
+
+                                if (child.name && child.name.includes('Jumbotron')) {
+                                    // High-tech dark LED stadium screen with sleek cyber scoreboard graphics
+                                    const jbCanvas = document.createElement('canvas');
+                                    jbCanvas.width = 512; jbCanvas.height = 256;
+                                    const jbCtx = jbCanvas.getContext('2d');
+                                    jbCtx.fillStyle = '#060a12';
+                                    jbCtx.fillRect(0, 0, 512, 256);
+                                    jbCtx.strokeStyle = '#00d2ff';
+                                    jbCtx.lineWidth = 6;
+                                    jbCtx.strokeRect(6, 6, 500, 244);
+                                    
+                                    jbCtx.fillStyle = 'rgba(0, 210, 255, 0.15)';
+                                    jbCtx.fillRect(10, 10, 492, 40);
+                                    jbCtx.fillStyle = '#00d2ff';
+                                    jbCtx.font = 'bold 22px monospace';
+                                    jbCtx.textAlign = 'center';
+                                    jbCtx.fillText('LEGACYLANE ARENA • LIVE', 256, 38);
+                                    
+                                    jbCtx.fillStyle = '#ffffff';
+                                    jbCtx.font = '900 64px "Arial Black", sans-serif';
+                                    jbCtx.fillText('HOME   AWAY', 256, 120);
+                                    jbCtx.fillStyle = '#f59e0b';
+                                    jbCtx.font = '900 72px "Impact", monospace';
+                                    jbCtx.fillText('3  -  0', 256, 195);
+                                    
+                                    jbCtx.fillStyle = '#10b981';
+                                    jbCtx.font = 'bold 18px monospace';
+                                    jbCtx.fillText('● 90:00 FULL TIME', 256, 235);
+                                    
+                                    const jbTex = new THREE.CanvasTexture(jbCanvas);
+                                    child.material = new THREE.MeshStandardMaterial({
+                                        map: jbTex,
+                                        roughness: 0.3,
+                                        metalness: 0.5,
+                                        emissive: 0x00d2ff,
+                                        emissiveMap: jbTex,
+                                        emissiveIntensity: 0.45
+                                    });
+                                } else if (child.material) {
                                     child.material.side = THREE.DoubleSide;
                                     if (child.material.emissive && child.material.emissiveIntensity !== undefined) {
                                         child.material.emissiveIntensity = 1.35;
@@ -5533,25 +5573,30 @@
                 return texture;
             }
 
-            // Realistically Sculpted 3D Athlete Builder (Head, Hairstyle, Face, Arms, Torso, Legs, Pro Cleats)
+            // Realistically Sculpted 3D Athlete Builder (Anatomy, Face, 6 Hairstyles, Arms, V-Taper Jersey, Muscular Legs, Pro Cleats)
             function buildRealisticAthlete(customInput) {
                 const custom = customInput || getAthleteCustomization();
-                const athleteBodyGroup = new THREE.Group();
-                athleteBodyGroup.name = 'athleteBody';
+                const athleteGroup = new THREE.Group();
+                athleteGroup.name = 'athleteBody';
 
+                const isLife = typeof isLifeMode !== 'undefined' ? isLifeMode : false;
                 const skinTone = custom.skinTone || '#c89366';
                 const skinToneHex = parseInt(skinTone.replace('#', ''), 16) || 0xc89366;
-                const skinMat = new THREE.MeshStandardMaterial({
-                    color: skinToneHex,
-                    roughness: 0.62,
-                    metalness: 0.08
+                const skinColor = new THREE.Color(skinToneHex);
+
+                const skinMat = new THREE.MeshPhysicalMaterial({
+                    color: skinColor,
+                    roughness: 0.52,
+                    metalness: 0.04,
+                    clearcoat: 0.12,
+                    clearcoatRoughness: 0.35
                 });
 
-                const hairColorHex = parseInt((custom.hairColor || '#111111').replace('#', ''), 16) || 0x111111;
+                const hairColorHex = parseInt((custom.hairColor || '#1a1410').replace('#', ''), 16) || 0x1a1410;
                 const hairMat = new THREE.MeshStandardMaterial({
                     color: hairColorHex,
-                    roughness: 0.78,
-                    metalness: 0.12
+                    roughness: 0.58,
+                    metalness: 0.20
                 });
 
                 const kitPrimary = parseInt((custom.kitPrimary || '#00d2ff').replace('#', ''), 16) || 0x00d2ff;
@@ -5560,478 +5605,803 @@
                 const socksColorHex = parseInt((custom.socksColor || '#00d2ff').replace('#', ''), 16) || 0x00d2ff;
                 const cleatsColorHex = parseInt((custom.cleatsColor || '#ccff00').replace('#', ''), 16) || 0xccff00;
 
-                const shortsMat = new THREE.MeshStandardMaterial({ color: shortsColorHex, roughness: 0.45 });
-                const socksMat = new THREE.MeshStandardMaterial({ color: socksColorHex, roughness: 0.42 });
+                // Procedural Eye Texture with Hazel Iris, Striations, Limbal Ring, Specular Reflection
+                function createRealisticEyeTexture() {
+                    const cv = document.createElement('canvas');
+                    cv.width = 256; cv.height = 256;
+                    const ctx = cv.getContext('2d');
+
+                    // Sclera
+                    const scleraGrad = ctx.createRadialGradient(128, 128, 40, 128, 128, 128);
+                    scleraGrad.addColorStop(0, '#ffffff');
+                    scleraGrad.addColorStop(0.85, '#f1f5f9');
+                    scleraGrad.addColorStop(1, '#94a3b8');
+                    ctx.fillStyle = scleraGrad;
+                    ctx.fillRect(0, 0, 256, 256);
+
+                    // Limbal ring (outer iris border)
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 80, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fill();
+
+                    // Hazel / Amber / Chestnut Iris
+                    const irisGrad = ctx.createRadialGradient(128, 128, 15, 128, 128, 76);
+                    irisGrad.addColorStop(0, '#381a05');
+                    irisGrad.addColorStop(0.4, '#854d19');
+                    irisGrad.addColorStop(0.8, '#4a250a');
+                    irisGrad.addColorStop(1, '#111827');
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 76, 0, Math.PI * 2);
+                    ctx.fillStyle = irisGrad;
+                    ctx.fill();
+
+                    // Radial Striations
+                    ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+                    ctx.lineWidth = 1.5;
+                    for (let a = 0; a < Math.PI * 2; a += Math.PI / 18) {
+                        ctx.beginPath();
+                        ctx.moveTo(128 + Math.cos(a) * 22, 128 + Math.sin(a) * 22);
+                        ctx.lineTo(128 + Math.cos(a) * 70, 128 + Math.sin(a) * 70);
+                        ctx.stroke();
+                    }
+
+                    // Deep Pupil
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 28, 0, Math.PI * 2);
+                    ctx.fillStyle = '#020617';
+                    ctx.fill();
+
+                    // Specular Highlight
+                    ctx.beginPath();
+                    ctx.arc(106, 106, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fill();
+
+                    const tex = new THREE.CanvasTexture(cv);
+                    tex.needsUpdate = true;
+                    return tex;
+                }
+
+                // Procedural Multi-Material Jersey Textures (Front & Back isolated)
+                function createJerseyTextures(c) {
+                    const primary = c.kitPrimary || '#00d2ff';
+                    const accent = c.kitAccent || '#ffffff';
+                    const pattern = c.kitPattern || 'stripes';
+                    const number = String(c.squadNumber || (isLife ? '✦' : '7'));
+                    const name = (c.jerseyName || (isLife ? 'SEEKER' : 'LEGACY')).toUpperCase();
+
+                    function drawBasePattern(ctx, w, h) {
+                        ctx.fillStyle = primary;
+                        ctx.fillRect(0, 0, w, h);
+
+                        if (pattern === 'stripes') {
+                            ctx.fillStyle = accent;
+                            const stripeW = w / 7;
+                            for (let x = stripeW; x < w; x += stripeW * 2) {
+                                ctx.fillRect(x, 0, stripeW, h);
+                            }
+                        } else if (pattern === 'sash') {
+                            ctx.save();
+                            ctx.fillStyle = accent;
+                            ctx.beginPath();
+                            ctx.moveTo(w * 0.15, 0);
+                            ctx.lineTo(w * 0.45, 0);
+                            ctx.lineTo(w * 0.85, h);
+                            ctx.lineTo(w * 0.55, h);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                        } else if (pattern === 'hoops') {
+                            ctx.fillStyle = accent;
+                            const hoopH = h / 7;
+                            for (let y = hoopH; y < h; y += hoopH * 2) {
+                                ctx.fillRect(0, y, w, hoopH);
+                            }
+                        } else if (pattern === 'gradient') {
+                            const grad = ctx.createLinearGradient(0, 0, 0, h);
+                            grad.addColorStop(0, primary);
+                            grad.addColorStop(1, accent);
+                            ctx.fillStyle = grad;
+                            ctx.fillRect(0, 0, w, h);
+                        } else if (pattern === 'cyber' || pattern === 'cyber_chevrons') {
+                            ctx.fillStyle = accent;
+                            for (let y = 80; y < h; y += 140) {
+                                ctx.beginPath();
+                                ctx.moveTo(w / 2, y);
+                                ctx.lineTo(w * 0.85, y + 60);
+                                ctx.lineTo(w * 0.80, y + 85);
+                                ctx.lineTo(w / 2, y + 35);
+                                ctx.lineTo(w * 0.20, y + 85);
+                                ctx.lineTo(w * 0.15, y + 60);
+                                ctx.closePath();
+                                ctx.fill();
+                            }
+                        }
+                    }
+
+                    // FRONT
+                    const fCv = document.createElement('canvas');
+                    fCv.width = 512; fCv.height = 512;
+                    const fCtx = fCv.getContext('2d');
+                    drawBasePattern(fCtx, 512, 512);
+
+                    // Front Swoosh
+                    fCtx.save();
+                    fCtx.fillStyle = accent;
+                    fCtx.beginPath();
+                    fCtx.moveTo(125, 145);
+                    fCtx.quadraticCurveTo(165, 130, 200, 140);
+                    fCtx.quadraticCurveTo(170, 155, 125, 145);
+                    fCtx.fill();
+                    fCtx.restore();
+
+                    // Front Club Crest
+                    fCtx.save();
+                    fCtx.translate(355, 140);
+                    fCtx.beginPath();
+                    fCtx.moveTo(0, -28);
+                    fCtx.lineTo(24, -28);
+                    fCtx.quadraticCurveTo(26, 16, 0, 32);
+                    fCtx.quadraticCurveTo(-26, 16, -24, -28);
+                    fCtx.closePath();
+                    fCtx.fillStyle = '#0a101d';
+                    fCtx.fill();
+                    fCtx.lineWidth = 3;
+                    fCtx.strokeStyle = '#f59e0b';
+                    fCtx.stroke();
+                    fCtx.fillStyle = '#fbbf24';
+                    fCtx.font = '14px sans-serif';
+                    fCtx.textAlign = 'center';
+                    fCtx.fillText('★', 0, -34);
+                    fCtx.fillStyle = '#f59e0b';
+                    fCtx.font = '900 20px "Arial Black", sans-serif';
+                    fCtx.textBaseline = 'middle';
+                    fCtx.fillText(isLife ? '✦' : 'LL', 0, 2);
+                    fCtx.restore();
+
+                    // Front Squad Number
+                    fCtx.save();
+                    fCtx.fillStyle = accent;
+                    fCtx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+                    fCtx.shadowBlur = 6;
+                    fCtx.font = '900 110px "Impact", "Arial Black", sans-serif';
+                    fCtx.textAlign = 'center';
+                    fCtx.textBaseline = 'middle';
+                    fCtx.fillText(number, 256, 310);
+                    fCtx.restore();
+
+                    // BACK
+                    const bCv = document.createElement('canvas');
+                    bCv.width = 512; bCv.height = 512;
+                    const bCtx = bCv.getContext('2d');
+                    drawBasePattern(bCtx, 512, 512);
+
+                    bCtx.save();
+                    bCtx.fillStyle = accent;
+                    bCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    bCtx.shadowBlur = 4;
+                    bCtx.font = '900 48px "Arial Black", sans-serif';
+                    bCtx.textAlign = 'center';
+                    const shortName = name.trim().split(' ').pop().slice(0, 12);
+                    bCtx.fillText(shortName, 256, 130);
+
+                    bCtx.font = '900 200px "Impact", "Arial Black", sans-serif';
+                    bCtx.strokeStyle = '#050811';
+                    bCtx.lineWidth = 12;
+                    bCtx.strokeText(number, 256, 330);
+                    bCtx.fillText(number, 256, 330);
+                    bCtx.restore();
+
+                    return {
+                        front: new THREE.CanvasTexture(fCv),
+                        back: new THREE.CanvasTexture(bCv)
+                    };
+                }
+
+                const jTex = createJerseyTextures(custom);
+                const sideMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const topMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const bottomMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const frontMat = new THREE.MeshStandardMaterial({ map: jTex.front, roughness: 0.6 });
+                const backMat = new THREE.MeshStandardMaterial({ map: jTex.back, roughness: 0.6 });
+                const jerseyMaterials = [sideMat, sideMat, topMat, bottomMat, frontMat, backMat];
+
+                const collarMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.45 });
+                const shortsMat = new THREE.MeshStandardMaterial({ color: shortsColorHex, roughness: 0.52 });
+                const socksMat = new THREE.MeshStandardMaterial({ color: socksColorHex, roughness: 0.48 });
                 const sockTrimMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.4 });
-                const cleatsMat = new THREE.MeshStandardMaterial({ color: cleatsColorHex, roughness: 0.25, metalness: 0.35 });
-                const soleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
-                const studMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9, roughness: 0.2 });
+                const cleatsUpperMat = new THREE.MeshStandardMaterial({ color: cleatsColorHex, roughness: 0.24, metalness: 0.32 });
+                const soleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.85 });
+                const studMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.95, roughness: 0.15 });
 
-                // 1. HEAD & ANATOMICAL FACE (Head pivot at y = 1.90)
+                // ==============================================================
+                // 1. HEAD & ATHLETIC FACE (Pivot at y = 1.88)
+                // ==============================================================
                 const headGroup = new THREE.Group();
-                headGroup.position.set(0, 1.90, 0);
+                headGroup.position.set(0, 1.88, 0);
 
-                // Muscular Neck connecting torso to head
-                const neckGeo = new THREE.CylinderGeometry(0.11, 0.14, 0.22, 18);
+                // Anatomical Muscular Neck (Length 0.28, sinks 10cm past collar into torso)
+                const neckGeo = new THREE.CylinderGeometry(0.088, 0.124, 0.28, 24);
                 const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-                neckMesh.position.set(0, -0.16, 0.01);
+                neckMesh.position.set(0, -0.13, 0.005);
                 headGroup.add(neckMesh);
 
-                // Anatomical Cranium
-                const craniumGeo = new THREE.SphereGeometry(0.185, 24, 20);
-                craniumGeo.scale(1.0, 1.14, 1.12);
+                // Sculpted Cranium & Jaw
+                const craniumGeo = new THREE.SphereGeometry(0.160, 36, 32);
+                const pos = craniumGeo.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let x = pos.getX(i);
+                    let y = pos.getY(i);
+                    let z = pos.getZ(i);
+
+                    // Jaw Taper and Athletic Chin
+                    if (y < 0) {
+                        const factor = 0.84 + (y + 0.160) * 0.45;
+                        x *= factor;
+                        if (z > 0) {
+                            z *= 1.05;
+                            if (y < -0.07) z += 0.018;
+                        }
+                    } else {
+                        if (y < 0.04 && Math.abs(x) > 0.09) x *= 1.04;
+                        if (y > 0.08 && Math.abs(x) > 0.11) x *= 0.95;
+                    }
+                    if (Math.abs(x) > 0.035 && Math.abs(x) < 0.080 && y > -0.005 && y < 0.045 && z > 0.08) {
+                        z -= 0.018;
+                    }
+                    pos.setXYZ(i, x, y, z);
+                }
+                craniumGeo.computeVertexNormals();
                 const craniumMesh = new THREE.Mesh(craniumGeo, skinMat);
-                craniumMesh.position.set(0, 0.04, -0.015);
+                craniumMesh.position.set(0, 0.025, -0.01);
                 headGroup.add(craniumMesh);
 
-                // Defined Jawline
-                const jawGeo = new THREE.CylinderGeometry(0.155, 0.095, 0.16, 16);
-                const jawMesh = new THREE.Mesh(jawGeo, skinMat);
-                jawMesh.position.set(0, -0.065, 0.02);
-                jawMesh.rotation.x = 0.08;
-                headGroup.add(jawMesh);
+                // Realistic Almond Eyes (Facing camera: rotated around Y by -Math.PI / 2)
+                const eyeTex = createRealisticEyeTexture();
+                const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex });
+                const eyeGeo = new THREE.SphereGeometry(0.024, 16, 14);
+                eyeGeo.scale(1.15, 0.95, 0.75);
 
-                // Defined Chin
-                const chinGeo = new THREE.SphereGeometry(0.062, 14, 12);
-                const chinMesh = new THREE.Mesh(chinGeo, skinMat);
-                chinMesh.position.set(0, -0.135, 0.075);
-                headGroup.add(chinMesh);
-
-                // Brow Ridge
-                const browGeo = new THREE.BoxGeometry(0.22, 0.04, 0.05);
-                const browMesh = new THREE.Mesh(browGeo, skinMat);
-                browMesh.position.set(0, 0.055, 0.165);
-                browMesh.rotation.x = -0.05;
-                headGroup.add(browMesh);
-
-                // Eyes: Sclera + Iris
-                const scleraGeo = new THREE.SphereGeometry(0.032, 12, 10);
-                const scleraMat = new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.2 });
-                const irisGeo = new THREE.SphereGeometry(0.016, 10, 8);
-                const irisMat = new THREE.MeshStandardMaterial({ color: 0x1c120c, roughness: 0.2 });
-
-                const eyeL = new THREE.Mesh(scleraGeo, scleraMat);
-                eyeL.position.set(-0.062, 0.032, 0.168);
+                const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeL.rotation.y = -Math.PI / 2;
+                eyeL.position.set(-0.052, 0.022, 0.134);
                 headGroup.add(eyeL);
-                const irisL = new THREE.Mesh(irisGeo, irisMat);
-                irisL.position.set(-0.062, 0.032, 0.192);
-                headGroup.add(irisL);
 
-                const eyeR = new THREE.Mesh(scleraGeo, scleraMat);
-                eyeR.position.set(0.062, 0.032, 0.168);
+                const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeR.rotation.y = -Math.PI / 2;
+                eyeR.position.set(0.052, 0.022, 0.134);
                 headGroup.add(eyeR);
-                const irisR = new THREE.Mesh(irisGeo, irisMat);
-                irisR.position.set(0.062, 0.032, 0.192);
-                headGroup.add(irisR);
+
+                // Soft Eyelid Arches
+                const lidGeo = new THREE.TorusGeometry(0.026, 0.0035, 8, 16, Math.PI * 0.85);
+                const lidMat = new THREE.MeshStandardMaterial({ color: skinColor.clone().offsetHSL(0, 0.02, -0.08), roughness: 0.6 });
+
+                const lidL = new THREE.Mesh(lidGeo, lidMat);
+                lidL.rotation.x = Math.PI / 2.2;
+                lidL.rotation.z = -Math.PI * 0.42;
+                lidL.position.set(-0.052, 0.030, 0.139);
+                headGroup.add(lidL);
+
+                const lidR = new THREE.Mesh(lidGeo, lidMat);
+                lidR.rotation.x = Math.PI / 2.2;
+                lidR.rotation.z = -Math.PI * 0.42;
+                lidR.position.set(0.052, 0.030, 0.139);
+                headGroup.add(lidR);
+
+                // Athletic Eyebrows
+                const browGeo = new THREE.BoxGeometry(0.058, 0.010, 0.014);
+                const browMat = new THREE.MeshStandardMaterial({ color: hairColorHex, roughness: 0.85 });
+
+                const browL = new THREE.Mesh(browGeo, browMat);
+                browL.position.set(-0.052, 0.046, 0.137);
+                browL.rotation.z = 0.08;
+                headGroup.add(browL);
+
+                const browR = new THREE.Mesh(browGeo, browMat);
+                browR.position.set(0.052, 0.046, 0.137);
+                browR.rotation.z = -0.08;
+                headGroup.add(browR);
 
                 // Sculpted Nose
-                const noseGeo = new THREE.ConeGeometry(0.032, 0.09, 8);
-                const noseMesh = new THREE.Mesh(noseGeo, skinMat);
-                noseMesh.rotation.x = 1.35;
-                noseMesh.position.set(0, -0.012, 0.192);
-                headGroup.add(noseMesh);
+                const noseBridgeGeo = new THREE.CylinderGeometry(0.008, 0.015, 0.055, 10);
+                const noseBridge = new THREE.Mesh(noseBridgeGeo, skinMat);
+                noseBridge.position.set(0, 0.014, 0.144);
+                noseBridge.rotation.x = 0.18;
+                headGroup.add(noseBridge);
 
-                // Mouth / Athletic Lips
-                const mouthGeo = new THREE.BoxGeometry(0.075, 0.018, 0.022);
-                const lipMat = new THREE.MeshStandardMaterial({
-                    color: skinToneHex,
-                    roughness: 0.5
-                });
-                lipMat.color.offsetHSL(0, 0.08, -0.07);
-                const mouthMesh = new THREE.Mesh(mouthGeo, lipMat);
-                mouthMesh.position.set(0, -0.082, 0.155);
-                headGroup.add(mouthMesh);
+                const noseTipGeo = new THREE.SphereGeometry(0.014, 12, 10);
+                noseTipGeo.scale(1.2, 0.85, 1.0);
+                const noseTip = new THREE.Mesh(noseTipGeo, skinMat);
+                noseTip.position.set(0, -0.014, 0.155);
+                headGroup.add(noseTip);
+
+                // Contoured Athletic Lips (Natural soft skin-harmonized tone)
+                const lipColor = skinColor.clone().offsetHSL(0.0, 0.18, -0.14);
+                const lipMat = new THREE.MeshStandardMaterial({ color: lipColor, roughness: 0.65, metalness: 0.02 });
+
+                const upperLipGeo = new THREE.CylinderGeometry(0.004, 0.007, 0.046, 8);
+                const upperLip = new THREE.Mesh(upperLipGeo, lipMat);
+                upperLip.rotation.z = Math.PI / 2;
+                upperLip.position.set(0, -0.046, 0.144);
+                headGroup.add(upperLip);
+
+                const lowerLipGeo = new THREE.CylinderGeometry(0.006, 0.004, 0.040, 8);
+                const lowerLip = new THREE.Mesh(lowerLipGeo, lipMat);
+                lowerLip.rotation.z = Math.PI / 2;
+                lowerLip.position.set(0, -0.058, 0.142);
+                headGroup.add(lowerLip);
 
                 // Ears
-                const earGeo = new THREE.SphereGeometry(0.048, 12, 10);
-                earGeo.scale(0.35, 1.0, 0.7);
+                const earGeo = new THREE.TorusGeometry(0.032, 0.009, 8, 18, Math.PI * 1.4);
+                earGeo.scale(0.35, 1.1, 0.8);
                 const earL = new THREE.Mesh(earGeo, skinMat);
-                earL.position.set(-0.19, 0.015, -0.01);
+                earL.position.set(-0.160, 0.015, -0.01);
+                earL.rotation.y = -Math.PI / 2;
                 headGroup.add(earL);
+
                 const earR = new THREE.Mesh(earGeo, skinMat);
-                earR.position.set(0.19, 0.015, -0.01);
+                earR.position.set(0.160, 0.015, -0.01);
+                earR.rotation.y = Math.PI / 2;
                 headGroup.add(earR);
 
-                // 2. HAIRSTYLES GENERATION
+                // ==============================================================
+                // 2. HAIRSTYLES (Meticulously fitted to scalp)
+                // ==============================================================
                 const hairGroup = new THREE.Group();
                 const style = custom.hairStyle || 'fade_quiff';
 
                 if (style === 'fade_quiff') {
-                    const fadeGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.6);
-                    fadeGeo.scale(1.01, 1.14, 1.10);
+                    const fadeGeo = new THREE.SphereGeometry(0.164, 28, 22, 0, Math.PI * 2, 0, Math.PI * 0.46);
+                    fadeGeo.scale(1.01, 1.06, 1.05);
                     const fadeMesh = new THREE.Mesh(fadeGeo, hairMat);
-                    fadeMesh.position.set(0, 0.045, -0.015);
+                    fadeMesh.position.set(0, 0.045, -0.022);
                     hairGroup.add(fadeMesh);
 
-                    const quiffGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.24, 16);
-                    quiffGeo.scale(1.0, 0.6, 1.35);
-                    const quiffMesh = new THREE.Mesh(quiffGeo, hairMat);
-                    quiffMesh.rotation.x = -0.35;
-                    quiffMesh.position.set(0, 0.23, 0.035);
-                    hairGroup.add(quiffMesh);
+                    const wave1Geo = new THREE.SphereGeometry(0.11, 18, 14);
+                    wave1Geo.scale(0.9, 0.55, 1.3);
+                    const wave1 = new THREE.Mesh(wave1Geo, hairMat);
+                    wave1.position.set(0, 0.17, 0.02);
+                    wave1.rotation.x = -0.35;
+                    hairGroup.add(wave1);
 
-                    const quiffTipGeo = new THREE.SphereGeometry(0.11, 14, 12);
-                    quiffTipGeo.scale(1.05, 0.75, 1.4);
-                    const quiffTip = new THREE.Mesh(quiffTipGeo, hairMat);
-                    quiffTip.position.set(0, 0.25, 0.02);
-                    hairGroup.add(quiffTip);
+                    const wave2Geo = new THREE.SphereGeometry(0.08, 16, 12);
+                    wave2Geo.scale(0.85, 0.5, 1.2);
+                    const waveL = new THREE.Mesh(wave2Geo, hairMat);
+                    waveL.position.set(-0.06, 0.16, 0.01);
+                    waveL.rotation.set(-0.25, 0.15, -0.15);
+                    hairGroup.add(waveL);
+
+                    const waveR = new THREE.Mesh(wave2Geo, hairMat);
+                    waveR.position.set(0.06, 0.16, 0.01);
+                    waveR.rotation.set(-0.25, -0.15, 0.15);
+                    hairGroup.add(waveR);
 
                 } else if (style === 'buzz_cut') {
-                    const buzzGeo = new THREE.SphereGeometry(0.195, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.58);
-                    buzzGeo.scale(1.02, 1.15, 1.12);
+                    const buzzGeo = new THREE.SphereGeometry(0.165, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.48);
+                    buzzGeo.scale(1.015, 1.05, 1.04);
                     const buzzMesh = new THREE.Mesh(buzzGeo, hairMat);
-                    buzzMesh.position.set(0, 0.045, -0.015);
+                    buzzMesh.position.set(0, 0.040, -0.018);
                     hairGroup.add(buzzMesh);
 
-                    const hairlineGeo = new THREE.TorusGeometry(0.18, 0.015, 8, 24, Math.PI * 0.7);
-                    const hairlineMesh = new THREE.Mesh(hairlineGeo, hairMat);
-                    hairlineMesh.position.set(0, 0.08, 0.06);
-                    hairlineMesh.rotation.x = 0.55;
-                    hairlineMesh.rotation.z = -Math.PI * 0.85;
-                    hairGroup.add(hairlineMesh);
+                    const burnGeo = new THREE.BoxGeometry(0.014, 0.065, 0.030);
+                    const burnL = new THREE.Mesh(burnGeo, hairMat);
+                    burnL.position.set(-0.160, 0.02, 0.01);
+                    hairGroup.add(burnL);
+
+                    const burnR = new THREE.Mesh(burnGeo, hairMat);
+                    burnR.position.set(0.160, 0.02, 0.01);
+                    hairGroup.add(burnR);
 
                 } else if (style === 'top_knot') {
-                    const underGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
-                    underGeo.scale(1.01, 1.14, 1.10);
+                    const underGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.44);
+                    underGeo.scale(1.01, 1.06, 1.05);
                     const underMesh = new THREE.Mesh(underGeo, hairMat);
-                    underMesh.position.set(0, 0.045, -0.015);
+                    underMesh.position.set(0, 0.045, -0.022);
                     hairGroup.add(underMesh);
 
-                    const topSweepGeo = new THREE.SphereGeometry(0.15, 16, 14);
-                    topSweepGeo.scale(0.9, 0.45, 1.2);
-                    const topSweep = new THREE.Mesh(topSweepGeo, hairMat);
-                    topSweep.position.set(0, 0.21, -0.02);
-                    hairGroup.add(topSweep);
+                    const sweepGeo = new THREE.SphereGeometry(0.12, 16, 14);
+                    sweepGeo.scale(0.85, 0.45, 1.15);
+                    const sweepMesh = new THREE.Mesh(sweepGeo, hairMat);
+                    sweepMesh.position.set(0, 0.17, -0.025);
+                    hairGroup.add(sweepMesh);
 
-                    const bunGeo = new THREE.SphereGeometry(0.065, 16, 14);
-                    bunGeo.scale(1.0, 0.85, 0.95);
+                    const bunGeo = new THREE.SphereGeometry(0.060, 16, 14);
                     const bunMesh = new THREE.Mesh(bunGeo, hairMat);
-                    bunMesh.position.set(0, 0.26, -0.09);
+                    bunMesh.position.set(0, 0.20, -0.075);
                     hairGroup.add(bunMesh);
 
-                    const tieGeo = new THREE.TorusGeometry(0.048, 0.012, 8, 16);
-                    const tieMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.5 });
-                    const tieMesh = new THREE.Mesh(tieGeo, tieMat);
-                    tieMesh.rotation.x = Math.PI / 2.5;
-                    tieMesh.position.set(0, 0.23, -0.08);
+                    const tieGeo = new THREE.TorusGeometry(0.038, 0.007, 8, 16);
+                    const tieMesh = new THREE.Mesh(tieGeo, collarMat);
+                    tieMesh.position.set(0, 0.18, -0.065);
+                    tieMesh.rotation.x = 0.45;
                     hairGroup.add(tieMesh);
 
                 } else if (style === 'flowing_waves') {
-                    const waveBaseGeo = new THREE.SphereGeometry(0.198, 22, 18, 0, Math.PI * 2, 0, Math.PI * 0.65);
-                    waveBaseGeo.scale(1.03, 1.16, 1.14);
-                    const waveBase = new THREE.Mesh(waveBaseGeo, hairMat);
-                    waveBase.position.set(0, 0.045, -0.015);
-                    hairGroup.add(waveBase);
+                    const flowBaseGeo = new THREE.SphereGeometry(0.166, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.50);
+                    flowBaseGeo.scale(1.02, 1.05, 1.06);
+                    const flowBase = new THREE.Mesh(flowBaseGeo, hairMat);
+                    flowBase.position.set(0, 0.042, -0.018);
+                    hairGroup.add(flowBase);
 
-                    const lockLGeo = new THREE.CylinderGeometry(0.04, 0.025, 0.24, 10);
-                    const lockL = new THREE.Mesh(lockLGeo, hairMat);
-                    lockL.position.set(-0.17, 0.02, 0.04);
-                    lockL.rotation.z = -0.25;
-                    lockL.rotation.x = 0.2;
-                    hairGroup.add(lockL);
-
-                    const lockRGeo = new THREE.CylinderGeometry(0.04, 0.025, 0.24, 10);
-                    const lockR = new THREE.Mesh(lockRGeo, hairMat);
-                    lockR.position.set(0.17, 0.02, 0.04);
-                    lockR.rotation.z = 0.25;
-                    lockR.rotation.x = 0.2;
-                    hairGroup.add(lockR);
-
-                    const napeGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.22, 14);
-                    napeGeo.scale(1.1, 1.0, 0.7);
-                    const napeMesh = new THREE.Mesh(napeGeo, hairMat);
-                    napeMesh.position.set(0, -0.04, -0.13);
-                    napeMesh.rotation.x = -0.22;
-                    hairGroup.add(napeMesh);
-
-                } else if (style === 'braids_dreads') {
-                    const braidBaseGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
-                    braidBaseGeo.scale(1.02, 1.15, 1.10);
-                    const braidBase = new THREE.Mesh(braidBaseGeo, hairMat);
-                    braidBase.position.set(0, 0.045, -0.015);
-                    hairGroup.add(braidBase);
-
-                    for (let i = -3.5; i <= 3.5; i += 1.0) {
-                        const braidGeo = new THREE.CylinderGeometry(0.022, 0.016, 0.36, 8);
-                        const braid = new THREE.Mesh(braidGeo, hairMat);
-                        const angle = (i / 4.0) * 0.75;
-                        braid.position.set(Math.sin(angle) * 0.16, 0.14, -0.02);
-                        braid.rotation.x = 1.15;
-                        braid.rotation.y = angle * 0.5;
-                        braid.rotation.z = -angle * 0.4;
-                        hairGroup.add(braid);
+                    for (let a = -0.32; a <= 0.32; a += 0.20) {
+                        const strandGeo = new THREE.CylinderGeometry(0.026, 0.010, 0.22, 10);
+                        strandGeo.scale(1.1, 0.6, 1.3);
+                        const strand = new THREE.Mesh(strandGeo, hairMat);
+                        strand.position.set(a * 0.40, 0.08, -0.13 - Math.abs(a) * 0.035);
+                        strand.rotation.set(-0.35, a * 0.3, 0);
+                        hairGroup.add(strand);
                     }
 
-                } else { // classic_crop
-                    const cropGeo = new THREE.SphereGeometry(0.196, 22, 18, 0, Math.PI * 2, 0, Math.PI * 0.58);
-                    cropGeo.scale(1.03, 1.16, 1.13);
-                    const cropMesh = new THREE.Mesh(cropGeo, hairMat);
-                    cropMesh.position.set(0, 0.045, -0.015);
-                    hairGroup.add(cropMesh);
+                } else if (style === 'braids_dreads') {
+                    const dreadCapGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.46);
+                    dreadCapGeo.scale(1.01, 1.05, 1.04);
+                    const dreadCap = new THREE.Mesh(dreadCapGeo, hairMat);
+                    dreadCap.position.set(0, 0.042, -0.018);
+                    hairGroup.add(dreadCap);
 
-                    const sweepGeo = new THREE.BoxGeometry(0.24, 0.08, 0.26);
-                    const sweepMesh = new THREE.Mesh(sweepGeo, hairMat);
-                    sweepMesh.position.set(0.03, 0.20, 0.02);
-                    sweepMesh.rotation.z = -0.15;
-                    hairGroup.add(sweepMesh);
+                    const bandMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+                    for (let i = 0; i < 12; i++) {
+                        const angle = (i / 12) * Math.PI * 2;
+                        const r = 0.145;
+                        const dx = Math.cos(angle) * r;
+                        const dz = Math.sin(angle) * r;
+
+                        const braidGeo = new THREE.CylinderGeometry(0.011, 0.008, 0.22, 8);
+                        const braid = new THREE.Mesh(braidGeo, hairMat);
+                        braid.position.set(dx, 0.08, dz);
+                        braid.rotation.set(dz * 1.5, 0, -dx * 1.5);
+                        hairGroup.add(braid);
+
+                        const bandGeo = new THREE.TorusGeometry(0.013, 0.004, 6, 12);
+                        const band = new THREE.Mesh(bandGeo, bandMat);
+                        band.position.set(dx * 1.05, 0.01, dz * 1.05);
+                        band.rotation.x = Math.PI / 2;
+                        hairGroup.add(band);
+                    }
+
+                } else if (style === 'classic_crop') {
+                    const cropCapGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.48);
+                    cropCapGeo.scale(1.01, 1.06, 1.05);
+                    const cropCap = new THREE.Mesh(cropCapGeo, hairMat);
+                    cropCap.position.set(0, 0.042, -0.018);
+                    hairGroup.add(cropCap);
+
+                    const fringeGeo = new THREE.BoxGeometry(0.18, 0.048, 0.18);
+                    const fringe = new THREE.Mesh(fringeGeo, hairMat);
+                    fringe.position.set(0, 0.15, 0.05);
+                    fringe.rotation.x = 0.35;
+                    hairGroup.add(fringe);
                 }
+
                 headGroup.add(hairGroup);
+                athleteGroup.add(headGroup);
 
-                // Moisture Headband (if enabled)
-                if (custom.headband) {
-                    const hbandGeo = new THREE.TorusGeometry(0.188, 0.022, 10, 28);
-                    hbandGeo.scale(1.0, 1.0, 1.12);
-                    const hbandMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.5 });
-                    const hbandMesh = new THREE.Mesh(hbandGeo, hbandMat);
-                    hbandMesh.rotation.x = Math.PI / 2.3;
-                    hbandMesh.position.set(0, 0.07, 0.01);
-                    headGroup.add(hbandMesh);
+                // ==============================================================
+                // 3. ATHLETIC V-TAPER TORSO & COLLAR (Collar tracks torso)
+                // ==============================================================
+                const torsoGeo = new THREE.BoxGeometry(0.50, 0.54, 0.26, 8, 8, 8);
+                const tPos = torsoGeo.attributes.position;
+                for (let i = 0; i < tPos.count; i++) {
+                    let x = tPos.getX(i);
+                    let y = tPos.getY(i);
+                    let z = tPos.getZ(i);
+
+                    // Waist taper
+                    if (y < 0) {
+                        const factor = 0.83 + (y + 0.27) * 0.45;
+                        x *= factor;
+                        z *= 0.88;
+                    } else {
+                        // Broad chest & sloping athletic shoulders
+                        x *= 1.04;
+                        if (z > 0) z *= 1.05;
+                        if (y > 0.20 && Math.abs(x) > 0.18) {
+                            y -= (Math.abs(x) - 0.18) * 0.35;
+                        }
+                    }
+                    tPos.setXYZ(i, x, y, z);
+                }
+                torsoGeo.computeVertexNormals();
+
+                const torso = new THREE.Mesh(torsoGeo, jerseyMaterials);
+                torso.position.set(0, 1.44, 0);
+
+                // Ribbed Collar Ring (Mounted to top of jersey at y = 0.26)
+                const collarGeo = new THREE.TorusGeometry(0.115, 0.016, 12, 32);
+                const collarMesh = new THREE.Mesh(collarGeo, collarMat);
+                collarMesh.position.set(0, 0.26, 0.012);
+                collarMesh.rotation.x = Math.PI / 2.2;
+                torso.add(collarMesh);
+
+                athleteGroup.add(torso);
+
+                // ==============================================================
+                // 4. SEAMLESS SHOULDERS & ARMS
+                // ==============================================================
+                function createHand(isLeft) {
+                    const handGroup = new THREE.Group();
+                    const palmGeo = new THREE.BoxGeometry(0.042, 0.076, 0.062);
+                    const palmMesh = new THREE.Mesh(palmGeo, skinMat);
+                    handGroup.add(palmMesh);
+
+                    const thumbGeo = new THREE.CylinderGeometry(0.008, 0.007, 0.036, 8);
+                    const thumb = new THREE.Mesh(thumbGeo, skinMat);
+                    thumb.position.set(isLeft ? 0.020 : -0.020, -0.014, 0.022);
+                    thumb.rotation.set(0.25, 0, isLeft ? -0.42 : 0.42);
+                    handGroup.add(thumb);
+
+                    const fingerOffsets = [-0.020, -0.006, 0.006, 0.020];
+                    const fingerLengths = [0.030, 0.038, 0.034, 0.026];
+                    fingerOffsets.forEach((zOff, fIdx) => {
+                        const fGeo = new THREE.CylinderGeometry(0.0075, 0.0065, fingerLengths[fIdx], 8);
+                        const finger = new THREE.Mesh(fGeo, skinMat);
+                        finger.position.set(0, -0.045, zOff);
+                        finger.rotation.x = 0.22;
+                        handGroup.add(finger);
+                    });
+                    return handGroup;
                 }
 
-                athleteBodyGroup.add(headGroup);
+                const sleeveGeo = new THREE.CylinderGeometry(0.088, 0.080, 0.18, 18);
+                const sleeveTrimGeo = new THREE.TorusGeometry(0.080, 0.008, 8, 24);
 
-                // 3. TORSO & DYNAMIC JERSEY (Pivot at y = 1.42)
-                const torso = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.58, 0.56, 0.32),
-                    createRealisticJerseyTextures(custom)
-                );
-                torso.position.set(0, 1.42, 0);
-                athleteBodyGroup.add(torso);
-
-                // 3D Ribbed V-Neck Collar
-                const collarGeo = new THREE.TorusGeometry(0.13, 0.024, 10, 24, Math.PI * 1.3);
-                const collarMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.4 });
-                const collarMesh = new THREE.Mesh(collarGeo, collarMat);
-                collarMesh.position.set(0, 1.69, 0.03);
-                collarMesh.rotation.x = Math.PI / 2.3;
-                collarMesh.rotation.z = Math.PI * 0.85;
-                athleteBodyGroup.add(collarMesh);
-
-                // Shorts Pelvis (from y = 1.00 to 1.20)
-                const pelvisGeo = new THREE.BoxGeometry(0.52, 0.22, 0.30);
-                const pelvisMesh = new THREE.Mesh(pelvisGeo, shortsMat);
-                pelvisMesh.position.set(0, 1.11, 0);
-                athleteBodyGroup.add(pelvisMesh);
-
-                // Shorts Waistband Trim
-                const waistbandGeo = new THREE.BoxGeometry(0.53, 0.035, 0.31);
-                const waistbandMesh = new THREE.Mesh(waistbandGeo, sockTrimMat);
-                waistbandMesh.position.set(0, 1.21, 0);
-                athleteBodyGroup.add(waistbandMesh);
-
-                // 4. ARTICULATED ARMS (Shoulder pivot at y = 1.58, x = ±0.34)
+                // Left Arm (x = -0.27, y = 1.58)
                 const armLGroup = new THREE.Group();
-                armLGroup.position.set(-0.35, 1.58, 0);
+                armLGroup.position.set(-0.27, 1.58, 0);
 
-                const sleeveGeo = new THREE.SphereGeometry(0.115, 16, 12);
-                const sleeveMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.35 });
-                const sleeveL = new THREE.Mesh(sleeveGeo, sleeveMat);
-                sleeveL.position.set(0, -0.02, 0);
+                const shoulderLGeo = new THREE.SphereGeometry(0.092, 18, 16);
+                shoulderLGeo.scale(0.92, 1.10, 0.98);
+                const shoulderL = new THREE.Mesh(shoulderLGeo, sideMat);
+                shoulderL.position.set(0, 0.0, 0);
+                armLGroup.add(shoulderL);
+
+                const sleeveL = new THREE.Mesh(sleeveGeo, sideMat);
+                sleeveL.position.set(0, -0.06, 0);
                 armLGroup.add(sleeveL);
 
-                const upperArmGeo = new THREE.CylinderGeometry(0.088, 0.078, 0.28, 16);
+                const sleeveTrimL = new THREE.Mesh(sleeveTrimGeo, collarMat);
+                sleeveTrimL.rotation.x = Math.PI / 2;
+                sleeveTrimL.position.set(0, -0.15, 0);
+                armLGroup.add(sleeveTrimL);
+
+                const upperArmGeo = new THREE.CylinderGeometry(0.075, 0.065, 0.26, 18);
                 const upperArmL = new THREE.Mesh(upperArmGeo, skinMat);
-                upperArmL.position.set(0, -0.16, 0);
+                upperArmL.position.set(0, -0.20, 0);
                 armLGroup.add(upperArmL);
 
-                // Captain's Armband (Left Arm)
                 if (custom.armband) {
-                    const armbandGeo = new THREE.CylinderGeometry(0.092, 0.090, 0.08, 18);
+                    const armbandGeo = new THREE.CylinderGeometry(0.079, 0.077, 0.078, 20);
                     const armbandCanvas = document.createElement('canvas');
                     armbandCanvas.width = 128; armbandCanvas.height = 64;
                     const abCtx = armbandCanvas.getContext('2d');
                     abCtx.fillStyle = '#f59e0b';
                     abCtx.fillRect(0, 0, 128, 64);
+                    abCtx.strokeStyle = '#111111';
+                    abCtx.lineWidth = 4;
+                    abCtx.strokeRect(2, 2, 124, 60);
                     abCtx.fillStyle = '#111111';
-                    abCtx.font = '900 42px "Arial Black", sans-serif';
+                    abCtx.font = '900 44px "Arial Black", sans-serif';
                     abCtx.textAlign = 'center';
                     abCtx.textBaseline = 'middle';
                     abCtx.fillText('C', 64, 32);
                     const abTex = new THREE.CanvasTexture(armbandCanvas);
                     const armbandMat = new THREE.MeshStandardMaterial({ map: abTex, roughness: 0.3 });
                     const armbandMesh = new THREE.Mesh(armbandGeo, armbandMat);
-                    armbandMesh.position.set(0, -0.16, 0);
+                    armbandMesh.position.set(0, -0.20, 0);
                     armLGroup.add(armbandMesh);
                 }
 
-                const elbowGeo = new THREE.SphereGeometry(0.076, 14, 12);
+                const elbowGeo = new THREE.SphereGeometry(0.065, 14, 12);
                 const elbowL = new THREE.Mesh(elbowGeo, skinMat);
-                elbowL.position.set(0, -0.32, 0);
+                elbowL.position.set(0, -0.33, 0);
                 armLGroup.add(elbowL);
 
-                const lowerArmGeo = new THREE.CylinderGeometry(0.075, 0.062, 0.26, 16);
+                const lowerArmGeo = new THREE.CylinderGeometry(0.063, 0.050, 0.25, 18);
                 const lowerArmL = new THREE.Mesh(lowerArmGeo, skinMat);
-                lowerArmL.position.set(0, -0.47, 0);
+                lowerArmL.position.set(0, -0.46, 0);
                 armLGroup.add(lowerArmL);
 
                 if (custom.wristTape && custom.wristTape !== 'none') {
                     const tapeColor = custom.wristTape === 'accent' ? kitAccent : 0xffffff;
                     const tapeMat = new THREE.MeshStandardMaterial({ color: tapeColor, roughness: 0.6 });
-                    const tapeGeo = new THREE.CylinderGeometry(0.066, 0.064, 0.07, 16);
+                    const tapeGeo = new THREE.CylinderGeometry(0.054, 0.052, 0.060, 16);
                     const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
-                    tapeMesh.position.set(0, -0.58, 0);
+                    tapeMesh.position.set(0, -0.56, 0);
                     armLGroup.add(tapeMesh);
                 }
 
-                const handGeo = new THREE.BoxGeometry(0.052, 0.10, 0.075);
-                const handL = new THREE.Mesh(handGeo, skinMat);
-                handL.position.set(0, -0.66, 0);
+                const handL = createHand(true);
+                handL.position.set(0, -0.63, 0);
                 armLGroup.add(handL);
-                const thumbGeo = new THREE.BoxGeometry(0.024, 0.045, 0.028);
-                const thumbL = new THREE.Mesh(thumbGeo, skinMat);
-                thumbL.position.set(0.026, -0.64, 0.02);
-                thumbL.rotation.z = -0.3;
-                armLGroup.add(thumbL);
 
-                athleteBodyGroup.add(armLGroup);
+                athleteGroup.add(armLGroup);
 
-                // Right Arm Group
+                // Right Arm (x = +0.27, y = 1.58)
                 const armRGroup = new THREE.Group();
-                armRGroup.position.set(0.35, 1.58, 0);
+                armRGroup.position.set(0.27, 1.58, 0);
 
-                const sleeveR = new THREE.Mesh(sleeveGeo, sleeveMat);
-                sleeveR.position.set(0, -0.02, 0);
+                const shoulderR = new THREE.Mesh(shoulderLGeo, sideMat);
+                shoulderR.position.set(0, 0.0, 0);
+                armRGroup.add(shoulderR);
+
+                const sleeveR = new THREE.Mesh(sleeveGeo, sideMat);
+                sleeveR.position.set(0, -0.06, 0);
                 armRGroup.add(sleeveR);
 
+                const sleeveTrimR = new THREE.Mesh(sleeveTrimGeo, collarMat);
+                sleeveTrimR.rotation.x = Math.PI / 2;
+                sleeveTrimR.position.set(0, -0.15, 0);
+                armRGroup.add(sleeveTrimR);
+
                 const upperArmR = new THREE.Mesh(upperArmGeo, skinMat);
-                upperArmR.position.set(0, -0.16, 0);
+                upperArmR.position.set(0, -0.20, 0);
                 armRGroup.add(upperArmR);
 
                 const elbowR = new THREE.Mesh(elbowGeo, skinMat);
-                elbowR.position.set(0, -0.32, 0);
+                elbowR.position.set(0, -0.33, 0);
                 armRGroup.add(elbowR);
 
                 const lowerArmR = new THREE.Mesh(lowerArmGeo, skinMat);
-                lowerArmR.position.set(0, -0.47, 0);
+                lowerArmR.position.set(0, -0.46, 0);
                 armRGroup.add(lowerArmR);
 
                 if (custom.wristTape && custom.wristTape !== 'none') {
                     const tapeColor = custom.wristTape === 'accent' ? kitAccent : 0xffffff;
                     const tapeMat = new THREE.MeshStandardMaterial({ color: tapeColor, roughness: 0.6 });
-                    const tapeGeo = new THREE.CylinderGeometry(0.066, 0.064, 0.07, 16);
+                    const tapeGeo = new THREE.CylinderGeometry(0.054, 0.052, 0.060, 16);
                     const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
-                    tapeMesh.position.set(0, -0.58, 0);
+                    tapeMesh.position.set(0, -0.56, 0);
                     armRGroup.add(tapeMesh);
                 }
 
-                const handR = new THREE.Mesh(handGeo, skinMat);
-                handR.position.set(0, -0.66, 0);
+                const handR = createHand(false);
+                handR.position.set(0, -0.63, 0);
                 armRGroup.add(handR);
-                const thumbR = new THREE.Mesh(thumbGeo, skinMat);
-                thumbR.position.set(-0.026, -0.64, 0.02);
-                thumbR.rotation.z = 0.3;
-                armRGroup.add(thumbR);
 
-                athleteBodyGroup.add(armRGroup);
+                athleteGroup.add(armRGroup);
 
-                // 5. ARTICULATED LEGS, SOCKS & PRO CLEATS (Hip pivot at y = 1.02, x = ±0.15)
-                const legLGroup = new THREE.Group();
-                legLGroup.position.set(-0.15, 1.02, 0);
+                // ==============================================================
+                // 5. ATHLETIC SHORTS & PELVIS (y = 1.00 to 1.22)
+                // ==============================================================
+                const pelvisGeo = new THREE.BoxGeometry(0.46, 0.20, 0.26, 6, 4, 6);
+                const pelvisMesh = new THREE.Mesh(pelvisGeo, shortsMat);
+                pelvisMesh.position.set(0, 1.12, 0);
+                athleteGroup.add(pelvisMesh);
 
-                const shortsLegGeo = new THREE.CylinderGeometry(0.14, 0.13, 0.16, 16);
+                const waistbandGeo = new THREE.BoxGeometry(0.47, 0.032, 0.27);
+                const waistbandMesh = new THREE.Mesh(waistbandGeo, sockTrimMat);
+                waistbandMesh.position.set(0, 1.21, 0);
+                athleteGroup.add(waistbandMesh);
+
+                const shortsLegGeo = new THREE.CylinderGeometry(0.120, 0.112, 0.20, 18);
                 const shortsLegL = new THREE.Mesh(shortsLegGeo, shortsMat);
-                shortsLegL.position.set(0, -0.07, 0);
-                legLGroup.add(shortsLegL);
+                shortsLegL.position.set(-0.135, 1.02, 0);
+                athleteGroup.add(shortsLegL);
 
-                const upperLegGeo = new THREE.CylinderGeometry(0.125, 0.098, 0.30, 16);
-                const upperLegL = new THREE.Mesh(upperLegGeo, skinMat);
-                upperLegL.position.set(0, -0.24, 0);
-                legLGroup.add(upperLegL);
+                const shortsLegR = new THREE.Mesh(shortsLegGeo, shortsMat);
+                shortsLegR.position.set(0.135, 1.02, 0);
+                athleteGroup.add(shortsLegR);
 
-                const kneeGeo = new THREE.SphereGeometry(0.088, 14, 12);
+                // ==============================================================
+                // 6. MUSCULAR LEGS, SOCKS & PRO CLEATS
+                // ==============================================================
+                function createProCleat(isLeft) {
+                    const cleatGroup = new THREE.Group();
+
+                    const bootGeo = new THREE.BoxGeometry(0.122, 0.072, 0.26, 4, 3, 5);
+                    const bPos = bootGeo.attributes.position;
+                    for (let i = 0; i < bPos.count; i++) {
+                        let x = bPos.getX(i);
+                        let y = bPos.getY(i);
+                        let z = bPos.getZ(i);
+
+                        if (z > 0.04) {
+                            const toeFactor = Math.max(0.45, 1.0 - (z - 0.04) * 3.8);
+                            x *= toeFactor;
+                            if (z > 0.09) y += 0.016;
+                        }
+                        if (z < -0.06) {
+                            x *= 0.88;
+                            y *= 0.95;
+                        }
+                        bPos.setXYZ(i, x, y, z);
+                    }
+                    bootGeo.computeVertexNormals();
+
+                    const bootMesh = new THREE.Mesh(bootGeo, cleatsUpperMat);
+                    bootMesh.position.set(0, 0.045, 0.035);
+                    cleatGroup.add(bootMesh);
+
+                    const soleGeo = new THREE.BoxGeometry(0.126, 0.016, 0.27);
+                    const soleMesh = new THREE.Mesh(soleGeo, soleMat);
+                    soleMesh.position.set(0, 0.008, 0.035);
+                    cleatGroup.add(soleMesh);
+
+                    const studOffsets = [
+                        [-0.038, -0.07], [0.038, -0.07],
+                        [-0.040, 0.05], [0.040, 0.05],
+                        [-0.028, 0.11], [0.028, 0.11]
+                    ];
+                    const studGeo = new THREE.CylinderGeometry(0.007, 0.011, 0.016, 8);
+                    studOffsets.forEach(([sx, sz]) => {
+                        const stud = new THREE.Mesh(studGeo, studMat);
+                        stud.position.set(sx, -0.008, sz);
+                        cleatGroup.add(stud);
+                    });
+
+                    const swooshGeo = new THREE.BoxGeometry(0.005, 0.022, 0.11);
+                    const swooshMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+                    const swoosh = new THREE.Mesh(swooshGeo, swooshMat);
+                    swoosh.position.set(isLeft ? -0.063 : 0.063, 0.046, 0.04);
+                    swoosh.rotation.y = isLeft ? 0.12 : -0.12;
+                    cleatGroup.add(swoosh);
+
+                    return cleatGroup;
+                }
+
+                const thighGeo = new THREE.CylinderGeometry(0.092, 0.072, 0.32, 20);
+                const kneeGeo = new THREE.SphereGeometry(0.068, 16, 14);
+                kneeGeo.scale(1.0, 1.15, 0.95);
+                const calfGeo = new THREE.CylinderGeometry(0.074, 0.048, 0.38, 20);
+                const sockCuffGeo = new THREE.TorusGeometry(0.074, 0.011, 8, 24);
+
+                // Left Leg (x = -0.135, y = 1.02)
+                const legLGroup = new THREE.Group();
+                legLGroup.position.set(-0.135, 1.02, 0);
+
+                const thighL = new THREE.Mesh(thighGeo, skinMat);
+                thighL.position.set(0, -0.16, 0.005);
+                legLGroup.add(thighL);
+
                 const kneeL = new THREE.Mesh(kneeGeo, skinMat);
-                kneeL.position.set(0, -0.39, 0.015);
+                kneeL.position.set(0, -0.33, 0.015);
                 legLGroup.add(kneeL);
 
-                const lowerLegGeo = new THREE.CylinderGeometry(0.096, 0.074, 0.42, 16);
-                const lowerLegL = new THREE.Mesh(lowerLegGeo, socksMat);
-                lowerLegL.position.set(0, -0.60, 0);
-                legLGroup.add(lowerLegL);
+                const calfL = new THREE.Mesh(calfGeo, socksMat);
+                calfL.position.set(0, -0.54, 0);
+                legLGroup.add(calfL);
 
-                const sockCuffGeo = new THREE.TorusGeometry(0.095, 0.016, 10, 24);
                 const sockCuffL = new THREE.Mesh(sockCuffGeo, sockTrimMat);
-                sockCuffL.position.set(0, -0.42, 0);
+                sockCuffL.position.set(0, -0.36, 0);
                 sockCuffL.rotation.x = Math.PI / 2;
                 legLGroup.add(sockCuffL);
 
-                // Pro Cleats (Left)
-                const bootUpperGeo = new THREE.BoxGeometry(0.145, 0.085, 0.30);
-                const bootL = new THREE.Mesh(bootUpperGeo, cleatsMat);
-                bootL.position.set(0, -0.87, 0.04);
-                legLGroup.add(bootL);
+                const cleatL = createProCleat(true);
+                cleatL.position.set(0, -0.74, 0);
+                legLGroup.add(cleatL);
 
-                const toeGeo = new THREE.CylinderGeometry(0.07, 0.04, 0.12, 12);
-                toeGeo.scale(1.0, 0.6, 1.2);
-                const toeL = new THREE.Mesh(toeGeo, cleatsMat);
-                toeL.position.set(0, -0.87, 0.15);
-                legLGroup.add(toeL);
+                athleteGroup.add(legLGroup);
 
-                const soleGeo = new THREE.BoxGeometry(0.15, 0.02, 0.31);
-                const soleL = new THREE.Mesh(soleGeo, soleMat);
-                soleL.position.set(0, -0.94, 0.04);
-                legLGroup.add(soleL);
-
-                const studGeo = new THREE.CylinderGeometry(0.014, 0.010, 0.04, 8);
-                const studPositions = [
-                    [-0.045, -0.98, 0.14], [0.045, -0.98, 0.14],
-                    [-0.048, -0.98, 0.03], [0.048, -0.98, 0.03],
-                    [-0.045, -0.98, -0.07], [0.045, -0.98, -0.07]
-                ];
-                studPositions.forEach(pos => {
-                    const stud = new THREE.Mesh(studGeo, studMat);
-                    stud.position.set(pos[0], pos[1], pos[2]);
-                    legLGroup.add(stud);
-                });
-
-                athleteBodyGroup.add(legLGroup);
-
-                // Right Leg Group
+                // Right Leg (x = +0.135, y = 1.02)
                 const legRGroup = new THREE.Group();
-                legRGroup.position.set(0.15, 1.02, 0);
+                legRGroup.position.set(0.135, 1.02, 0);
 
-                const shortsLegR = new THREE.Mesh(shortsLegGeo, shortsMat);
-                shortsLegR.position.set(0, -0.07, 0);
-                legRGroup.add(shortsLegR);
-
-                const upperLegR = new THREE.Mesh(upperLegGeo, skinMat);
-                upperLegR.position.set(0, -0.24, 0);
-                legRGroup.add(upperLegR);
+                const thighR = new THREE.Mesh(thighGeo, skinMat);
+                thighR.position.set(0, -0.16, 0.005);
+                legRGroup.add(thighR);
 
                 const kneeR = new THREE.Mesh(kneeGeo, skinMat);
-                kneeR.position.set(0, -0.39, 0.015);
+                kneeR.position.set(0, -0.33, 0.015);
                 legRGroup.add(kneeR);
 
-                const lowerLegR = new THREE.Mesh(lowerLegGeo, socksMat);
-                lowerLegR.position.set(0, -0.60, 0);
-                legRGroup.add(lowerLegR);
+                const calfR = new THREE.Mesh(calfGeo, socksMat);
+                calfR.position.set(0, -0.54, 0);
+                legRGroup.add(calfR);
 
                 const sockCuffR = new THREE.Mesh(sockCuffGeo, sockTrimMat);
-                sockCuffR.position.set(0, -0.42, 0);
+                sockCuffR.position.set(0, -0.36, 0);
                 sockCuffR.rotation.x = Math.PI / 2;
                 legRGroup.add(sockCuffR);
 
-                const bootR = new THREE.Mesh(bootUpperGeo, cleatsMat);
-                bootR.position.set(0, -0.87, 0.04);
-                legRGroup.add(bootR);
+                const cleatR = createProCleat(false);
+                cleatR.position.set(0, -0.74, 0);
+                legRGroup.add(cleatR);
 
-                const toeR = new THREE.Mesh(toeGeo, cleatsMat);
-                toeR.position.set(0, -0.87, 0.15);
-                legRGroup.add(toeR);
-
-                const soleR = new THREE.Mesh(soleGeo, soleMat);
-                soleR.position.set(0, -0.94, 0.04);
-                legRGroup.add(soleR);
-
-                studPositions.forEach(pos => {
-                    const stud = new THREE.Mesh(studGeo, studMat);
-                    stud.position.set(pos[0], pos[1], pos[2]);
-                    legRGroup.add(stud);
-                });
-
-                athleteBodyGroup.add(legRGroup);
+                athleteGroup.add(legRGroup);
 
                 return {
-                    athleteBodyGroup,
+                    athleteBodyGroup: athleteGroup,
                     avatarLimbs: {
                         armLGroup,
                         armRGroup,
@@ -6042,7 +6412,6 @@
                     }
                 };
             }
-
             // Limb refs object for idle breathing & locomotion animation loop
             const avatarLimbs = {
                 armLGroup: null,
@@ -6166,15 +6535,35 @@
                 innerRingMesh.position.y = 0.266;
                 championPedestalGroup.add(innerRingMesh);
 
-                // 5. Overhead Vertical Champion Spotlight
+                // 5. Studio Three-Point Lighting for High-Fidelity Character Shading
                 if (!pedestalSpotlight) {
                     pedestalSpotlight = new THREE.SpotLight(auraHex, 2.8, 32, Math.PI / 4.2, 0.35, 1.2);
                     pedestalSpotlight.position.set(0, 15, 0);
                     pedestalSpotlight.target = avatarGroup;
                     pedestalSpotlight.castShadow = true;
                     scene.add(pedestalSpotlight);
+
+                    // Front Key Light (Warm Key)
+                    const keyLight = new THREE.DirectionalLight(0xfff5ea, 1.6);
+                    keyLight.position.set(2.5, 4.2, 5.0);
+                    keyLight.target = avatarGroup;
+                    scene.add(keyLight);
+
+                    // Front Fill Light (Cool Soft Fill)
+                    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.9);
+                    fillLight.position.set(-3.5, 3.5, 4.0);
+                    fillLight.target = avatarGroup;
+                    scene.add(fillLight);
+
+                    // Back Rim Light (Athlete Silhouette / Hair Glow)
+                    const rimLight = new THREE.DirectionalLight(auraHex, 2.2);
+                    rimLight.position.set(0, 3.8, -3.5);
+                    rimLight.target = avatarGroup;
+                    scene.add(rimLight);
+                    window.pedestalRimLight = rimLight;
                 } else {
                     pedestalSpotlight.color.setHex(auraHex);
+                    if (window.pedestalRimLight) window.pedestalRimLight.color.setHex(auraHex);
                 }
 
                 scene.add(championPedestalGroup);
@@ -6205,6 +6594,9 @@
                 }
                 if (pedestalSpotlight) {
                     pedestalSpotlight.color.setHex(auraHex);
+                }
+                if (window.pedestalRimLight) {
+                    window.pedestalRimLight.color.setHex(auraHex);
                 }
             }
             window.updateAthleteCustomizationLive = update3DJerseyAndCard;
@@ -10388,6 +10780,23 @@
 
             function closeProfileEditor() {
                 if (modalEditProfile) modalEditProfile.classList.remove('active');
+                if (typeof gsap !== 'undefined' && camera && controls && defaultCamPos) {
+                    gsap.to(camera.position, {
+                        x: defaultCamPos.x,
+                        y: defaultCamPos.y,
+                        z: defaultCamPos.z,
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        onUpdate: () => controls.update()
+                    });
+                    gsap.to(controls.target, {
+                        x: 0,
+                        y: 1.25,
+                        z: 0,
+                        duration: 1.2,
+                        ease: 'power2.out'
+                    });
+                }
             }
 
             if (btnCloseEditProfile) btnCloseEditProfile.addEventListener('click', closeProfileEditor);
@@ -10500,6 +10909,23 @@
                 });
                 if (tabKey === 'avatar') {
                     initAvatarStudioUI();
+                    if (typeof gsap !== 'undefined' && camera && controls) {
+                        gsap.to(camera.position, {
+                            x: 0,
+                            y: 1.45,
+                            z: 3.2,
+                            duration: 1.2,
+                            ease: 'power2.out',
+                            onUpdate: () => controls.update()
+                        });
+                        gsap.to(controls.target, {
+                            x: 0,
+                            y: 1.25,
+                            z: 0,
+                            duration: 1.2,
+                            ease: 'power2.out'
+                        });
+                    }
                 }
             }
 
@@ -12976,11 +13402,12 @@
 
                 const memories = getActiveMemories();
 
-                // ── AVATAR: idle breathing ──
-                const breatheAmt = Math.sin(time * 2.1) * 0.018;
-                torsoMesh.position.y = 1.15 + breatheAmt;
-                headMesh.position.y  = 2.0  + breatheAmt * 0.6;
-                if (hairMesh) hairMesh.position.y = 2.32 + breatheAmt * 0.6;
+                // ── AVATAR: idle breathing (Anatomically anchored to 1.44 torso, 1.88 head, 1.58 arms) ──
+                const breatheAmt = Math.sin(time * 2.1) * 0.008;
+                if (torsoMesh) torsoMesh.position.y = 1.44 + breatheAmt;
+                if (headMesh) headMesh.position.y  = 1.88 + breatheAmt * 0.6;
+                if (avatarLimbs.armLGroup) avatarLimbs.armLGroup.position.y = 1.58 + breatheAmt * 0.4;
+                if (avatarLimbs.armRGroup) avatarLimbs.armRGroup.position.y = 1.58 + breatheAmt * 0.4;
 
                 // ── FREE WALK MODE LOCOMOTION (WASD) ──
                 if (isFreeWalkMode) {
