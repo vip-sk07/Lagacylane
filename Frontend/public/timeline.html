@@ -756,6 +756,12 @@
             </div>
 
             <!-- View Mode Tabs: Arena HQ vs 3D Trophy Room vs Dedicated 3D Walk -->
+            <!-- Arena Time Travel Dial (2018 - 2026) -->
+            <div id="arena-time-travel" class="tactical-glass px-3 py-1.5 rounded-2xl flex items-center gap-2 border border-amber-500/30 shadow-sm text-xs">
+                <span class="text-amber-400 font-bold flex items-center gap-1">⏳ <span id="time-dial-year-val">2026</span></span>
+                <input type="range" id="arena-year-slider" min="2018" max="2026" value="2026" class="w-18 sm:w-24 md:w-28 accent-amber-500 h-1.5 bg-stone-800 rounded-lg cursor-pointer" title="Time travel through career milestones">
+            </div>
+
             <div id="view-mode-tabs" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 shadow-sm border border-white/10">
                 <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Athlete Home Arena & Customization HQ">
                     🏟️ Arena HQ
@@ -5117,6 +5123,112 @@
             benchRing.position.y = 0.04;
             benchGroup.add(benchRing);
 
+            // 3D AI COACH NPC & MENTOR RIG (Standing beside sideline bench)
+            let aiCoachGroup = null;
+            let aiCoachHead = null;
+
+            function buildAICoachNPC() {
+                if (aiCoachGroup) {
+                    scene.remove(aiCoachGroup);
+                }
+                aiCoachGroup = new THREE.Group();
+                aiCoachGroup.name = 'aiCoachNPC';
+                aiCoachGroup.position.set(4.8, 0, 1.2);
+                aiCoachGroup.rotation.y = -Math.PI * 0.45;
+
+                const coachSkinMat = new THREE.MeshPhysicalMaterial({ color: 0x8a5a3d, roughness: 0.55 });
+                const coachPoloMat = new THREE.MeshStandardMaterial({ color: 0x16325c, roughness: 0.5 });
+                const coachPantMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+                const coachHairMat = new THREE.MeshStandardMaterial({ color: 0xcfd4da, roughness: 0.7 });
+
+                // Coach Torso & Polo
+                const cTorso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.52, 0.25), coachPoloMat);
+                cTorso.position.set(0, 1.40, 0);
+                aiCoachGroup.add(cTorso);
+
+                const cCollar = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.016, 8, 24), coachPoloMat);
+                cCollar.rotation.x = Math.PI / 2;
+                cCollar.position.set(0, 1.66, 0.01);
+                aiCoachGroup.add(cCollar);
+
+                // Coach Head
+                aiCoachHead = new THREE.Group();
+                aiCoachHead.position.set(0, 1.82, 0);
+
+                const cHead = new THREE.Mesh(new THREE.SphereGeometry(0.155, 24, 20), coachSkinMat);
+                aiCoachHead.add(cHead);
+
+                const cHair = new THREE.Mesh(new THREE.SphereGeometry(0.160, 24, 18, 0, Math.PI * 2, 0, Math.PI * 0.46), coachHairMat);
+                cHair.position.set(0, 0.035, -0.015);
+                aiCoachHead.add(cHair);
+
+                // Spectacles
+                [-0.045, 0.045].forEach(gx => {
+                    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.003, 6, 16), new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8 }));
+                    rim.position.set(gx, 0.018, 0.145);
+                    aiCoachHead.add(rim);
+                });
+                const cBridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.004, 0.004), new THREE.MeshStandardMaterial({ color: 0xd4af37 }));
+                cBridge.position.set(0, 0.022, 0.145);
+                aiCoachHead.add(cBridge);
+                aiCoachGroup.add(aiCoachHead);
+
+                // Legs & Shoes
+                [-0.12, 0.12].forEach(lx => {
+                    const cLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.85, 16), coachPantMat);
+                    cLeg.position.set(lx, 0.68, 0);
+                    aiCoachGroup.add(cLeg);
+
+                    const cShoe = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.06, 0.24), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 }));
+                    cShoe.position.set(lx, 0.03, 0.03);
+                    aiCoachGroup.add(cShoe);
+                });
+
+                // Arms: Left holds Clipboard, Right rests at hip
+                const cArmL = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.05, 0.52, 14), coachPoloMat);
+                cArmL.position.set(-0.28, 1.30, 0.08);
+                cArmL.rotation.set(-0.55, 0, 0.15);
+                aiCoachGroup.add(cArmL);
+
+                const cArmR = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.05, 0.52, 14), coachPoloMat);
+                cArmR.position.set(0.28, 1.25, 0);
+                aiCoachGroup.add(cArmR);
+
+                // Tactical Coaching Clipboard
+                const cBoard = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.012), new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.6 }));
+                cBoard.position.set(-0.28, 1.05, 0.26);
+                cBoard.rotation.set(-0.6, 0.1, 0);
+                const cPaper = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.22), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+                cPaper.position.set(-0.28, 1.05, 0.268);
+                cPaper.rotation.set(-0.6, 0.1, 0);
+                aiCoachGroup.add(cBoard, cPaper);
+
+                // Floating Coach Hologram Badge
+                const badgeCanvas = document.createElement('canvas');
+                badgeCanvas.width = 256; badgeCanvas.height = 64;
+                const bCtx = badgeCanvas.getContext('2d');
+                bCtx.fillStyle = 'rgba(10, 20, 35, 0.88)';
+                bCtx.roundRect(4, 4, 248, 56, 12);
+                bCtx.fill();
+                bCtx.strokeStyle = '#00d2ff';
+                bCtx.lineWidth = 3;
+                bCtx.stroke();
+                bCtx.fillStyle = '#00d2ff';
+                bCtx.font = 'bold 20px monospace';
+                bCtx.textAlign = 'center';
+                bCtx.fillText('AI COACH • MENTOR', 128, 36);
+
+                const badgeTex = new THREE.CanvasTexture(badgeCanvas);
+                const badgeSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: badgeTex, transparent: true }));
+                badgeSprite.position.set(0, 2.15, 0);
+                badgeSprite.scale.set(1.1, 0.275, 1);
+                aiCoachGroup.add(badgeSprite);
+
+                scene.add(aiCoachGroup);
+                window.aiCoachGroup = aiCoachGroup;
+            }
+            buildAICoachNPC();
+
             // 3D YOUNGER SELF AVATAR SEATED ON THE BENCH
             const subAvatarGroup = new THREE.Group();
             subAvatarGroup.position.set(0, 0.7, 0);
@@ -5573,13 +5685,14 @@
                 return texture;
             }
 
-            // Realistically Sculpted 3D Athlete Builder (Anatomy, Face, 6 Hairstyles, Arms, V-Taper Jersey, Muscular Legs, Pro Cleats)
+            // Realistically Sculpted 3D Athlete Builder (Anatomy, Face, 6 Hairstyles, Blinking Eyelids, Arms, V-Taper Jersey, Muscular Legs, Pro Cleats, Sport Equipment)
             function buildRealisticAthlete(customInput) {
                 const custom = customInput || getAthleteCustomization();
                 const athleteGroup = new THREE.Group();
                 athleteGroup.name = 'athleteBody';
 
                 const isLife = typeof isLifeMode !== 'undefined' ? isLifeMode : false;
+                const sport = (typeof currentSport !== 'undefined' ? currentSport : 'football');
                 const skinTone = custom.skinTone || '#c89366';
                 const skinToneHex = parseInt(skinTone.replace('#', ''), 16) || 0xc89366;
                 const skinColor = new THREE.Color(skinToneHex);
@@ -5857,37 +5970,50 @@
                 craniumMesh.position.set(0, 0.025, -0.01);
                 headGroup.add(craniumMesh);
 
-                // Realistic Almond Eyes (Facing camera: rotated around Y by -Math.PI / 2)
+                // Biological Articulated Eyes & Blinking Eyelid Rig
                 const eyeTex = createRealisticEyeTexture();
                 const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex });
                 const eyeGeo = new THREE.SphereGeometry(0.024, 16, 14);
                 eyeGeo.scale(1.15, 0.95, 0.75);
 
-                const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-                eyeL.rotation.y = -Math.PI / 2;
-                eyeL.position.set(-0.052, 0.022, 0.134);
-                headGroup.add(eyeL);
-
-                const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-                eyeR.rotation.y = -Math.PI / 2;
-                eyeR.position.set(0.052, 0.022, 0.134);
-                headGroup.add(eyeR);
-
-                // Soft Eyelid Arches
-                const lidGeo = new THREE.TorusGeometry(0.026, 0.0035, 8, 16, Math.PI * 0.85);
+                const lidGeo = new THREE.TorusGeometry(0.026, 0.004, 8, 16, Math.PI * 0.85);
                 const lidMat = new THREE.MeshStandardMaterial({ color: skinColor.clone().offsetHSL(0, 0.02, -0.08), roughness: 0.6 });
 
-                const lidL = new THREE.Mesh(lidGeo, lidMat);
-                lidL.rotation.x = Math.PI / 2.2;
-                lidL.rotation.z = -Math.PI * 0.42;
-                lidL.position.set(-0.052, 0.030, 0.139);
-                headGroup.add(lidL);
+                // Left Eye Socket & Gaze
+                const eyeSocketL = new THREE.Group();
+                eyeSocketL.position.set(-0.052, 0.022, 0.134);
+                const eyeMeshL = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeMeshL.rotation.y = -Math.PI / 2;
+                eyeSocketL.add(eyeMeshL);
 
-                const lidR = new THREE.Mesh(lidGeo, lidMat);
-                lidR.rotation.x = Math.PI / 2.2;
-                lidR.rotation.z = -Math.PI * 0.42;
-                lidR.position.set(0.052, 0.030, 0.139);
-                headGroup.add(lidR);
+                const lidUpL = new THREE.Mesh(lidGeo, lidMat);
+                lidUpL.rotation.set(-0.45, 0, -Math.PI * 0.42);
+                lidUpL.position.set(0, 0.008, 0.005);
+                eyeSocketL.add(lidUpL);
+
+                const lidLoL = new THREE.Mesh(lidGeo, lidMat);
+                lidLoL.rotation.set(0.40, 0, Math.PI * 0.58);
+                lidLoL.position.set(0, -0.008, 0.005);
+                eyeSocketL.add(lidLoL);
+                headGroup.add(eyeSocketL);
+
+                // Right Eye Socket & Gaze
+                const eyeSocketR = new THREE.Group();
+                eyeSocketR.position.set(0.052, 0.022, 0.134);
+                const eyeMeshR = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeMeshR.rotation.y = -Math.PI / 2;
+                eyeSocketR.add(eyeMeshR);
+
+                const lidUpR = new THREE.Mesh(lidGeo, lidMat);
+                lidUpR.rotation.set(-0.45, 0, -Math.PI * 0.42);
+                lidUpR.position.set(0, 0.008, 0.005);
+                eyeSocketR.add(lidUpR);
+
+                const lidLoR = new THREE.Mesh(lidGeo, lidMat);
+                lidLoR.rotation.set(0.40, 0, Math.PI * 0.58);
+                lidLoR.position.set(0, -0.008, 0.005);
+                eyeSocketR.add(lidLoR);
+                headGroup.add(eyeSocketR);
 
                 // Athletic Eyebrows
                 const browGeo = new THREE.BoxGeometry(0.058, 0.010, 0.014);
@@ -6400,6 +6526,151 @@
 
                 athleteGroup.add(legRGroup);
 
+                // ==============================================================
+                // 7. SIGNATURE SPORT EQUIPMENT & GEAR ACCESSORIES
+                // ==============================================================
+                const gearGroup = new THREE.Group();
+                gearGroup.name = 'sportGear';
+
+                if (sport === 'football' && !isLife) {
+                    const bGeo = new THREE.SphereGeometry(0.115, 24, 20);
+                    const bMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35 });
+                    const matchBall = new THREE.Mesh(bGeo, bMat);
+                    [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4].forEach(a => {
+                        const seam = new THREE.Mesh(new THREE.TorusGeometry(0.116, 0.0035, 6, 24), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+                        seam.rotation.y = a;
+                        matchBall.add(seam);
+                    });
+                    matchBall.position.set(0.26, 0.12, 0.28);
+                    gearGroup.add(matchBall);
+
+                } else if (sport === 'cricket' && !isLife) {
+                    // Batting Pads
+                    [-0.135, 0.135].forEach((lx) => {
+                        const padGeo = new THREE.CylinderGeometry(0.082, 0.068, 0.42, 16, 1, false, -Math.PI * 0.45, Math.PI * 0.9);
+                        const padMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+                        const pad = new THREE.Mesh(padGeo, padMat);
+                        pad.position.set(lx, 0.48, 0.035);
+                        gearGroup.add(pad);
+                    });
+
+                    // Willow Bat in Right Hand
+                    const batGroup = new THREE.Group();
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.52, 0.028), new THREE.MeshStandardMaterial({ color: 0xd9b370, roughness: 0.45 }));
+                    blade.position.y = -0.24;
+                    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 }));
+                    grip.position.y = 0.09;
+                    batGroup.add(blade, grip);
+                    batGroup.position.set(0, -0.05, 0.04);
+                    batGroup.rotation.set(-0.25, 0, -0.15);
+                    handR.add(batGroup);
+
+                    // Batting Gloves
+                    [-0.27, 0.27].forEach(gx => {
+                        const glv = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.08, 0.075), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 }));
+                        glv.position.set(gx, 0.95, 0.0);
+                        gearGroup.add(glv);
+                    });
+
+                } else if (sport === 'basketball' && !isLife) {
+                    // Basketball
+                    const bGeo = new THREE.SphereGeometry(0.125, 24, 20);
+                    const bMat = new THREE.MeshStandardMaterial({ color: 0xd96a1f, roughness: 0.55 });
+                    const bball = new THREE.Mesh(bGeo, bMat);
+                    [0, Math.PI / 2].forEach(a => {
+                        const seam = new THREE.Mesh(new THREE.TorusGeometry(0.126, 0.004, 6, 24), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+                        seam.rotation.y = a;
+                        bball.add(seam);
+                    });
+                    bball.position.set(-0.32, 0.95, 0.18);
+                    gearGroup.add(bball);
+
+                    // Headband
+                    const hb = new THREE.Mesh(new THREE.TorusGeometry(0.145, 0.014, 10, 32), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+                    hb.rotation.x = Math.PI / 2 - 0.12;
+                    hb.position.set(0, 0.055, 0.015);
+                    headGroup.add(hb);
+
+                } else if (sport === 'tennis' && !isLife) {
+                    // Graphite Tennis Racket
+                    const rGroup = new THREE.Group();
+                    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.013, 0.22, 10), new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 }));
+                    handle.position.y = -0.10;
+                    rGroup.add(handle);
+
+                    const headMesh = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.011, 8, 24), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.3, metalness: 0.6 }));
+                    headMesh.scale.set(0.85, 1.25, 1.0);
+                    headMesh.position.y = 0.15;
+                    rGroup.add(headMesh);
+
+                    const strings = new THREE.Mesh(new THREE.CircleGeometry(0.105, 16), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+                    strings.scale.set(0.85, 1.25, 1.0);
+                    strings.position.y = 0.15;
+                    rGroup.add(strings);
+
+                    rGroup.position.set(0, -0.05, 0.05);
+                    rGroup.rotation.set(-0.25, 0.2, -0.1);
+                    handR.add(rGroup);
+
+                    // Tennis Ball in Left Hand
+                    const tb = new THREE.Mesh(new THREE.SphereGeometry(0.034, 16, 12), new THREE.MeshStandardMaterial({ color: 0xd7f23c, roughness: 0.8 }));
+                    tb.position.set(0, -0.03, 0.04);
+                    handL.add(tb);
+
+                    // Sun Visor on Head
+                    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.010, 0.09), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.4 }));
+                    visor.position.set(0, 0.065, 0.16);
+                    visor.rotation.x = 0.15;
+                    headGroup.add(visor);
+
+                } else if (sport === 'combat' && !isLife) {
+                    // 12oz Boxing Gloves
+                    [-0.27, 0.27].forEach(gx => {
+                        const glv = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 14), new THREE.MeshStandardMaterial({ color: 0xc1121f, roughness: 0.35, metalness: 0.1 }));
+                        glv.scale.set(1.0, 1.25, 1.1);
+                        glv.position.set(gx, 0.95, 0.02);
+                        gearGroup.add(glv);
+                    });
+
+                    // Championship Gold Waistband
+                    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.07, 0.28), new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 }));
+                    belt.position.set(0, 1.21, 0);
+                    gearGroup.add(belt);
+
+                } else if (isLife) {
+                    // Cyan Academic Stole around neck down chest
+                    [-0.075, 0.075].forEach(sx => {
+                        const stole = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.65, 0.012), new THREE.MeshStandardMaterial({ color: 0x00d2ff, roughness: 0.4 }));
+                        stole.position.set(sx, 1.38, 0.135);
+                        gearGroup.add(stole);
+                    });
+
+                    // Mortarboard Academic Cap
+                    const capBase = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.07, 24), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 }));
+                    capBase.position.set(0, 0.11, 0);
+                    headGroup.add(capBase);
+
+                    const mortar = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.016, 0.34), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 }));
+                    mortar.position.set(0, 0.15, 0);
+                    mortar.rotation.y = 0.4;
+                    headGroup.add(mortar);
+
+                    const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.12, 8), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+                    tassel.position.set(0.14, 0.09, 0.10);
+                    headGroup.add(tassel);
+
+                    // Diploma Scroll in Hand
+                    const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.24, 16), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 }));
+                    scroll.rotation.z = Math.PI / 2;
+                    scroll.position.set(0, -0.04, 0.02);
+                    const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.021, 0.005, 8, 16), new THREE.MeshStandardMaterial({ color: 0xd64545 }));
+                    ribbon.rotation.y = Math.PI / 2;
+                    ribbon.position.copy(scroll.position);
+                    handR.add(scroll, ribbon);
+                }
+
+                athleteGroup.add(gearGroup);
+
                 return {
                     athleteBodyGroup: athleteGroup,
                     avatarLimbs: {
@@ -6408,7 +6679,15 @@
                         legLGroup,
                         legRGroup,
                         torsoMesh: torso,
-                        headMesh: headGroup
+                        headMesh: headGroup,
+                        eyes: {
+                            eyeL: eyeMeshL,
+                            eyeR: eyeMeshR,
+                            lidUpL,
+                            lidLoL,
+                            lidUpR,
+                            lidLoR
+                        }
                     }
                 };
             }
@@ -6419,7 +6698,8 @@
                 legLGroup: null,
                 legRGroup: null,
                 torsoMesh: null,
-                headMesh: null
+                headMesh: null,
+                eyes: null
             };
             let torsoMesh = null;
             let headMesh = null;
@@ -6449,6 +6729,7 @@
                 avatarLimbs.legRGroup = built.avatarLimbs.legRGroup;
                 avatarLimbs.torsoMesh = built.avatarLimbs.torsoMesh;
                 avatarLimbs.headMesh = built.avatarLimbs.headMesh;
+                avatarLimbs.eyes = built.avatarLimbs.eyes;
                 torsoMesh = built.avatarLimbs.torsoMesh;
                 headMesh = built.avatarLimbs.headMesh;
             }
@@ -12618,6 +12899,16 @@
                     return;
                 }
 
+                // Click on 3D AI Coach NPC in Technical Area
+                if (aiCoachGroup) {
+                    const coachHits = raycaster.intersectObjects([aiCoachGroup], true);
+                    if (coachHits.length > 0) {
+                        const coachBtn = document.getElementById('btn-open-companion') || btnAICompanion;
+                        if (coachBtn) coachBtn.click();
+                        return;
+                    }
+                }
+
                 // Click on Younger Self substitute bench
                 const benchHits = raycaster.intersectObjects(benchGroup.children, true);
                 if (benchHits.length > 0) {
@@ -13342,6 +13633,65 @@
             document.getElementById('tab-btn-view-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
             document.getElementById('btn-open-trophy-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
 
+            // ── TIME TRAVEL SLIDER INTERACTION (2018 - 2026) ──
+            const yearSlider = document.getElementById('arena-year-slider');
+            const yearValLabel = document.getElementById('time-dial-year-val');
+            let currentFilteredYear = 2026;
+
+            function updateTimeTravelYear(yr) {
+                currentFilteredYear = parseInt(yr);
+                if (yearValLabel) yearValLabel.textContent = currentFilteredYear;
+
+                // Update Stadium Jumbotron scoreboard text live
+                if (currentFieldModelGroup) {
+                    currentFieldModelGroup.traverse(child => {
+                        if (child.name && child.name.includes('Jumbotron') && child.material && child.material.map) {
+                            const jbCanvas = child.material.map.image;
+                            if (jbCanvas && jbCanvas.getContext) {
+                                const jbCtx = jbCanvas.getContext('2d');
+                                jbCtx.fillStyle = '#060a12';
+                                jbCtx.fillRect(0, 0, 512, 256);
+                                jbCtx.strokeStyle = '#00d2ff';
+                                jbCtx.lineWidth = 6;
+                                jbCtx.strokeRect(6, 6, 500, 244);
+                                
+                                jbCtx.fillStyle = 'rgba(0, 210, 255, 0.15)';
+                                jbCtx.fillRect(10, 10, 492, 40);
+                                jbCtx.fillStyle = '#00d2ff';
+                                jbCtx.font = 'bold 22px monospace';
+                                jbCtx.textAlign = 'center';
+                                jbCtx.fillText('LEGACYLANE ARENA • ' + (currentSport || 'CAREER').toUpperCase(), 256, 38);
+                                
+                                jbCtx.fillStyle = '#ffffff';
+                                jbCtx.font = '900 76px "Arial Black", sans-serif';
+                                jbCtx.fillText(String(currentFilteredYear), 256, 125);
+                                
+                                const totalMem = getActiveMemories().length;
+                                const yearProgress = Math.max(1, Math.min(totalMem, Math.round(totalMem * ((currentFilteredYear - 2018) / 8))));
+                                const fans = Math.round(25000 + 45000 * ((currentFilteredYear - 2018) / 8));
+                                
+                                jbCtx.fillStyle = '#f59e0b';
+                                jbCtx.font = 'bold 24px monospace';
+                                jbCtx.fillText(yearProgress + ' MILESTONES  ·  ' + fans.toLocaleString() + ' FANS', 256, 185);
+                                
+                                jbCtx.fillStyle = '#10b981';
+                                jbCtx.font = 'bold 16px monospace';
+                                jbCtx.fillText('● HISTORICAL ERA SYNCHRONIZED', 256, 225);
+                                
+                                child.material.map.needsUpdate = true;
+                                if (child.material.emissiveMap) child.material.emissiveMap.needsUpdate = true;
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (yearSlider) {
+                yearSlider.addEventListener('input', (e) => {
+                    updateTimeTravelYear(e.target.value);
+                });
+            }
+
             // Expose globally for accessibility & script access
             window.inspectTrophy = inspectTrophy;
             window.closeTrophyInspection = closeTrophyInspection;
@@ -13350,6 +13700,9 @@
             window.camera = camera;
             window.controls = controls;
             window.avatarGroup = avatarGroup;
+            window.avatarLimbs = avatarLimbs;
+            window.aiCoachGroup = aiCoachGroup;
+            window.benchGroup = benchGroup;
             window.championPedestalGroup = championPedestalGroup;
 
             /* ------------------------------------------------------------------
@@ -13408,6 +13761,34 @@
                 if (headMesh) headMesh.position.y  = 1.88 + breatheAmt * 0.6;
                 if (avatarLimbs.armLGroup) avatarLimbs.armLGroup.position.y = 1.58 + breatheAmt * 0.4;
                 if (avatarLimbs.armRGroup) avatarLimbs.armRGroup.position.y = 1.58 + breatheAmt * 0.4;
+
+                // ── BIOLOGICAL BLINKING & EYE SACCADES (Avatar v5 Engine) ──
+                if (avatarLimbs && avatarLimbs.eyes) {
+                    const blinkCycle = time % 3.6;
+                    const blinkProgress = (blinkCycle < 0.16) ? Math.sin((blinkCycle / 0.16) * Math.PI) : 0;
+                    const upRot = THREE.MathUtils.lerp(-0.45, 0.18, blinkProgress);
+                    const loRot = THREE.MathUtils.lerp(0.40, -0.15, blinkProgress);
+                    avatarLimbs.eyes.lidUpL.rotation.x = upRot;
+                    avatarLimbs.eyes.lidLoL.rotation.x = loRot;
+                    avatarLimbs.eyes.lidUpR.rotation.x = upRot;
+                    avatarLimbs.eyes.lidLoR.rotation.x = loRot;
+
+                    const gazeX = Math.max(-0.25, Math.min(0.25, mouse.x * 0.25)) + Math.sin(time * 0.7) * 0.02;
+                    const gazeY = Math.max(-0.18, Math.min(0.18, mouse.y * 0.18)) + Math.sin(time * 0.9) * 0.015;
+                    avatarLimbs.eyes.eyeL.rotation.y = -Math.PI / 2 + gazeX;
+                    avatarLimbs.eyes.eyeL.rotation.z = gazeY;
+                    avatarLimbs.eyes.eyeR.rotation.y = -Math.PI / 2 + gazeX;
+                    avatarLimbs.eyes.eyeR.rotation.z = gazeY;
+                }
+
+                // ── AI COACH HEAD TRACKING ──
+                if (aiCoachHead && avatarGroup) {
+                    const cWorldPos = new THREE.Vector3();
+                    aiCoachHead.getWorldPosition(cWorldPos);
+                    const lookVector = avatarGroup.position.clone().sub(cWorldPos);
+                    const targetAngle = Math.atan2(lookVector.x, lookVector.z);
+                    aiCoachHead.rotation.y = THREE.MathUtils.lerp(aiCoachHead.rotation.y, targetAngle * 0.5, 0.05);
+                }
 
                 // ── FREE WALK MODE LOCOMOTION (WASD) ──
                 if (isFreeWalkMode) {
