@@ -1481,22 +1481,43 @@
 
             <form id="form-log-play" class="space-y-4">
                 
-                <!-- Guided Inspiration / Theme Selector (No hardcodes, just helpful sparks) -->
-                <div class="bg-stone-900/40 p-2.5 rounded-2xl border border-white/10 space-y-1">
+                <!-- 1-Tap Milestone Preset Selector (Zero-Typing Quick Setup) -->
+                <div class="bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 p-3 rounded-2xl border border-amber-400/30 space-y-2">
                     <div class="flex items-center justify-between">
-                        <label class="block text-[11px] font-mono text-amber-300 font-semibold uppercase tracking-wider">Inspiration Spark (Optional)</label>
-                        <span class="text-[10px] font-mono text-stone-400">Choose a theme to prompt your memory</span>
+                        <label for="log-milestone-preset" class="block text-[11px] font-mono text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="animate-pulse">⚡</span> 1-Tap Milestone Preset
+                        </label>
+                        <span class="text-[10px] font-mono text-stone-400">Select preset to auto-fill entire memory</span>
                     </div>
-                    <select id="log-inspiration-selector" class="w-full px-3 py-1.5 rounded-xl bg-stone-950 border border-white/15 text-stone-200 text-xs focus:border-amber-400 focus:outline-none cursor-pointer">
-                        <option value="">✨ Custom Milestone / Blank Slate</option>
-                        <option value="genesis">🌱 The Genesis: When your journey first began</option>
-                        <option value="obstacle">⚡ The Crucible: Overcoming a major obstacle or defeat</option>
-                        <option value="breakthrough">🏆 The Breakthrough: That clutch triumphant moment</option>
-                        <option value="turning_point">🍂 The Turning Point: A lesson that reshaped your perspective</option>
-                        <option value="graduation">🎓 Next Chapter: Advancing to higher competition or mastery</option>
-                        <option value="mentorship">🤝 The Mentor: Advice or teammate that lifted you up</option>
-                        <option value="peace">🕊️ Quiet Gratitude: A moment of calm and deep reflection</option>
+                    <select id="log-milestone-preset" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-amber-400/40 text-stone-100 text-xs font-medium focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none cursor-pointer">
+                        <option value="">✨ Custom / Blank Entry (Pick Preset to Auto-Fill)</option>
                     </select>
+
+                    <!-- Quick Ledger Chips (Outcome, Role, Setting, Crowd) -->
+                    <div class="pt-1 space-y-1.5">
+                        <div class="flex items-center justify-between text-[10px] font-mono text-stone-400">
+                            <span>Quick Match / Life Ledger Tags</span>
+                            <span class="text-stone-500">Tap to enrich</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="match-ledger-chips">
+                            <!-- Outcome -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Victory 🏆">🏆 Won</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Hard-Fought Draw 🤝">🤝 Draw</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Gritty Defeat / Lesson 🌧️">🌧️ Lesson</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="New Personal Record ⚡">⚡ PR</button>
+                            <!-- Role -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="Starter">⭐ Starter</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="Captain">©️ Captain</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="MVP">🎖️ MVP</button>
+                            <!-- Atmosphere -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Home Fortress">🏟️ Home</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Away Derby">✈️ Away</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Night Match Under Floodlights">🌙 Night</button>
+                            <!-- People -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-emerald-400 hover:text-emerald-200 transition" data-group="people" data-val="Full Squad & Coach">👥 Squad</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-emerald-400 hover:text-emerald-200 transition" data-group="people" data-val="Family & Parents">👨‍👩‍👧 Family</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Title & Date -->
@@ -1590,8 +1611,18 @@
 
                 <!-- Journal Entry -->
                 <div>
-                    <label class="block text-xs font-medium text-stone-300 mb-1">Reflective Journal Entry *</label>
-                    <textarea id="log-input-journal" rows="3" required placeholder="Write freely about what happened, how your heart and mind felt, and what echoes from this day..." class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-medium text-stone-300">Reflective Journal Entry *</label>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="btn-auto-story" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 text-[11px] font-medium flex items-center gap-1 transition">
+                                <span>✨</span> Auto-Story
+                            </button>
+                            <button type="button" id="btn-dictate-journal" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 text-[11px] font-medium flex items-center gap-1 transition" title="Dictate using voice">
+                                <span id="dictate-icon">🎙️</span> <span id="dictate-label">Dictate</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="log-input-journal" rows="3" required placeholder="Select a preset above or tap Auto-Story / Dictate to write instantly..." class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                 </div>
 
                 <!-- Multipart Multi-Photo Keepsakes Upload Box -->
@@ -5958,273 +5989,413 @@
                 const studMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.95, roughness: 0.15 });
 
                 // ==============================================================
-                // 1. HEAD & ATHLETIC FACE (Pivot at y = 1.88)
+                // 1. ANATOMICALLY SCULPTED ATHLETE HEAD & FACE (Parametric Head, Blinking Lids, Dynamic Lips)
                 // ==============================================================
-                const headGroup = new THREE.Group();
-                headGroup.position.set(0, 1.88, 0);
+                const cl = (v, min, max) => Math.min(Math.max(v, min), max);
+                const sm = (e0, e1, x) => {
+                    const t = cl((x - e0) / (e1 - e0), 0, 1);
+                    return t * t * (3 - 2 * t);
+                };
+                const gs = (x, y, cx, cy, sx, sy) => Math.exp(-(((x - cx) ** 2) / (2 * sx * sx) + ((y - cy) ** 2) / (2 * sy * sy)));
+                const hw = (uy, pw) => {
+                    const a = Math.abs(uy);
+                    const p = uy >= 0 ? 2.1 : pw;
+                    return Math.pow(Math.max(0, 1 - Math.pow(a, p)), 1 / p);
+                };
 
-                // Anatomical Muscular Neck (Length 0.28, sinks 10cm past collar into torso)
-                const neckGeo = new THREE.CylinderGeometry(0.088, 0.124, 0.28, 24);
-                const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-                neckMesh.position.set(0, -0.13, 0.005);
+                const RX = 0.088, RY = 0.114, RZf = 0.098, RZb = 0.106;
+                const sx = RX / 0.081, sy = RY / 0.108;
+                const pw = 2.45;
+
+                function bumpZ(px, py) {
+                    const x = px / sx, y = py / sy, ax = Math.abs(x);
+                    let z = 0;
+                    z += 0.0062 * Math.exp(-((y - 0.040) ** 2) / (2 * (0.0066 ** 2))) * sm(0.062, 0.012, ax); // brow ridge
+                    z -= 0.0050 * gs(ax, y, 0.031, 0.008, 0.016, 0.012);                                      // eye socket
+                    z += 0.0068 * gs(ax, y, 0.052, -0.020, 0.020, 0.016);                                     // cheekbone
+                    z += 0.0075 * gs(ax, y, 0.044, -0.046, 0.024, 0.020);                                     // cheek fullness
+                    z += 0.0030 * gs(x, y, 0, 0.07, 0.045, 0.02);                                             // forehead
+                    z -= 0.0030 * gs(ax, y, 0.070, 0.030, 0.015, 0.030);                                      // temple
+                    z += 0.0105 * gs(x, y, 0, 0.0, 0.0054, 0.034);                                            // nose bridge
+                    z += 0.0165 * gs(x, y, 0, -0.031, 0.0086, 0.0078);                                        // nose tip
+                    z += 0.0080 * gs(ax, y, 0.0138, -0.0315, 0.0062, 0.0070);                                 // nose wings
+                    z -= 0.0028 * gs(ax, y, 0.0085, -0.0415, 0.0055, 0.0035);                                 // under nostrils
+                    z += 0.0042 * gs(x, y, 0, -0.060, 0.028, 0.015);                                          // lip pad
+                    z -= 0.0012 * gs(x, y, 0, -0.0505, 0.0032, 0.0075);                                       // philtrum
+                    z += 0.0085 * gs(x, y, 0, -0.101, 0.020, 0.013);                                          // chin
+                    z -= 0.0028 * gs(x, y, 0, -0.0795, 0.016, 0.0045);                                        // lower-lip groove
+                    return z;
+                }
+
+                function surfZ(x, y) {
+                    const uy = cl(y / RY, -0.999, 0.999);
+                    const w = hw(uy, pw);
+                    const dx = cl(x / (w * RX), -0.995, 0.995);
+                    const dz = Math.sqrt(Math.max(0, 1 - dx * dx));
+                    return dz * w * RZf + sm(0, 0.5, dz) * bumpZ(x, y);
+                }
+
+                // Sculpted continuous cranium mesh
+                const headGeo = new THREE.SphereGeometry(1, 112, 84);
+                headGeo.rotateY(-Math.PI / 2);
+                const hPos = headGeo.attributes.position;
+                const hUv = headGeo.attributes.uv;
+                for (let i = 0; i < hPos.count; i++) {
+                    const ux = hPos.getX(i), uy = hPos.getY(i), uz = hPos.getZ(i);
+                    const r = Math.hypot(ux, uz);
+                    const dx = r > 1e-6 ? ux / r : 0;
+                    const dz = r > 1e-6 ? uz / r : 1;
+                    const w = hw(uy, pw);
+                    const px = dx * w * RX;
+                    const py = uy * RY;
+                    let pz = dz * w * (dz > 0 ? RZf : RZb);
+                    pz += sm(0, 0.5, dz) * bumpZ(px, py);
+                    hPos.setXYZ(i, px, py, pz);
+                    hUv.setXY(i, cl((px + RX) / (2 * RX), 0, 1), cl((py + RY) / (2 * RY), 0, 1));
+                }
+                headGeo.computeVertexNormals();
+
+                // Soft anatomical face painting (blush, eye contours, nostrils, warm skin tone)
+                function paintFace(skinHex) {
+                    const W = 1024;
+                    const c = document.createElement('canvas');
+                    c.width = c.height = W;
+                    const x = c.getContext('2d');
+                    const X = v => (v + RX) / (2 * RX) * W;
+                    const Y = v => (RY - v) / (2 * RY) * W;
+
+                    x.fillStyle = skinHex;
+                    x.fillRect(0, 0, W, W);
+
+                    const baseColor = new THREE.Color(skinHex);
+                    const sr = [baseColor.r * 255, baseColor.g * 255, baseColor.b * 255];
+                    const mixRGB = (a, b, t) => a.map((v, idx) => v + (b[idx] - v) * t);
+
+                    const blush = mixRGB(sr, [205, 70, 75], 0.45);
+                    const dark = sr.map(v => v * 0.65);
+                    const warm = mixRGB(sr, [150, 70, 60], 0.35);
+
+                    const blob = (cx, cy, rx, ry, rgb, a) => {
+                        x.save();
+                        x.translate(X(cx * sx), Y(cy * sy));
+                        x.scale(rx * sx / (2 * RX) * W, ry * sy / (2 * RY) * W);
+                        const grad = x.createRadialGradient(0, 0, 0, 0, 0, 1);
+                        grad.addColorStop(0, `rgba(${rgb.map(Math.round).join(',')},${a})`);
+                        grad.addColorStop(1, `rgba(${rgb.map(Math.round).join(',')},0)`);
+                        x.fillStyle = grad;
+                        x.beginPath();
+                        x.arc(0, 0, 1, 0, Math.PI * 2);
+                        x.fill();
+                        x.restore();
+                    };
+
+                    blob(0, 0.075, 0.045, 0.028, [255, 255, 255], 0.05);
+                    [-1, 1].forEach(s => {
+                        blob(s * 0.046, -0.040, 0.030, 0.024, blush, 0.30);
+                        blob(s * 0.032, -0.004, 0.020, 0.009, mixRGB(sr, [120, 90, 150], 0.25), 0.18);
+                        blob(s * 0.032, 0.017, 0.022, 0.013, dark, 0.25);
+                        blob(s * 0.058, 0.015, 0.012, 0.02, warm, 0.10);
+                    });
+                    blob(0, -0.033, 0.010, 0.009, blush, 0.22);
+                    blob(0, -0.064, 0.030, 0.016, warm, 0.14);
+                    blob(0, -0.102, 0.016, 0.010, [255, 255, 255], 0.04);
+
+                    // Delicate nostril shading
+                    x.fillStyle = 'rgba(55, 22, 20, 0.65)';
+                    [-1, 1].forEach(s => {
+                        x.beginPath();
+                        x.ellipse(X(s * 0.0083 * sx), Y(-0.0412 * sy), 0.0032 * sx / (2 * RX) * W, 0.0021 * sy / (2 * RY) * W, 0, 0, Math.PI * 2);
+                        x.fill();
+                    });
+
+                    // Subtle micro-skin pores
+                    for (let i = 0; i < 2200; i++) {
+                        const px = Math.random() * W;
+                        const py = Math.random() * W;
+                        x.fillStyle = (Math.random() < 0.5) ? 'rgba(255, 235, 225, 0.02)' : 'rgba(90, 50, 40, 0.02)';
+                        x.fillRect(px, py, 2, 2);
+                    }
+
+                    const tex = new THREE.CanvasTexture(c);
+                    tex.encoding = THREE.sRGBEncoding;
+                    tex.needsUpdate = true;
+                    return tex;
+                }
+
+                const faceMap = paintFace(skinTone);
+                const realisticSkinMat = new THREE.MeshPhysicalMaterial({
+                    map: faceMap,
+                    roughness: 0.54,
+                    metalness: 0.02,
+                    clearcoat: 0.10,
+                    clearcoatRoughness: 0.45
+                });
+
+                const headGroup = new THREE.Group();
+                headGroup.position.set(0, 1.86, 0);
+
+                const headMesh = new THREE.Mesh(headGeo, realisticSkinMat);
+                headMesh.castShadow = true;
+                headMesh.receiveShadow = true;
+                headGroup.add(headMesh);
+
+                // Muscular Neck syncing seamlessly with collar
+                const neckGeo = new THREE.CylinderGeometry(0.052, 0.076, 0.26, 28);
+                const neckMesh = new THREE.Mesh(neckGeo, realisticSkinMat);
+                neckMesh.position.set(0, -RY + 0.015, -0.012);
+                neckMesh.rotation.x = 0.10;
                 headGroup.add(neckMesh);
 
-                // Sculpted Cranium & Jaw
-                const craniumGeo = new THREE.SphereGeometry(0.160, 36, 32);
-                const pos = craniumGeo.attributes.position;
-                for (let i = 0; i < pos.count; i++) {
-                    let x = pos.getX(i);
-                    let y = pos.getY(i);
-                    let z = pos.getZ(i);
-
-                    // Jaw Taper and Athletic Chin
-                    if (y < 0) {
-                        const factor = 0.84 + (y + 0.160) * 0.45;
-                        x *= factor;
-                        if (z > 0) {
-                            z *= 1.05;
-                            if (y < -0.07) z += 0.018;
-                        }
-                    } else {
-                        if (y < 0.04 && Math.abs(x) > 0.09) x *= 1.04;
-                        if (y > 0.08 && Math.abs(x) > 0.11) x *= 0.95;
-                    }
-                    if (Math.abs(x) > 0.035 && Math.abs(x) < 0.080 && y > -0.005 && y < 0.045 && z > 0.08) {
-                        z -= 0.018;
-                    }
-                    pos.setXYZ(i, x, y, z);
-                }
-                craniumGeo.computeVertexNormals();
-                const craniumMesh = new THREE.Mesh(craniumGeo, skinMat);
-                craniumMesh.position.set(0, 0.025, -0.01);
-                headGroup.add(craniumMesh);
-
-                // Biological Articulated Eyes & Blinking Eyelid Rig
+                // Embedded Anatomical Almond Eyes & Blinking Eyelid Rig
                 const eyeTex = createRealisticEyeTexture();
                 const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex });
-                const eyeGeo = new THREE.SphereGeometry(0.024, 16, 14);
-                eyeGeo.scale(1.15, 0.95, 0.75);
+                const ER = 0.0162;
+                const EX = 0.0315 * sx;
+                const EYy = 0.006 * sy;
 
-                const lidGeo = new THREE.TorusGeometry(0.026, 0.004, 8, 16, Math.PI * 0.85);
-                const lidMat = new THREE.MeshStandardMaterial({ color: skinColor.clone().offsetHSL(0, 0.02, -0.08), roughness: 0.6 });
+                let eyeMeshL, eyeMeshR, lidUpL, lidLoL, lidUpR, lidLoR;
 
-                // Left Eye Socket & Gaze
-                const eyeSocketL = new THREE.Group();
-                eyeSocketL.position.set(-0.052, 0.022, 0.134);
-                const eyeMeshL = new THREE.Mesh(eyeGeo, eyeMat);
-                eyeMeshL.rotation.y = -Math.PI / 2;
-                eyeSocketL.add(eyeMeshL);
+                [-1, 1].forEach(side => {
+                    const isLeft = side < 0;
+                    const x = side * EX;
+                    const z = surfZ(x, EYy) - ER * 0.48;
 
-                const lidUpL = new THREE.Mesh(lidGeo, lidMat);
-                lidUpL.rotation.set(-0.45, 0, -Math.PI * 0.42);
-                lidUpL.position.set(0, 0.008, 0.005);
-                eyeSocketL.add(lidUpL);
+                    const eg = new THREE.Group();
+                    eg.position.set(x, EYy, z);
 
-                const lidLoL = new THREE.Mesh(lidGeo, lidMat);
-                lidLoL.rotation.set(0.40, 0, Math.PI * 0.58);
-                lidLoL.position.set(0, -0.008, 0.005);
-                eyeSocketL.add(lidLoL);
-                headGroup.add(eyeSocketL);
+                    const gaze = new THREE.Group();
+                    eg.add(gaze);
 
-                // Right Eye Socket & Gaze
-                const eyeSocketR = new THREE.Group();
-                eyeSocketR.position.set(0.052, 0.022, 0.134);
-                const eyeMeshR = new THREE.Mesh(eyeGeo, eyeMat);
-                eyeMeshR.rotation.y = -Math.PI / 2;
-                eyeSocketR.add(eyeMeshR);
+                    const ball = new THREE.Mesh(new THREE.SphereGeometry(ER, 36, 24), eyeMat);
+                    ball.rotation.y = -Math.PI / 2;
+                    gaze.add(ball);
 
-                const lidUpR = new THREE.Mesh(lidGeo, lidMat);
-                lidUpR.rotation.set(-0.45, 0, -Math.PI * 0.42);
-                lidUpR.position.set(0, 0.008, 0.005);
-                eyeSocketR.add(lidUpR);
+                    // Clearcoat Cornea Specular Shell
+                    const cornea = new THREE.Mesh(
+                        new THREE.SphereGeometry(ER * 1.018, 30, 20),
+                        new THREE.MeshPhysicalMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.12,
+                            roughness: 0,
+                            metalness: 0,
+                            clearcoat: 1,
+                            clearcoatRoughness: 0,
+                            depthWrite: false
+                        })
+                    );
+                    gaze.add(cornea);
 
-                const lidLoR = new THREE.Mesh(lidGeo, lidMat);
-                lidLoR.rotation.set(0.40, 0, Math.PI * 0.58);
-                lidLoR.position.set(0, -0.008, 0.005);
-                eyeSocketR.add(lidLoR);
-                headGroup.add(eyeSocketR);
+                    // Sculpted Eyelids with baked facial UV coordinates
+                    const RL = ER * 1.085;
+                    const upGroup = new THREE.Group();
+                    const loGroup = new THREE.Group();
 
-                // Athletic Eyebrows
-                const browGeo = new THREE.BoxGeometry(0.058, 0.010, 0.014);
-                const browMat = new THREE.MeshStandardMaterial({ color: hairColorHex, roughness: 0.85 });
+                    const ug = new THREE.SphereGeometry(RL, 36, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                    const lg = new THREE.SphereGeometry(RL, 36, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
 
-                const browL = new THREE.Mesh(browGeo, browMat);
-                browL.position.set(-0.052, 0.046, 0.137);
-                browL.rotation.z = 0.08;
-                headGroup.add(browL);
+                    const bake = (geo, rot) => {
+                        const m4 = new THREE.Matrix4().makeRotationX(rot);
+                        const v = new THREE.Vector3();
+                        const pa = geo.attributes.position;
+                        const uv = geo.attributes.uv;
+                        for (let i = 0; i < pa.count; i++) {
+                            v.set(pa.getX(i), pa.getY(i), pa.getZ(i)).applyMatrix4(m4);
+                            uv.setXY(i, cl((x + v.x + RX) / (2 * RX), 0, 1), cl((EYy + v.y + RY) / (2 * RY), 0, 1));
+                        }
+                    };
+                    bake(ug, -0.35);
+                    bake(lg, 0.45);
 
-                const browR = new THREE.Mesh(browGeo, browMat);
-                browR.position.set(0.052, 0.046, 0.137);
-                browR.rotation.z = -0.08;
-                headGroup.add(browR);
+                    const um = new THREE.Mesh(ug, realisticSkinMat);
+                    const lm = new THREE.Mesh(lg, realisticSkinMat);
+                    upGroup.add(um);
+                    loGroup.add(lm);
 
-                // Sculpted Nose
-                const noseBridgeGeo = new THREE.CylinderGeometry(0.008, 0.015, 0.055, 10);
-                const noseBridge = new THREE.Mesh(noseBridgeGeo, skinMat);
-                noseBridge.position.set(0, 0.014, 0.144);
-                noseBridge.rotation.x = 0.18;
-                headGroup.add(noseBridge);
+                    // Rest rotation: Eyes wide open
+                    upGroup.rotation.x = -0.65;
+                    loGroup.rotation.x = 0.55;
 
-                const noseTipGeo = new THREE.SphereGeometry(0.014, 12, 10);
-                noseTipGeo.scale(1.2, 0.85, 1.0);
-                const noseTip = new THREE.Mesh(noseTipGeo, skinMat);
-                noseTip.position.set(0, -0.014, 0.155);
-                headGroup.add(noseTip);
+                    const lashGeo = new THREE.TorusGeometry(RL * 1.002, 0.00085, 6, 36, Math.PI * 0.9);
+                    lashGeo.rotateZ(Math.PI * 0.05);
+                    lashGeo.rotateX(Math.PI / 2);
+                    const lash = new THREE.Mesh(lashGeo, new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 }));
+                    upGroup.add(lash);
 
-                // Contoured Athletic Lips (Natural soft skin-harmonized tone)
-                const lipColor = skinColor.clone().offsetHSL(0.0, 0.18, -0.14);
-                const lipMat = new THREE.MeshStandardMaterial({ color: lipColor, roughness: 0.65, metalness: 0.02 });
+                    eg.add(upGroup, loGroup);
+                    headGroup.add(eg);
 
-                const upperLipGeo = new THREE.CylinderGeometry(0.004, 0.007, 0.046, 8);
-                const upperLip = new THREE.Mesh(upperLipGeo, lipMat);
-                upperLip.rotation.z = Math.PI / 2;
-                upperLip.position.set(0, -0.046, 0.144);
+                    if (isLeft) {
+                        eyeMeshL = ball;
+                        lidUpL = upGroup;
+                        lidLoL = loGroup;
+                    } else {
+                        eyeMeshR = ball;
+                        lidUpR = upGroup;
+                        lidLoR = loGroup;
+                    }
+
+                    // Sculpted Natural Eyebrows
+                    const browCurve = new THREE.CatmullRomCurve3([
+                        new THREE.Vector3(side * 0.012 * sx, 0.0335 * sy, surfZ(side * 0.012 * sx, 0.0335 * sy) + 0.0015),
+                        new THREE.Vector3(side * 0.032 * sx, 0.0405 * sy, surfZ(side * 0.032 * sx, 0.0405 * sy) + 0.0022),
+                        new THREE.Vector3(side * 0.052 * sx, 0.0345 * sy, surfZ(side * 0.052 * sx, 0.0345 * sy) + 0.0016)
+                    ]);
+                    const browGeo = new THREE.TubeGeometry(browCurve, 18, 0.0036, 8, false);
+                    const browMesh = new THREE.Mesh(browGeo, new THREE.MeshStandardMaterial({ color: hairColorHex, roughness: 0.85 }));
+                    headGroup.add(browMesh);
+
+                    // Anatomical Ear with Inner Concha Depth
+                    const earOuterGeo = new THREE.SphereGeometry(1, 24, 18);
+                    earOuterGeo.scale(0.0055, 0.0235 * sy, 0.0155);
+                    const earOuter = new THREE.Mesh(earOuterGeo, realisticSkinMat);
+
+                    const earInnerGeo = new THREE.SphereGeometry(1, 16, 12);
+                    earInnerGeo.scale(0.0040, 0.014 * sy, 0.009);
+                    const earInner = new THREE.Mesh(earInnerGeo, new THREE.MeshStandardMaterial({ color: skinColor.clone().offsetHSL(0, 0.15, -0.14), roughness: 0.7 }));
+                    earInner.position.x = side * 0.0032;
+
+                    const earGroup = new THREE.Group();
+                    earGroup.add(earOuter, earInner);
+                    earGroup.position.set(side * RX * 0.985, -0.004 * sy, -0.0035);
+                    earGroup.rotation.set(0, side * 0.20, side * -0.05);
+                    headGroup.add(earGroup);
+                });
+
+                // Sculpted Organic Athletic Lips & Oral Cavity (Natural Warm Flush)
+                const lipColor = skinColor.clone().lerp(new THREE.Color(0xb25858), 0.32);
+                const lipMat = new THREE.MeshStandardMaterial({ color: lipColor, roughness: 0.48, metalness: 0.01 });
+                const Y0 = -0.0635 * sy;
+                const upperCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.024 * sx, Y0 - 0.002, surfZ(-0.024 * sx, Y0 - 0.002) + 0.0012),
+                    new THREE.Vector3(-0.010 * sx, Y0 + 0.003, surfZ(-0.010 * sx, Y0 + 0.003) + 0.0022),
+                    new THREE.Vector3(0, Y0 + 0.001, surfZ(0, Y0 + 0.001) + 0.0020),
+                    new THREE.Vector3(0.010 * sx, Y0 + 0.003, surfZ(0.010 * sx, Y0 + 0.003) + 0.0022),
+                    new THREE.Vector3(0.024 * sx, Y0 - 0.002, surfZ(0.024 * sx, Y0 - 0.002) + 0.0012)
+                ]);
+                const upperLip = new THREE.Mesh(new THREE.TubeGeometry(upperCurve, 20, 0.0034, 8, false), lipMat);
                 headGroup.add(upperLip);
 
-                const lowerLipGeo = new THREE.CylinderGeometry(0.006, 0.004, 0.040, 8);
-                const lowerLip = new THREE.Mesh(lowerLipGeo, lipMat);
-                lowerLip.rotation.z = Math.PI / 2;
-                lowerLip.position.set(0, -0.058, 0.142);
+                const lowerCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.023 * sx, Y0 - 0.002, surfZ(-0.023 * sx, Y0 - 0.002) + 0.0012),
+                    new THREE.Vector3(-0.011 * sx, Y0 - 0.006, surfZ(-0.011 * sx, Y0 - 0.006) + 0.0025),
+                    new THREE.Vector3(0, Y0 - 0.007, surfZ(0, Y0 - 0.007) + 0.0028),
+                    new THREE.Vector3(0.011 * sx, Y0 - 0.006, surfZ(0.011 * sx, Y0 - 0.006) + 0.0025),
+                    new THREE.Vector3(0.023 * sx, Y0 - 0.002, surfZ(0.023 * sx, Y0 - 0.002) + 0.0012)
+                ]);
+                const lowerLip = new THREE.Mesh(new THREE.TubeGeometry(lowerCurve, 20, 0.0040, 8, false), lipMat);
                 headGroup.add(lowerLip);
 
-                // Ears
-                const earGeo = new THREE.TorusGeometry(0.032, 0.009, 8, 18, Math.PI * 1.4);
-                earGeo.scale(0.35, 1.1, 0.8);
-                const earL = new THREE.Mesh(earGeo, skinMat);
-                earL.position.set(-0.160, 0.015, -0.01);
-                earL.rotation.y = -Math.PI / 2;
-                headGroup.add(earL);
-
-                const earR = new THREE.Mesh(earGeo, skinMat);
-                earR.position.set(0.160, 0.015, -0.01);
-                earR.rotation.y = Math.PI / 2;
-                headGroup.add(earR);
-
                 // ==============================================================
-                // 2. HAIRSTYLES (Meticulously fitted to scalp)
+                // 2. ATHLETIC HAIRSTYLES (Scalp-Fitted Procedural Shells)
                 // ==============================================================
                 const hairGroup = new THREE.Group();
                 const style = custom.hairStyle || 'fade_quiff';
 
+                function createScalpCap(scaleY = 1.05, scaleZ = 1.04, thetaEnd = Math.PI * 0.38) {
+                    const capGeo = new THREE.SphereGeometry(1, 48, 36, 0, Math.PI * 2, 0, thetaEnd);
+                    capGeo.rotateY(-Math.PI / 2);
+                    const pos = capGeo.attributes.position;
+                    for (let i = 0; i < pos.count; i++) {
+                        const ux = pos.getX(i), uy = pos.getY(i), uz = pos.getZ(i);
+                        const r = Math.hypot(ux, uz);
+                        const dx = r > 1e-6 ? ux / r : 0;
+                        const dz = r > 1e-6 ? uz / r : 1;
+                        const w = hw(uy, pw);
+                        const px = dx * w * (RX * 1.018);
+                        const py = uy * (RY * scaleY);
+                        let pz = dz * w * (dz > 0 ? (RZf * scaleZ) : (RZb * 1.025));
+                        pz += sm(0, 0.5, dz) * bumpZ(px, py);
+                        pos.setXYZ(i, px, py, pz);
+                    }
+                    capGeo.computeVertexNormals();
+                    return new THREE.Mesh(capGeo, hairMat);
+                }
+
                 if (style === 'fade_quiff') {
-                    const fadeGeo = new THREE.SphereGeometry(0.164, 28, 22, 0, Math.PI * 2, 0, Math.PI * 0.46);
-                    fadeGeo.scale(1.01, 1.06, 1.05);
-                    const fadeMesh = new THREE.Mesh(fadeGeo, hairMat);
-                    fadeMesh.position.set(0, 0.045, -0.022);
-                    hairGroup.add(fadeMesh);
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.37);
+                    hairGroup.add(scalp);
 
-                    const wave1Geo = new THREE.SphereGeometry(0.11, 18, 14);
-                    wave1Geo.scale(0.9, 0.55, 1.3);
-                    const wave1 = new THREE.Mesh(wave1Geo, hairMat);
-                    wave1.position.set(0, 0.17, 0.02);
-                    wave1.rotation.x = -0.35;
-                    hairGroup.add(wave1);
-
-                    const wave2Geo = new THREE.SphereGeometry(0.08, 16, 12);
-                    wave2Geo.scale(0.85, 0.5, 1.2);
-                    const waveL = new THREE.Mesh(wave2Geo, hairMat);
-                    waveL.position.set(-0.06, 0.16, 0.01);
-                    waveL.rotation.set(-0.25, 0.15, -0.15);
-                    hairGroup.add(waveL);
-
-                    const waveR = new THREE.Mesh(wave2Geo, hairMat);
-                    waveR.position.set(0.06, 0.16, 0.01);
-                    waveR.rotation.set(-0.25, -0.15, 0.15);
-                    hairGroup.add(waveR);
+                    // Swept athletic quiff crest
+                    const quiffGeo = new THREE.SphereGeometry(0.080, 22, 16);
+                    quiffGeo.scale(0.85, 0.50, 1.35);
+                    const quiff = new THREE.Mesh(quiffGeo, hairMat);
+                    quiff.position.set(0, 0.125, 0.005);
+                    quiff.rotation.x = -0.28;
+                    hairGroup.add(quiff);
 
                 } else if (style === 'buzz_cut') {
-                    const buzzGeo = new THREE.SphereGeometry(0.165, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.48);
-                    buzzGeo.scale(1.015, 1.05, 1.04);
-                    const buzzMesh = new THREE.Mesh(buzzGeo, hairMat);
-                    buzzMesh.position.set(0, 0.040, -0.018);
-                    hairGroup.add(buzzMesh);
+                    const buzz = createScalpCap(1.04, 1.03, Math.PI * 0.38);
+                    hairGroup.add(buzz);
 
-                    const burnGeo = new THREE.BoxGeometry(0.014, 0.065, 0.030);
-                    const burnL = new THREE.Mesh(burnGeo, hairMat);
-                    burnL.position.set(-0.160, 0.02, 0.01);
-                    hairGroup.add(burnL);
-
-                    const burnR = new THREE.Mesh(burnGeo, hairMat);
-                    burnR.position.set(0.160, 0.02, 0.01);
-                    hairGroup.add(burnR);
+                    [-1, 1].forEach(side => {
+                        const burn = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.045, 0.024), hairMat);
+                        burn.position.set(side * RX * 0.98, 0.010, 0.005);
+                        hairGroup.add(burn);
+                    });
 
                 } else if (style === 'top_knot') {
-                    const underGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.44);
-                    underGeo.scale(1.01, 1.06, 1.05);
-                    const underMesh = new THREE.Mesh(underGeo, hairMat);
-                    underMesh.position.set(0, 0.045, -0.022);
-                    hairGroup.add(underMesh);
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.36);
+                    hairGroup.add(scalp);
 
-                    const sweepGeo = new THREE.SphereGeometry(0.12, 16, 14);
+                    const sweepGeo = new THREE.SphereGeometry(0.095, 18, 14);
                     sweepGeo.scale(0.85, 0.45, 1.15);
-                    const sweepMesh = new THREE.Mesh(sweepGeo, hairMat);
-                    sweepMesh.position.set(0, 0.17, -0.025);
-                    hairGroup.add(sweepMesh);
+                    const sweep = new THREE.Mesh(sweepGeo, hairMat);
+                    sweep.position.set(0, 0.13, -0.035);
+                    hairGroup.add(sweep);
 
-                    const bunGeo = new THREE.SphereGeometry(0.060, 16, 14);
-                    const bunMesh = new THREE.Mesh(bunGeo, hairMat);
-                    bunMesh.position.set(0, 0.20, -0.075);
-                    hairGroup.add(bunMesh);
+                    const bun = new THREE.Mesh(new THREE.SphereGeometry(0.048, 16, 14), hairMat);
+                    bun.position.set(0, 0.155, -0.08);
+                    hairGroup.add(bun);
 
-                    const tieGeo = new THREE.TorusGeometry(0.038, 0.007, 8, 16);
-                    const tieMesh = new THREE.Mesh(tieGeo, collarMat);
-                    tieMesh.position.set(0, 0.18, -0.065);
-                    tieMesh.rotation.x = 0.45;
-                    hairGroup.add(tieMesh);
+                    const tie = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.006, 8, 16), collarMat);
+                    tie.position.set(0, 0.142, -0.07);
+                    tie.rotation.x = 0.45;
+                    hairGroup.add(tie);
 
                 } else if (style === 'flowing_waves') {
-                    const flowBaseGeo = new THREE.SphereGeometry(0.166, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.50);
-                    flowBaseGeo.scale(1.02, 1.05, 1.06);
-                    const flowBase = new THREE.Mesh(flowBaseGeo, hairMat);
-                    flowBase.position.set(0, 0.042, -0.018);
-                    hairGroup.add(flowBase);
+                    const scalp = createScalpCap(1.06, 1.05, Math.PI * 0.50);
+                    hairGroup.add(scalp);
 
-                    for (let a = -0.32; a <= 0.32; a += 0.20) {
-                        const strandGeo = new THREE.CylinderGeometry(0.026, 0.010, 0.22, 10);
+                    for (let a = -0.28; a <= 0.28; a += 0.14) {
+                        const strandGeo = new THREE.CylinderGeometry(0.018, 0.008, 0.20, 10);
                         strandGeo.scale(1.1, 0.6, 1.3);
                         const strand = new THREE.Mesh(strandGeo, hairMat);
-                        strand.position.set(a * 0.40, 0.08, -0.13 - Math.abs(a) * 0.035);
-                        strand.rotation.set(-0.35, a * 0.3, 0);
+                        strand.position.set(a * 0.35, 0.04, -0.10 - Math.abs(a) * 0.03);
+                        strand.rotation.set(-0.35, a * 0.25, 0);
                         hairGroup.add(strand);
                     }
 
                 } else if (style === 'braids_dreads') {
-                    const dreadCapGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.46);
-                    dreadCapGeo.scale(1.01, 1.05, 1.04);
-                    const dreadCap = new THREE.Mesh(dreadCapGeo, hairMat);
-                    dreadCap.position.set(0, 0.042, -0.018);
-                    hairGroup.add(dreadCap);
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.46);
+                    hairGroup.add(scalp);
 
                     const bandMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
                     for (let i = 0; i < 12; i++) {
                         const angle = (i / 12) * Math.PI * 2;
-                        const r = 0.145;
+                        const r = 0.118;
                         const dx = Math.cos(angle) * r;
                         const dz = Math.sin(angle) * r;
 
-                        const braidGeo = new THREE.CylinderGeometry(0.011, 0.008, 0.22, 8);
+                        const braidGeo = new THREE.CylinderGeometry(0.009, 0.007, 0.18, 8);
                         const braid = new THREE.Mesh(braidGeo, hairMat);
-                        braid.position.set(dx, 0.08, dz);
+                        braid.position.set(dx, 0.04, dz);
                         braid.rotation.set(dz * 1.5, 0, -dx * 1.5);
                         hairGroup.add(braid);
 
-                        const bandGeo = new THREE.TorusGeometry(0.013, 0.004, 6, 12);
+                        const bandGeo = new THREE.TorusGeometry(0.011, 0.0035, 6, 12);
                         const band = new THREE.Mesh(bandGeo, bandMat);
-                        band.position.set(dx * 1.05, 0.01, dz * 1.05);
+                        band.position.set(dx * 1.04, -0.02, dz * 1.04);
                         band.rotation.x = Math.PI / 2;
                         hairGroup.add(band);
                     }
 
                 } else if (style === 'classic_crop') {
-                    const cropCapGeo = new THREE.SphereGeometry(0.164, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.48);
-                    cropCapGeo.scale(1.01, 1.06, 1.05);
-                    const cropCap = new THREE.Mesh(cropCapGeo, hairMat);
-                    cropCap.position.set(0, 0.042, -0.018);
-                    hairGroup.add(cropCap);
+                    const scalp = createScalpCap(1.06, 1.05, Math.PI * 0.48);
+                    hairGroup.add(scalp);
 
-                    const fringeGeo = new THREE.BoxGeometry(0.18, 0.048, 0.18);
-                    const fringe = new THREE.Mesh(fringeGeo, hairMat);
-                    fringe.position.set(0, 0.15, 0.05);
+                    const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.036, 0.12), hairMat);
+                    fringe.position.set(0, 0.115, 0.045);
                     fringe.rotation.x = 0.35;
                     hairGroup.add(fringe);
                 }
@@ -7920,11 +8091,13 @@
                 renderAttachedPhotosPreview();
                 document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Preserve Memory' : 'Log Match Milestone';
+                populateMilestonePresets(currentSport, isLifeMode);
+                resetLedgerChips();
                 modalLogPlay.classList.add('active');
                 if (window.LegacyMotion) window.LegacyMotion.trapFocus(modalLogPlay);
                 playSoftSound('click');
                 setTimeout(() => {
-                    document.getElementById('log-input-title')?.focus();
+                    document.getElementById('log-milestone-preset')?.focus();
                 }, 120);
             }
 
@@ -7956,55 +8129,531 @@
                 });
             });
 
-            // Inspiration spark themes
-            const inspirationSelector = document.getElementById('log-inspiration-selector');
-            if (inspirationSelector) {
-                const inspirationThemes = {
-                    genesis: {
-                        title: isLifeMode ? 'The First Spark of Curiosity' : 'Day One: Stepping on the Field',
-                        journalHint: 'Recall where you were, who believed in you first, and what you felt when you took your very first step...'
+            // ==============================================================
+            // 1-TAP MILESTONE PRESETS & ZERO-TYPING INTELLIGENT WORKFLOW
+            // ==============================================================
+            const SPORT_MILESTONE_PRESETS = {
+                football: [
+                    {
+                        id: 'stoppage_winner',
+                        label: '⚽ 93\' Stoppage-Time Match Winner',
+                        title: "93' Stoppage-Time Match Winner",
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Home Fortress Stadium',
+                        people: 'Starting XI & 45,000 Fans',
+                        sentiment: '95',
+                        journal: 'The stadium erupted in pure delirium as the ball hit the back of the net in the dying seconds. Every drop of sweat, every sprint during pre-season came down to this singular moment.'
                     },
-                    obstacle: {
-                        title: isLifeMode ? 'Weathering the Heavy Storm' : 'The Grueling Comeback After Adversity',
-                        journalHint: 'What made this trial seem impossible, and where did you discover the quiet grit to keep moving forward?'
+                    {
+                        id: 'hat_trick',
+                        label: '🎩 Hat-Trick Ball & Clinical Finishing',
+                        title: 'Match Ball: Career First Hat-Trick',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Metropolitan Arena',
+                        people: 'Squad & Coaching Staff',
+                        sentiment: '95',
+                        journal: 'Took home the signed match ball tonight. Clinical finishing, flawless service from the midfield, and a night that will forever be etched in my legacy.'
                     },
-                    breakthrough: {
-                        title: isLifeMode ? 'The Moment Everything Clicked' : 'The Championship Clutch Victory',
-                        journalHint: 'What did the roar or the silence feel like? Who rushed to embrace you?'
+                    {
+                        id: 'debut_cap',
+                        label: '🌟 Starting XI Senior Debut',
+                        title: 'First Cap: Starting XI Senior Debut',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'Main Stadium',
+                        people: 'Head Coach & Parents in Stands',
+                        sentiment: '90',
+                        journal: 'Stepping over that white touchline into the roar of the crowd for the very first time. Nervous energy transformed into hyper-focus the second the whistle blew.'
                     },
-                    turning_point: {
-                        title: isLifeMode ? 'The Crossroads Decision' : 'A Crucial Shift in Tactics & Discipline',
-                        journalHint: 'What belief did you let go of, and what new truth did you embrace on this pivotal day?'
+                    {
+                        id: 'derby_clean',
+                        label: '🛡️ Derby Clean Sheet & Defensive Stand',
+                        title: 'Derby Clean Sheet & Defensive Stand',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Hostile Away Grounds',
+                        people: 'Defensive Line & Keeper',
+                        sentiment: '85',
+                        journal: 'A masterclass in resilience and discipline. When the pressure was relentless in the second half, our backline held immovable like iron.'
                     },
-                    graduation: {
-                        title: isLifeMode ? 'Entering the Next Chapter' : 'Debuting on the Elite Stage',
-                        journalHint: 'Stepping into a bigger world. Describe the nervous excitement and determination.'
+                    {
+                        id: 'injury_comeback',
+                        label: '💪 Return to Pitch After Rehab',
+                        title: 'Return to Pitch After 6-Month Rehab',
+                        era: 'Comeback & Resilience Season',
+                        landmark: true,
+                        location: 'Training Ground Stadium',
+                        people: 'Physio Team, Teammates, Family',
+                        sentiment: '85',
+                        journal: 'Six months of solitary weight-room sessions and doubt evaporated in an instant when I strapped on the boots and took the pitch again. Stronger than ever.'
                     },
-                    mentorship: {
-                        title: isLifeMode ? 'Words from a Guiding Light' : 'Coach’s Halftime Speech',
-                        journalHint: 'What sentence did they utter that has stayed in your mind ever since?'
-                    },
-                    peace: {
-                        title: isLifeMode ? 'An Afternoon of Pure Stillness' : 'Quiet Reflection After the Final Whistle',
-                        journalHint: 'Sitting back, taking a breath, and noticing all the little blessings along this path...'
+                    {
+                        id: 'championship_lift',
+                        label: '🏆 League Championship Trophy Lift',
+                        title: 'League Championship Trophy Lift',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'National Stadium',
+                        people: 'Entire Club, Staff, Supporters',
+                        sentiment: '95',
+                        journal: 'Confetti falling from the rafters, hands lifting silverware high into the night sky. A season of sacrifices validated in gold.'
                     }
-                };
+                ],
+                cricket: [
+                    {
+                        id: 'maiden_century',
+                        label: '🏏 Maiden First-Class Century (104*)',
+                        title: 'Maiden First-Class Century (104*)',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Historic County Oval',
+                        people: 'Batting Partner & Dressing Room',
+                        sentiment: '95',
+                        journal: 'Raising the bat to a standing ovation as the triple-digit milestone arrived through a crisp cover drive. Pure composure under intense seam bowling.'
+                    },
+                    {
+                        id: 'five_fer',
+                        label: '🎯 Fiery 5-Wicket Haul (5/28)',
+                        title: 'Fiery 5-Wicket Haul (5/28)',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'State Cricket Ground',
+                        people: 'Wicketkeeper & Slip Cordon',
+                        sentiment: '95',
+                        journal: 'Finding the exact seam angle and rhythm. Watching timber fly and bails light up five times in a match-defining spell.'
+                    },
+                    {
+                        id: 'clutch_death_overs',
+                        label: '⚡ Defending 7 Runs in the Final Over',
+                        title: 'Defending 7 Runs in the Final Over',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Packed Floodlit Stadium',
+                        people: 'Captain & Bowler Union',
+                        sentiment: '90',
+                        journal: 'Six nerve-shredding yorkers under the blinding floodlights. Ice in the veins when the entire tournament was on the line.'
+                    },
+                    {
+                        id: 'captaincy_debut',
+                        label: '©️ First Match Leading as Captain',
+                        title: 'Leading the Team as Captain for the First Time',
+                        era: 'High School & Early Ambition',
+                        landmark: true,
+                        location: 'Home Pavilion Ground',
+                        people: 'Vice-Captain & Squad',
+                        sentiment: '90',
+                        journal: 'Walking out for the toss wearing the captain blazer. The weight of responsibility turned into pride as the team rallied together.'
+                    }
+                ],
+                basketball: [
+                    {
+                        id: 'buzzer_beater',
+                        label: '🏀 Game 7 Buzzer-Beater Fadeaway',
+                        title: 'Game 7 Buzzer-Beater Fadeaway',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Sold-Out Home Court',
+                        people: 'Roster, Head Coach, Family',
+                        sentiment: '95',
+                        journal: 'Three seconds on the clock, isolation at the top of the key. Rose over two defenders, high arc, bottom of the net as the red horn sounded.'
+                    },
+                    {
+                        id: 'double_double',
+                        label: '📊 Playoff Double-Double: 28 Pts, 14 Reb',
+                        title: 'Playoff Double-Double: 28 Pts, 14 Rebounds',
+                        era: 'Collegiate / Trial Era',
+                        landmark: false,
+                        location: 'Conference Championship Center',
+                        people: 'Starting Five & Bench Mob',
+                        sentiment: '90',
+                        journal: 'Dominating the paint on both ends of the floor. Boxing out, setting hard screens, and attacking the rim with relentless energy.'
+                    },
+                    {
+                        id: 'dagger_three',
+                        label: '🔥 Clutch Step-Back 3 & Defensive Lockdown',
+                        title: 'Clutch Step-Back Three & Defensive Lockdown',
+                        era: 'Championship & Breakthrough',
+                        landmark: false,
+                        location: 'Downtown Arena',
+                        people: 'Teammates & Home Crowd',
+                        sentiment: '90',
+                        journal: 'Created separation with a sharp step-back and knocked down the dagger three, followed by a steal on the immediate transition.'
+                    }
+                ],
+                tennis: [
+                    {
+                        id: 'five_set_epic',
+                        label: '🎾 Five-Set Epic: 5th Set Tiebreak (7-6)',
+                        title: 'Five-Set Epic: Conquering the 5th Set Tiebreak (7-6)',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Center Court',
+                        people: 'Coach Box & Supportive Parents',
+                        sentiment: '95',
+                        journal: 'Four hours and forty minutes of grueling baseline rallies under searing sun. Digging deep into mental reserves to close out match point.'
+                    },
+                    {
+                        id: 'flawless_serve',
+                        label: '⚡ 18 Aces in Straight-Set Masterclass',
+                        title: 'Serving 18 Aces in Flawless Straight-Set Match',
+                        era: 'Collegiate / Trial Era',
+                        landmark: false,
+                        location: 'Grand Slam Qualifying Courts',
+                        people: 'Hitting Partner & Coach',
+                        sentiment: '90',
+                        journal: 'The serve was untouchable today. Hitting spots with surgical precision on both wide corners and down the T.'
+                    },
+                    {
+                        id: 'first_title',
+                        label: '🏆 First Tour Title Trophy',
+                        title: 'First Tour Title Championship Trophy',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Metropolitan Tennis Stadium',
+                        people: 'Team & Family',
+                        sentiment: '95',
+                        journal: 'Holding the championship trophy after surviving the week. All the early morning drill sessions proved their worth.'
+                    }
+                ],
+                combat: [
+                    {
+                        id: 'ko_victory',
+                        label: '🥊 Title Fight: 2nd-Round Counter KO',
+                        title: 'Title Fight: 2nd-Round Counter-Hook Knockout',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'The Grand Arena Octagon',
+                        people: 'Corner Team, Head Coach, Cutman',
+                        sentiment: '95',
+                        journal: 'Slipped the jab and countered with a clean left hook that ended the contest. Precision beats power and timing beats speed.'
+                    },
+                    {
+                        id: 'black_belt',
+                        label: '🥋 Black Belt Promotion & Mastery',
+                        title: 'Earning the Black Belt Promotion',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: true,
+                        location: 'Home Dojo & Academy',
+                        people: 'Grandmaster, Sensei, Training Partners',
+                        sentiment: '95',
+                        journal: 'A decade of sweat, bruises, mat burns, and discipline culminating in tying the black belt around my waist. The journey truly begins now.'
+                    },
+                    {
+                        id: 'five_round_war',
+                        label: '⚔️ 5-Round Championship War Victory',
+                        title: 'Unanimous Decision in 5-Round Championship War',
+                        era: 'Comeback & Resilience Season',
+                        landmark: false,
+                        location: 'Fight Night Colosseum',
+                        people: 'Corner Crew & Physio',
+                        sentiment: '85',
+                        journal: 'Battered and bloodied, but never yielded an inch of ground. Imposed will across all twenty-five minutes of combat.'
+                    }
+                ],
+                track: [
+                    {
+                        id: 'sub_102',
+                        label: '⚡ Sub-10.2s 100m Dash & New PR',
+                        title: 'Sub-10.2s 100m Dash & New Personal Record',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'National Athletics Stadium',
+                        people: 'Sprint Coach & Track Club',
+                        sentiment: '95',
+                        journal: 'Explosive block clearance, seamless transition drive, and hitting max velocity at 60 meters. Glancing at the timer board and seeing the historic PR.'
+                    },
+                    {
+                        id: 'gold_podium',
+                        label: '🥇 State Championship Gold atop Podium',
+                        title: 'State Championship Gold Medal atop the Podium',
+                        era: 'High School & Early Ambition',
+                        landmark: true,
+                        location: 'State Track Facility',
+                        people: 'Parents & School Teammates',
+                        sentiment: '95',
+                        journal: 'Standing atop the center podium hearing the cheers. That medal around the neck represents months of solitary sprint repeats in cold rain.'
+                    }
+                ],
+                swimming: [
+                    {
+                        id: 'anchor_gold',
+                        label: '🏊 Anchor Leg Touchpad Gold by 0.04s',
+                        title: 'Clutch Relay Anchor Leg: Gold by 0.04s',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Aquatic Competition Center',
+                        people: 'Relay Quartet & Head Coach',
+                        sentiment: '95',
+                        journal: 'Dove into the wake half a body-length behind. Hammered the kick, nailed the underwater turn, and touched the touchpad four hundredths ahead.'
+                    },
+                    {
+                        id: 'national_cut',
+                        label: '⏱️ Securing National Qualifying Cut',
+                        title: 'Hitting the National Qualifying Standard Cut',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'Olympic Trials Pool',
+                        people: 'Swim Club & Family',
+                        sentiment: '90',
+                        journal: 'Glanced at the timing board: green light and the national qualifying standard secured. The work is just getting started.'
+                    }
+                ],
+                life: [
+                    {
+                        id: 'graduation_day',
+                        label: '🎓 University Graduation & Honors',
+                        title: 'University Graduation & Academic Honors',
+                        era: 'Youth & Formative Years',
+                        landmark: true,
+                        location: 'University Grand Quadrangle',
+                        people: 'Parents, Mentors, Lifelong Friends',
+                        sentiment: '95',
+                        journal: 'Walking across the stage in cap and gown, seeing tears of joy in my parents\' eyes. The closing of one profound chapter and the birth of another.'
+                    },
+                    {
+                        id: 'first_home',
+                        label: '🏡 Keys in Hand: Our First Home',
+                        title: 'Keys in Hand: Our First Home',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: true,
+                        location: 'New Hearth & Home',
+                        people: 'Partner & Family',
+                        sentiment: '90',
+                        journal: 'Turning the key in the front door of our empty living room, sunlight streaming through bare windows. A sanctuary where our next decade will unfold.'
+                    },
+                    {
+                        id: 'rising_strong',
+                        label: '🌿 Rising Strong: Overcoming Valley',
+                        title: 'Rising Strong: Emerging from Life\'s Deepest Valley',
+                        era: 'Comeback & Resilience Season',
+                        landmark: true,
+                        location: 'Mountain Trail Sanctuary',
+                        people: 'Closest Confidant',
+                        sentiment: '85',
+                        journal: 'When everything seemed broken, taking it one day at a time healed what words could not. Immense gratitude for the quiet strength that lives inside us.'
+                    },
+                    {
+                        id: 'mentoring_torch',
+                        label: '🕯️ Passing the Torch: Mentorship',
+                        title: 'Passing the Torch: Mentoring the Next Generation',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Community Center Hall',
+                        people: 'Young Proteges & Peers',
+                        sentiment: '90',
+                        journal: 'Seeing the spark ignite in their eyes just as it did in mine years ago. True legacy isn\'t what you collect, but what you leave behind in others.'
+                    }
+                ]
+            };
 
-                inspirationSelector.addEventListener('change', (e) => {
-                    const val = e.target.value;
-                    if (val && inspirationThemes[val]) {
-                        const data = inspirationThemes[val];
-                        const titleInput = document.getElementById('log-input-title');
-                        const journalInput = document.getElementById('log-input-journal');
-                        if (titleInput && (!titleInput.value.trim() || Object.values(inspirationThemes).some(t => t.title === titleInput.value))) {
-                            titleInput.value = data.title;
-                        }
-                        if (journalInput) {
-                            journalInput.placeholder = data.journalHint;
-                        }
-                        playSoftSound('click');
+            function populateMilestonePresets(sportKey, isLife) {
+                const sel = document.getElementById('log-milestone-preset');
+                if (!sel) return;
+                sel.innerHTML = '<option value="">✨ Custom / Blank Entry (Pick Preset to Auto-Fill)</option>';
+                const key = isLife ? 'life' : (sportKey || 'football');
+                const list = SPORT_MILESTONE_PRESETS[key] || SPORT_MILESTONE_PRESETS.football || [];
+                list.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.label;
+                    sel.appendChild(opt);
+                });
+            }
+
+            function resetLedgerChips() {
+                document.querySelectorAll('.ledger-chip').forEach(chip => {
+                    chip.classList.remove('active-chip', 'bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                    chip.classList.add('bg-stone-900', 'text-stone-300', 'border-white/10');
+                });
+            }
+
+            // Wire Preset Dropdown Change Handler
+            const presetSelector = document.getElementById('log-milestone-preset');
+            if (presetSelector) {
+                presetSelector.addEventListener('change', (e) => {
+                    const id = e.target.value;
+                    if (!id) return;
+                    const key = isLifeMode ? 'life' : (currentSport || 'football');
+                    const presets = SPORT_MILESTONE_PRESETS[key] || SPORT_MILESTONE_PRESETS.football || [];
+                    const found = presets.find(p => p.id === id);
+                    if (found) {
+                        const titleEl = document.getElementById('log-input-title');
+                        const eraEl = document.getElementById('log-input-era');
+                        const favEl = document.getElementById('log-input-favorite');
+                        const locEl = document.getElementById('log-input-location');
+                        const pplEl = document.getElementById('log-input-people');
+                        const jnlEl = document.getElementById('log-input-journal');
+                        const dateEl = document.getElementById('log-input-date');
+
+                        if (titleEl) titleEl.value = found.title;
+                        if (eraEl) eraEl.value = found.era;
+                        if (favEl) favEl.checked = !!found.landmark;
+                        if (locEl) locEl.value = found.location;
+                        if (pplEl) pplEl.value = found.people;
+                        if (jnlEl) jnlEl.value = found.journal;
+                        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+
+                        // Sync resonance chip
+                        const targetChip = Array.from(document.querySelectorAll('.resonance-chip')).find(c => c.dataset.score === found.sentiment);
+                        if (targetChip) targetChip.click();
+
+                        resetLedgerChips();
+                        playSoftSound('chime');
                     }
                 });
+            }
+
+            // Wire Match Ledger Chips
+            document.querySelectorAll('.ledger-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('active-chip');
+                    const isActive = chip.classList.contains('active-chip');
+                    if (isActive) {
+                        chip.classList.remove('bg-stone-900', 'text-stone-300', 'border-white/10');
+                        chip.classList.add('bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                    } else {
+                        chip.classList.remove('bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                        chip.classList.add('bg-stone-900', 'text-stone-300', 'border-white/10');
+                    }
+
+                    const group = chip.dataset.group;
+                    const val = chip.dataset.val;
+
+                    if (isActive) {
+                        if (group === 'setting') {
+                            const locInput = document.getElementById('log-input-location');
+                            if (locInput) {
+                                if (!locInput.value) locInput.value = val;
+                                else if (!locInput.value.includes(val)) locInput.value += ` (${val})`;
+                            }
+                        } else if (group === 'people') {
+                            const pplInput = document.getElementById('log-input-people');
+                            if (pplInput) {
+                                if (!pplInput.value) pplInput.value = val;
+                                else if (!pplInput.value.includes(val)) pplInput.value += `, ${val}`;
+                            }
+                        } else if (group === 'outcome') {
+                            if (val.includes('Victory') || val.includes('Record')) {
+                                const fav = document.getElementById('log-input-favorite');
+                                if (fav) fav.checked = true;
+                            }
+                        }
+                    }
+                    playSoftSound('click');
+                });
+            });
+
+            // Wire Auto-Generate Story Button
+            const btnAutoStory = document.getElementById('btn-auto-story');
+            if (btnAutoStory) {
+                btnAutoStory.addEventListener('click', () => {
+                    const title = document.getElementById('log-input-title')?.value.trim() || 'Milestone Moment';
+                    const location = document.getElementById('log-input-location')?.value.trim();
+                    const people = document.getElementById('log-input-people')?.value.trim();
+                    const era = document.getElementById('log-input-era')?.value || 'Crucial Era';
+
+                    const activeChips = Array.from(document.querySelectorAll('.ledger-chip.active-chip')).map(c => c.dataset.val);
+                    const outcome = activeChips.find(v => v.includes('Victory') || v.includes('Draw') || v.includes('Defeat') || v.includes('Lesson') || v.includes('Record')) || '';
+                    const role = activeChips.find(v => v === 'Starter' || v === 'Captain' || v === 'MVP') || '';
+
+                    let story = `${title}. A defining chapter in my ${era.toLowerCase()}`;
+                    if (role) story += ` stepping up as ${role}`;
+                    if (location) story += ` at ${location}`;
+                    story += `.`;
+
+                    if (outcome) {
+                        story += ` The contest concluded with a memorable ${outcome.toLowerCase()}.`;
+                    }
+                    if (people) {
+                        story += ` Sharing this moment alongside ${people} made the journey unforgettable.`;
+                    } else {
+                        story += ` Every minute of relentless preparation and dedication came alive when it mattered most.`;
+                    }
+
+                    const journalInput = document.getElementById('log-input-journal');
+                    if (journalInput) {
+                        journalInput.value = story;
+                        journalInput.classList.add('ring-2', 'ring-amber-400/50');
+                        setTimeout(() => journalInput.classList.remove('ring-2', 'ring-amber-400/50'), 600);
+                    }
+                    playSoftSound('chime');
+                });
+            }
+
+            // Wire Voice Dictation Button (Web Speech API)
+            const btnDictate = document.getElementById('btn-dictate-journal');
+            const dictateIcon = document.getElementById('dictate-icon');
+            const dictateLabel = document.getElementById('dictate-label');
+            let recognition = null;
+            let isRecording = false;
+
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (btnDictate) {
+                if (SpeechRec) {
+                    recognition = new SpeechRec();
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
+
+                    recognition.onstart = () => {
+                        isRecording = true;
+                        if (dictateIcon) dictateIcon.textContent = '🔴';
+                        if (dictateLabel) dictateLabel.textContent = 'Listening...';
+                        btnDictate.classList.add('bg-red-500/20', 'border-red-400', 'text-red-300', 'animate-pulse');
+                    };
+
+                    recognition.onresult = (event) => {
+                        let finalTranscript = '';
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript;
+                            }
+                        }
+                        if (finalTranscript) {
+                            const journalInput = document.getElementById('log-input-journal');
+                            if (journalInput) {
+                                const curr = journalInput.value.trim();
+                                journalInput.value = curr ? `${curr} ${finalTranscript.trim()}` : finalTranscript.trim();
+                            }
+                        }
+                    };
+
+                    recognition.onerror = (e) => {
+                        console.warn('Speech recognition error:', e.error);
+                        stopRecording();
+                    };
+
+                    recognition.onend = () => {
+                        stopRecording();
+                    };
+
+                    function stopRecording() {
+                        isRecording = false;
+                        if (dictateIcon) dictateIcon.textContent = '🎙️';
+                        if (dictateLabel) dictateLabel.textContent = 'Dictate';
+                        btnDictate.classList.remove('bg-red-500/20', 'border-red-400', 'text-red-300', 'animate-pulse');
+                    }
+
+                    btnDictate.addEventListener('click', () => {
+                        if (!isRecording) {
+                            try {
+                                recognition.start();
+                                playSoftSound('click');
+                            } catch (e) {
+                                console.warn(e);
+                            }
+                        } else {
+                            recognition.stop();
+                            stopRecording();
+                            playSoftSound('click');
+                        }
+                    });
+                } else {
+                    btnDictate.title = 'Voice dictation supported in Chrome, Edge, Safari';
+                    btnDictate.classList.add('opacity-60');
+                }
             }
 
             document.getElementById('btn-close-log-modal').addEventListener('click', () => {
@@ -8521,6 +9170,8 @@
                         if (currentMem.people) document.getElementById('log-input-people').value = currentMem.people;
                     }
 
+                    populateMilestonePresets(currentSport, isLifeMode);
+                    resetLedgerChips();
                     document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Add Memory to Node' : 'Add Milestone to Node';
                     modalLogPlay.classList.add('active');
                     playSoftSound('click');
@@ -13795,8 +14446,8 @@
                 if (avatarLimbs && avatarLimbs.eyes) {
                     const blinkCycle = time % 3.6;
                     const blinkProgress = (blinkCycle < 0.16) ? Math.sin((blinkCycle / 0.16) * Math.PI) : 0;
-                    const upRot = THREE.MathUtils.lerp(-0.45, 0.18, blinkProgress);
-                    const loRot = THREE.MathUtils.lerp(0.40, -0.15, blinkProgress);
+                    const upRot = THREE.MathUtils.lerp(-0.65, 0.15, blinkProgress);
+                    const loRot = THREE.MathUtils.lerp(0.55, -0.15, blinkProgress);
                     avatarLimbs.eyes.lidUpL.rotation.x = upRot;
                     avatarLimbs.eyes.lidLoL.rotation.x = loRot;
                     avatarLimbs.eyes.lidUpR.rotation.x = upRot;
