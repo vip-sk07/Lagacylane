@@ -3288,7 +3288,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.25;
+            renderer.toneMappingExposure = 0.90;
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -3300,10 +3300,10 @@
             controls.maxDistance = 60.0;
             controls.maxPolarAngle = Math.PI / 2.05;
 
-            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x22384a : 0x2b394d, isLifeMode ? 1.6 : 1.5);
+            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x0c1e28 : 0x09131f, isLifeMode ? 0.45 : 0.38);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x7dd3fc : 0xffffff, isLifeMode ? 1.8 : 1.6);
+            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x7dd3fc : 0xb0c4de, isLifeMode ? 0.75 : 0.55);
             dirLight.position.set(15, 45, 25);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
@@ -3311,11 +3311,11 @@
             dirLight.shadow.bias = -0.0001;
             scene.add(dirLight);
 
-            const fillLight = new THREE.DirectionalLight(0x64748b, 0.8);
+            const fillLight = new THREE.DirectionalLight(0x475569, 0.28);
             fillLight.position.set(-25, 30, -25);
             scene.add(fillLight);
 
-            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 2.5 : 1.6, 120, Math.PI / 3.0, 0.4);
+            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 0.6 : 0.25, 120, Math.PI / 3.0, 0.4);
             spotlight.position.set(0, 35, 0);
             scene.add(spotlight);
 
@@ -3360,9 +3360,9 @@
                         : (currentSport === 'track' ? 0x130909 : 0x08101a))));
                     scene.background = new THREE.Color(darkBg);
                     if (scene.fog) scene.fog.color = new THREE.Color(darkBg);
-                    ambientLight.color.setHex(isLifeMode ? 0x1e3a8a : 0x1e293b);
-                    ambientLight.intensity = isLifeMode ? 1.4 : 1.3;
-                    dirLight.intensity = isLifeMode ? 1.6 : 1.4;
+                    ambientLight.color.setHex(isLifeMode ? 0x0c1e28 : 0x09131f);
+                    ambientLight.intensity = isLifeMode ? 0.45 : 0.38;
+                    dirLight.intensity = isLifeMode ? 0.75 : 0.55;
                 }
 
                 // Invalidate textures cache and re-render nodes so procedural graphics match theme
@@ -4426,7 +4426,7 @@
                     pylonGroup.add(headGroup);
                     stadiumGroup.add(pylonGroup);
 
-                    const towerSpot = new THREE.SpotLight(0xfffbeb, 1.4, 75, Math.PI / 3.8, 0.55, 1.2);
+                    const towerSpot = new THREE.SpotLight(0xfffbeb, 0.45, 75, Math.PI / 3.8, 0.55, 1.2);
                     towerSpot.position.set(pos.x, pylonH, pos.z);
                     towerSpot.target.position.set(pos.x * 0.25, 0, pos.z * 0.25);
                     scene.add(towerSpot);
@@ -4989,8 +4989,34 @@
                                     });
                                 } else if (child.material) {
                                     child.material.side = THREE.DoubleSide;
-                                    if (child.material.emissive && child.material.emissiveIntensity !== undefined) {
-                                        child.material.emissiveIntensity = 1.35;
+                                    const mName = (child.name || '').toLowerCase();
+                                    const matName = (child.material.name || '').toLowerCase();
+                                    
+                                    if (mName.includes('turf') || matName.includes('turf')) {
+                                        child.material.roughness = 0.92;
+                                        child.material.metalness = 0.0;
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
+                                        
+                                        if (mName.includes('dark') || matName.includes('dark')) {
+                                            child.material.color.setHex(0x092b12); // Deep rich emerald turf
+                                        } else {
+                                            child.material.color.setHex(0x113e1a); // Mowed lawn stripe
+                                        }
+                                    } else if (mName.includes('track') || matName.includes('track')) {
+                                        child.material.roughness = 0.9;
+                                        child.material.metalness = 0.0;
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
+                                        child.material.color.setHex(0x4a180e); // Authentic clay/terracotta track
+                                    } else if (mName.includes('led') || matName.includes('led') || mName.includes('lamp')) {
+                                        if (child.material.emissiveIntensity !== undefined) {
+                                            child.material.emissiveIntensity = 0.85;
+                                        }
+                                    } else {
+                                        // Non-emissive physical elements (seats, goals, nets, trusses, concrete)
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
                                     }
                                 }
                             }
@@ -5002,6 +5028,9 @@
                         if (fieldMesh) fieldMesh.visible = false;
                         if (stadiumGroup) stadiumGroup.visible = false;
                         if (benchGroup) benchGroup.visible = false;
+                        if (stadiumSpotlights && stadiumSpotlights.length > 0) {
+                            stadiumSpotlights.forEach(spot => { spot.intensity = 0.20; });
+                        }
 
                         // Start 60-frame looping animations (fluttering flags, pulsing rings, beacon markers)
                         if (gltf.animations && gltf.animations.length > 0) {
@@ -6818,26 +6847,26 @@
 
                 // 5. Studio Three-Point Lighting for High-Fidelity Character Shading
                 if (!pedestalSpotlight) {
-                    pedestalSpotlight = new THREE.SpotLight(auraHex, 2.8, 32, Math.PI / 4.2, 0.35, 1.2);
+                    pedestalSpotlight = new THREE.SpotLight(auraHex, 0.95, 14, Math.PI / 5.5, 0.55, 1.2);
                     pedestalSpotlight.position.set(0, 15, 0);
                     pedestalSpotlight.target = avatarGroup;
                     pedestalSpotlight.castShadow = true;
                     scene.add(pedestalSpotlight);
 
                     // Front Key Light (Warm Key)
-                    const keyLight = new THREE.DirectionalLight(0xfff5ea, 1.6);
+                    const keyLight = new THREE.DirectionalLight(0xfff5ea, 0.80);
                     keyLight.position.set(2.5, 4.2, 5.0);
                     keyLight.target = avatarGroup;
                     scene.add(keyLight);
 
                     // Front Fill Light (Cool Soft Fill)
-                    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.9);
+                    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.40);
                     fillLight.position.set(-3.5, 3.5, 4.0);
                     fillLight.target = avatarGroup;
                     scene.add(fillLight);
 
                     // Back Rim Light (Athlete Silhouette / Hair Glow)
-                    const rimLight = new THREE.DirectionalLight(auraHex, 2.2);
+                    const rimLight = new THREE.DirectionalLight(auraHex, 0.85);
                     rimLight.position.set(0, 3.8, -3.5);
                     rimLight.target = avatarGroup;
                     scene.add(rimLight);

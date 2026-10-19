@@ -731,10 +731,16 @@
   function calcNodeCoords() {
     const count = MEM.length;
     if (count === 0) return;
-    const spacing = count > 1 ? Math.min(18, 140 / (count - 1)) : 18;
+    // Pitch center is Z = -80. Safe central pitch span is Z = -54 down to Z = -106 (52m span)
+    const startZ = -54;
+    const endZ = -106;
+    const totalSpan = endZ - startZ;
+    const step = count > 1 ? totalSpan / (count - 1) : 0;
+
     MEM.forEach((m, i) => {
-      m.x = (i % 2 ? 1 : -1) * (3.6 + (i % 3) * 1.5);
-      m.z = -10 - i * spacing;
+      // Lateral displacement alternating gently around center line (within ±4m, safely inside ±34m touchlines)
+      m.x = (i % 2 === 0 ? -1 : 1) * (2.8 + (i % 3) * 0.9);
+      m.z = count === 1 ? -80 : (startZ + i * step);
     });
   }
 
@@ -747,6 +753,7 @@
   G.environment = ENV;
 
   const gcam = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
+  gcam.position.set(0, 5.2, -38.5);
 
   // Ground surface texture customized per athlete sport
   const turf = tex(512, 512, (x, w, h) => {
@@ -799,7 +806,7 @@
       }
     } else {
       for (let i = 0; i < 8; i++) {
-        x.fillStyle = i % 2 ? '#246b34' : '#2d7a3d';
+        x.fillStyle = i % 2 ? '#0d3817' : '#13461e';
         x.fillRect(0, i * h / 8, w, h / 8);
       }
       for (let i = 0; i < 22000; i++) {
@@ -866,13 +873,41 @@
         G.remove(dynamicFieldGroup);
       }
       dynamicFieldGroup = gltf.scene;
+      window.dynamicFieldGroup = dynamicFieldGroup;
       dynamicFieldGroup.position.set(0, 0.05, -80);
+      if (sportKey === 'football' || sportKey === 'track') {
+        dynamicFieldGroup.rotation.y = Math.PI / 2;
+      }
       dynamicFieldGroup.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          const mName = (child.name || '').toLowerCase();
+          const matName = (child.material && child.material.name ? child.material.name : '').toLowerCase();
+          if (mName.includes('turf') || matName.includes('turf')) {
+            child.material.roughness = 0.92;
+            child.material.metalness = 0.0;
+            if (child.material.emissive) child.material.emissive.setHex(0x000000);
+            child.material.emissiveIntensity = 0;
+            if (mName.includes('dark') || matName.includes('dark')) {
+              child.material.color.setHex(0x092b12);
+            } else {
+              child.material.color.setHex(0x113e1a);
+            }
+          } else if (mName.includes('track') || matName.includes('track')) {
+            child.material.roughness = 0.9;
+            child.material.metalness = 0.0;
+            if (child.material.emissive) child.material.emissive.setHex(0x000000);
+            child.material.emissiveIntensity = 0;
+            child.material.color.setHex(0x4a180e);
+          } else if (!mName.includes('led') && !mName.includes('lamp') && !mName.includes('chalk')) {
+            if (child.material.emissive) child.material.emissive.setHex(0x000000);
+            child.material.emissiveIntensity = 0;
+          }
         }
       });
+      if (pitch) pitch.visible = false;
+      if (outer) outer.visible = false;
       G.add(dynamicFieldGroup);
     }, undefined, (err) => {
       console.warn('Sport GLB model notice (using procedural fallback):', err);
@@ -1010,6 +1045,7 @@
     }
 
     // Recompute 3D field coordinates
+    window.MEM = MEM;
     calcNodeCoords();
 
     // 1. Build Beacons, Light Pillars, Particle Fountains
@@ -1155,8 +1191,11 @@
   P.add(ring);
 
   P.scale.setScalar(1.4);
-  P.position.set(0, 0, 6);
+  P.position.set(0, 0, -48);
   G.add(P);
+  window.P = P;
+  window.G = G;
+  window.gcam = gcam;
 
   /* ------------------------------------------------------------------
      6. MEMORY INSPECTOR CARD & WALK/TOUR MECHANICS
@@ -1170,11 +1209,15 @@
     if (i < 0 || i >= MEM.length) return;
     sel = i;
     const n = MEM[i];
-    target = new THREE.Vector3(n.x + (n.x > 0 ? -2.4 : 2.4), 0, n.z + 3.6);
+    const offsetX = n.x >= 0 ? -2.2 : 2.2;
+    target = new THREE.Vector3(n.x + offsetX, 0, n.z + 3.2);
     walking = true;
+    window.target = target;
+    window.walking = true;
     $('#gcard').hidden = true;
     buildList();
   }
+  window.goTo = goTo;
 
   function arrive() {
     walking = false;
@@ -2034,7 +2077,7 @@
   addEventListener('resize', resize);
   resize();
 
-  const gl_pos = new THREE.Vector3(0, 5, 16), gl_look = new THREE.Vector3(0, 2, -4);
+  const gl_pos = new THREE.Vector3(0, 5.2, -38.5), gl_look = new THREE.Vector3(0, 2, -54);
   gcam.position.copy(gl_pos);
 
   let last = performance.now(), T = 0, mx = 0, my = 0;
@@ -2059,21 +2102,21 @@
         walking = false;
         target = null;
         stopTour();
-        P.position.x = clamp(P.position.x + kx * 8 * dt, -30, 30);
-        P.position.z = clamp(P.position.z + kz * 8 * dt, -165, 16);
+        P.position.x = clamp(P.position.x + kx * 8 * dt, -24, 24);
+        P.position.z = clamp(P.position.z + kz * 8 * dt, -118, -42);
         faceAng = Math.atan2(kx, kz);
         mv = true;
       } else if (walking && target) {
         const d = target.clone().sub(P.position);
         d.y = 0;
         const L = d.length();
-        if (L < 0.25) {
+        if (L < 0.65) {
           P.position.x = target.x;
           P.position.z = target.z;
           arrive();
         } else {
           d.normalize();
-          const sp = Math.min(L, 9.2 * dt);
+          const sp = Math.min(L, Math.max(24.0 * dt, L * 5.0 * dt));
           P.position.addScaledVector(d, sp);
           faceAng = Math.atan2(d.x, d.z);
           mv = true;
@@ -2123,8 +2166,10 @@
         ? new THREE.Vector3((P.position.x + MEM[sel].x) / 2, 2.4, (P.position.z + MEM[sel].z) / 2)
         : new THREE.Vector3(P.position.x * 0.6, 2, P.position.z - 6);
 
-      const pos = new THREE.Vector3(P.position.x * 0.5, 5.2, P.position.z + 10.5);
+      const pos = new THREE.Vector3(P.position.x * 0.5, 5.2, P.position.z + 9.5);
       gcam.position.lerp(pos, Math.min(1, dt * 2.5));
+      gcam.position.x = clamp(gcam.position.x, -22, 22);
+      gcam.position.z = clamp(gcam.position.z, -125, -34);
       gl_look.lerp(look, Math.min(1, dt * 3));
       gcam.lookAt(gl_look);
 
