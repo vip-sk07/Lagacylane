@@ -2906,6 +2906,13 @@
                 localStorage.setItem('legacylane_memories_v2', JSON.stringify(allMemoriesStore));
             }
 
+            // Expose state handles for testing and inspection
+            window.getActiveMemories = getActiveMemories;
+            window.saveMemoriesStore = saveMemoriesStore;
+            window.allMemoriesStore = allMemoriesStore;
+            window.isLifeMode = isLifeMode;
+            window.currentSport = currentSport;
+
             /* ------------------------------------------------------------------
                1B. DYNAMIC USER PROFILE RESOLVER (ZERO HARDCODES)
                ------------------------------------------------------------------ */
@@ -3305,10 +3312,12 @@
                ------------------------------------------------------------------ */
             const canvas = document.getElementById('webgl-canvas');
             const scene = new THREE.Scene();
+            window.scene = scene;
             scene.background = new THREE.Color(0x07111e);
             scene.fog = new THREE.FogExp2(0x07111e, 0.0055);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            window.camera = camera;
             const defaultCamPos = new THREE.Vector3(0, 1.75, 4.6);
             
             // Start elevated for cinematic intro animation
@@ -3316,6 +3325,7 @@
             camera.lookAt(0, 1.25, 0);
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+            window.renderer = renderer;
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -7081,6 +7091,14 @@
                 }
             }
             window.updateAthleteCustomizationLive = update3DJerseyAndCard;
+            window.updateAthleteCustomization = (custom) => {
+                const updated = Object.assign({}, getAthleteCustomization(), custom);
+                saveAthleteCustomization(updated);
+                update3DJerseyAndCard(updated);
+                return updated;
+            };
+            window.getAthleteCustomization = getAthleteCustomization;
+            window.saveAthleteCustomization = saveAthleteCustomization;
 
             const selectionRingGeo = new THREE.RingGeometry(0.95, 1.25, 32);
             const selectionRingMat = new THREE.MeshBasicMaterial({
@@ -7410,6 +7428,7 @@
                 updateActiveNode(activeNodeIndex);
                 updateSubBenchWidget();
             }
+            window.rebuild3DSpline = rebuild3DSpline;
 
             function updateHUDEmptyState() {
                 activeNodeIndex = -1;
@@ -8919,6 +8938,8 @@
                 updateActiveNode(index);
                 flyToNode(index, instant, openModal);
             }
+            window.visitNode = visitNode;
+            window.flyToNode = flyToNode;
 
             function toggleTour() {
                 if (isTourActive) {
@@ -9127,6 +9148,7 @@
                 }
                 playSoftSound('click');
             }
+            window.openInspectModalForNode = openInspectModalForNode;
 
             document.getElementById('snippet-clickable-area').addEventListener('click', () => {
                 visitNode(activeNodeIndex, true);
@@ -11738,6 +11760,7 @@
                 }
                 playSoftSound('chime');
             }
+            window.openProfileEditor = openProfileEditor;
 
             function closeProfileEditor() {
                 if (modalEditProfile) modalEditProfile.classList.remove('active');
