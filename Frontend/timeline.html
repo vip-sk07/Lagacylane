@@ -756,6 +756,12 @@
             </div>
 
             <!-- View Mode Tabs: Arena HQ vs 3D Trophy Room vs Dedicated 3D Walk -->
+            <!-- Arena Time Travel Dial (2018 - 2026) -->
+            <div id="arena-time-travel" class="tactical-glass px-3 py-1.5 rounded-2xl flex items-center gap-2 border border-amber-500/30 shadow-sm text-xs">
+                <span class="text-amber-400 font-bold flex items-center gap-1">⏳ <span id="time-dial-year-val">2026</span></span>
+                <input type="range" id="arena-year-slider" min="2018" max="2026" value="2026" class="w-18 sm:w-24 md:w-28 accent-amber-500 h-1.5 bg-stone-800 rounded-lg cursor-pointer" title="Time travel through career milestones">
+            </div>
+
             <div id="view-mode-tabs" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 shadow-sm border border-white/10">
                 <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Athlete Home Arena & Customization HQ">
                     🏟️ Arena HQ
@@ -1475,22 +1481,43 @@
 
             <form id="form-log-play" class="space-y-4">
                 
-                <!-- Guided Inspiration / Theme Selector (No hardcodes, just helpful sparks) -->
-                <div class="bg-stone-900/40 p-2.5 rounded-2xl border border-white/10 space-y-1">
+                <!-- 1-Tap Milestone Preset Selector (Zero-Typing Quick Setup) -->
+                <div class="bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 p-3 rounded-2xl border border-amber-400/30 space-y-2">
                     <div class="flex items-center justify-between">
-                        <label class="block text-[11px] font-mono text-amber-300 font-semibold uppercase tracking-wider">Inspiration Spark (Optional)</label>
-                        <span class="text-[10px] font-mono text-stone-400">Choose a theme to prompt your memory</span>
+                        <label for="log-milestone-preset" class="block text-[11px] font-mono text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="animate-pulse">⚡</span> 1-Tap Milestone Preset
+                        </label>
+                        <span class="text-[10px] font-mono text-stone-400">Select preset to auto-fill entire memory</span>
                     </div>
-                    <select id="log-inspiration-selector" class="w-full px-3 py-1.5 rounded-xl bg-stone-950 border border-white/15 text-stone-200 text-xs focus:border-amber-400 focus:outline-none cursor-pointer">
-                        <option value="">✨ Custom Milestone / Blank Slate</option>
-                        <option value="genesis">🌱 The Genesis: When your journey first began</option>
-                        <option value="obstacle">⚡ The Crucible: Overcoming a major obstacle or defeat</option>
-                        <option value="breakthrough">🏆 The Breakthrough: That clutch triumphant moment</option>
-                        <option value="turning_point">🍂 The Turning Point: A lesson that reshaped your perspective</option>
-                        <option value="graduation">🎓 Next Chapter: Advancing to higher competition or mastery</option>
-                        <option value="mentorship">🤝 The Mentor: Advice or teammate that lifted you up</option>
-                        <option value="peace">🕊️ Quiet Gratitude: A moment of calm and deep reflection</option>
+                    <select id="log-milestone-preset" class="w-full px-3 py-2 rounded-xl bg-stone-950 border border-amber-400/40 text-stone-100 text-xs font-medium focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none cursor-pointer">
+                        <option value="">✨ Custom / Blank Entry (Pick Preset to Auto-Fill)</option>
                     </select>
+
+                    <!-- Quick Ledger Chips (Outcome, Role, Setting, Crowd) -->
+                    <div class="pt-1 space-y-1.5">
+                        <div class="flex items-center justify-between text-[10px] font-mono text-stone-400">
+                            <span>Quick Match / Life Ledger Tags</span>
+                            <span class="text-stone-500">Tap to enrich</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="match-ledger-chips">
+                            <!-- Outcome -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Victory 🏆">🏆 Won</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Hard-Fought Draw 🤝">🤝 Draw</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="Gritty Defeat / Lesson 🌧️">🌧️ Lesson</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-amber-400 hover:text-amber-200 transition" data-group="outcome" data-val="New Personal Record ⚡">⚡ PR</button>
+                            <!-- Role -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="Starter">⭐ Starter</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="Captain">©️ Captain</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-cyan-400 hover:text-cyan-200 transition" data-group="role" data-val="MVP">🎖️ MVP</button>
+                            <!-- Atmosphere -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Home Fortress">🏟️ Home</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Away Derby">✈️ Away</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-purple-400 hover:text-purple-200 transition" data-group="setting" data-val="Night Match Under Floodlights">🌙 Night</button>
+                            <!-- People -->
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-emerald-400 hover:text-emerald-200 transition" data-group="people" data-val="Full Squad & Coach">👥 Squad</button>
+                            <button type="button" class="ledger-chip px-2.5 py-1 rounded-lg bg-stone-900 border border-white/10 text-stone-300 text-[11px] hover:border-emerald-400 hover:text-emerald-200 transition" data-group="people" data-val="Family & Parents">👨‍👩‍👧 Family</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Title & Date -->
@@ -1584,8 +1611,18 @@
 
                 <!-- Journal Entry -->
                 <div>
-                    <label class="block text-xs font-medium text-stone-300 mb-1">Reflective Journal Entry *</label>
-                    <textarea id="log-input-journal" rows="3" required placeholder="Write freely about what happened, how your heart and mind felt, and what echoes from this day..." class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-medium text-stone-300">Reflective Journal Entry *</label>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="btn-auto-story" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 text-[11px] font-medium flex items-center gap-1 transition">
+                                <span>✨</span> Auto-Story
+                            </button>
+                            <button type="button" id="btn-dictate-journal" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 text-[11px] font-medium flex items-center gap-1 transition" title="Dictate using voice">
+                                <span id="dictate-icon">🎙️</span> <span id="dictate-label">Dictate</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="log-input-journal" rows="3" required placeholder="Select a preset above or tap Auto-Story / Dictate to write instantly..." class="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-stone-100 text-xs focus:border-amber-400 focus:outline-none resize-none leading-relaxed"></textarea>
                 </div>
 
                 <!-- Multipart Multi-Photo Keepsakes Upload Box -->
@@ -2869,6 +2906,13 @@
                 localStorage.setItem('legacylane_memories_v2', JSON.stringify(allMemoriesStore));
             }
 
+            // Expose state handles for testing and inspection
+            window.getActiveMemories = getActiveMemories;
+            window.saveMemoriesStore = saveMemoriesStore;
+            window.allMemoriesStore = allMemoriesStore;
+            window.isLifeMode = isLifeMode;
+            window.currentSport = currentSport;
+
             /* ------------------------------------------------------------------
                1B. DYNAMIC USER PROFILE RESOLVER (ZERO HARDCODES)
                ------------------------------------------------------------------ */
@@ -3268,21 +3312,24 @@
                ------------------------------------------------------------------ */
             const canvas = document.getElementById('webgl-canvas');
             const scene = new THREE.Scene();
+            window.scene = scene;
             scene.background = new THREE.Color(0x07111e);
             scene.fog = new THREE.FogExp2(0x07111e, 0.0055);
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const defaultCamPos = new THREE.Vector3(0, 2.4, 6.8);
+            window.camera = camera;
+            const defaultCamPos = new THREE.Vector3(0, 1.75, 4.6);
             
             // Start elevated for cinematic intro animation
             camera.position.set(0, 5.0, 11.0);
             camera.lookAt(0, 1.25, 0);
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+            window.renderer = renderer;
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.25;
+            renderer.toneMappingExposure = 0.90;
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -3294,10 +3341,10 @@
             controls.maxDistance = 60.0;
             controls.maxPolarAngle = Math.PI / 2.05;
 
-            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x22384a : 0x2b394d, isLifeMode ? 1.6 : 1.5);
+            const ambientLight = new THREE.AmbientLight(isLifeMode ? 0x0c1e28 : 0x09131f, isLifeMode ? 0.45 : 0.38);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x7dd3fc : 0xffffff, isLifeMode ? 1.8 : 1.6);
+            const dirLight = new THREE.DirectionalLight(isLifeMode ? 0x7dd3fc : 0xb0c4de, isLifeMode ? 0.75 : 0.55);
             dirLight.position.set(15, 45, 25);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
@@ -3305,11 +3352,11 @@
             dirLight.shadow.bias = -0.0001;
             scene.add(dirLight);
 
-            const fillLight = new THREE.DirectionalLight(0x64748b, 0.8);
+            const fillLight = new THREE.DirectionalLight(0x475569, 0.28);
             fillLight.position.set(-25, 30, -25);
             scene.add(fillLight);
 
-            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 2.5 : 1.6, 120, Math.PI / 3.0, 0.4);
+            const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 0.6 : 0.25, 120, Math.PI / 3.0, 0.4);
             spotlight.position.set(0, 35, 0);
             scene.add(spotlight);
 
@@ -3354,9 +3401,9 @@
                         : (currentSport === 'track' ? 0x130909 : 0x08101a))));
                     scene.background = new THREE.Color(darkBg);
                     if (scene.fog) scene.fog.color = new THREE.Color(darkBg);
-                    ambientLight.color.setHex(isLifeMode ? 0x1e3a8a : 0x1e293b);
-                    ambientLight.intensity = isLifeMode ? 1.4 : 1.3;
-                    dirLight.intensity = isLifeMode ? 1.6 : 1.4;
+                    ambientLight.color.setHex(isLifeMode ? 0x0c1e28 : 0x09131f);
+                    ambientLight.intensity = isLifeMode ? 0.45 : 0.38;
+                    dirLight.intensity = isLifeMode ? 0.75 : 0.55;
                 }
 
                 // Invalidate textures cache and re-render nodes so procedural graphics match theme
@@ -4079,11 +4126,12 @@
                     roughness: 0.2,
                     metalness: 0.3
                 });
-                const goalNetMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
+                const goalNetMat = new THREE.MeshBasicMaterial({
+                    color: 0x64748b,
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.45
+                    opacity: 0.12,
+                    depthWrite: false
                 });
 
                 // 1. Stadium Grass Apron / Perimeter Surround
@@ -4419,7 +4467,7 @@
                     pylonGroup.add(headGroup);
                     stadiumGroup.add(pylonGroup);
 
-                    const towerSpot = new THREE.SpotLight(0xfffbeb, 1.4, 75, Math.PI / 3.8, 0.55, 1.2);
+                    const towerSpot = new THREE.SpotLight(0xfffbeb, 0.45, 75, Math.PI / 3.8, 0.55, 1.2);
                     towerSpot.position.set(pos.x, pylonH, pos.z);
                     towerSpot.target.position.set(pos.x * 0.25, 0, pos.z * 0.25);
                     scene.add(towerSpot);
@@ -4941,10 +4989,75 @@
                             if (child.isMesh) {
                                 child.castShadow = true;
                                 child.receiveShadow = true;
-                                if (child.material) {
+
+                                if (child.name && child.name.includes('Jumbotron')) {
+                                    // High-tech dark LED stadium screen with sleek cyber scoreboard graphics
+                                    const jbCanvas = document.createElement('canvas');
+                                    jbCanvas.width = 512; jbCanvas.height = 256;
+                                    const jbCtx = jbCanvas.getContext('2d');
+                                    jbCtx.fillStyle = '#060a12';
+                                    jbCtx.fillRect(0, 0, 512, 256);
+                                    jbCtx.strokeStyle = '#00d2ff';
+                                    jbCtx.lineWidth = 6;
+                                    jbCtx.strokeRect(6, 6, 500, 244);
+                                    
+                                    jbCtx.fillStyle = 'rgba(0, 210, 255, 0.15)';
+                                    jbCtx.fillRect(10, 10, 492, 40);
+                                    jbCtx.fillStyle = '#00d2ff';
+                                    jbCtx.font = 'bold 22px monospace';
+                                    jbCtx.textAlign = 'center';
+                                    jbCtx.fillText('LEGACYLANE ARENA • LIVE', 256, 38);
+                                    
+                                    jbCtx.fillStyle = '#ffffff';
+                                    jbCtx.font = '900 64px "Arial Black", sans-serif';
+                                    jbCtx.fillText('HOME   AWAY', 256, 120);
+                                    jbCtx.fillStyle = '#f59e0b';
+                                    jbCtx.font = '900 72px "Impact", monospace';
+                                    jbCtx.fillText('3  -  0', 256, 195);
+                                    
+                                    jbCtx.fillStyle = '#10b981';
+                                    jbCtx.font = 'bold 18px monospace';
+                                    jbCtx.fillText('● 90:00 FULL TIME', 256, 235);
+                                    
+                                    const jbTex = new THREE.CanvasTexture(jbCanvas);
+                                    child.material = new THREE.MeshStandardMaterial({
+                                        map: jbTex,
+                                        roughness: 0.3,
+                                        metalness: 0.5,
+                                        emissive: 0x00d2ff,
+                                        emissiveMap: jbTex,
+                                        emissiveIntensity: 0.45
+                                    });
+                                } else if (child.material) {
                                     child.material.side = THREE.DoubleSide;
-                                    if (child.material.emissive && child.material.emissiveIntensity !== undefined) {
-                                        child.material.emissiveIntensity = 1.35;
+                                    const mName = (child.name || '').toLowerCase();
+                                    const matName = (child.material.name || '').toLowerCase();
+                                    
+                                    if (mName.includes('turf') || matName.includes('turf')) {
+                                        child.material.roughness = 0.92;
+                                        child.material.metalness = 0.0;
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
+                                        
+                                        if (mName.includes('dark') || matName.includes('dark')) {
+                                            child.material.color.setHex(0x092b12); // Deep rich emerald turf
+                                        } else {
+                                            child.material.color.setHex(0x113e1a); // Mowed lawn stripe
+                                        }
+                                    } else if (mName.includes('track') || matName.includes('track')) {
+                                        child.material.roughness = 0.9;
+                                        child.material.metalness = 0.0;
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
+                                        child.material.color.setHex(0x4a180e); // Authentic clay/terracotta track
+                                    } else if (mName.includes('led') || matName.includes('led') || mName.includes('lamp')) {
+                                        if (child.material.emissiveIntensity !== undefined) {
+                                            child.material.emissiveIntensity = 0.85;
+                                        }
+                                    } else {
+                                        // Non-emissive physical elements (seats, goals, nets, trusses, concrete)
+                                        if (child.material.emissive) child.material.emissive.setHex(0x000000);
+                                        child.material.emissiveIntensity = 0;
                                     }
                                 }
                             }
@@ -4956,6 +5069,9 @@
                         if (fieldMesh) fieldMesh.visible = false;
                         if (stadiumGroup) stadiumGroup.visible = false;
                         if (benchGroup) benchGroup.visible = false;
+                        if (stadiumSpotlights && stadiumSpotlights.length > 0) {
+                            stadiumSpotlights.forEach(spot => { spot.intensity = 0.20; });
+                        }
 
                         // Start 60-frame looping animations (fluttering flags, pulsing rings, beacon markers)
                         if (gltf.animations && gltf.animations.length > 0) {
@@ -5076,6 +5192,112 @@
             benchRing.rotation.x = Math.PI / 2;
             benchRing.position.y = 0.04;
             benchGroup.add(benchRing);
+
+            // 3D AI COACH NPC & MENTOR RIG (Standing beside sideline bench)
+            let aiCoachGroup = null;
+            let aiCoachHead = null;
+
+            function buildAICoachNPC() {
+                if (aiCoachGroup) {
+                    scene.remove(aiCoachGroup);
+                }
+                aiCoachGroup = new THREE.Group();
+                aiCoachGroup.name = 'aiCoachNPC';
+                aiCoachGroup.position.set(4.8, 0, 1.2);
+                aiCoachGroup.rotation.y = -Math.PI * 0.45;
+
+                const coachSkinMat = new THREE.MeshPhysicalMaterial({ color: 0x8a5a3d, roughness: 0.55 });
+                const coachPoloMat = new THREE.MeshStandardMaterial({ color: 0x16325c, roughness: 0.5 });
+                const coachPantMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+                const coachHairMat = new THREE.MeshStandardMaterial({ color: 0xcfd4da, roughness: 0.7 });
+
+                // Coach Torso & Polo
+                const cTorso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.52, 0.25), coachPoloMat);
+                cTorso.position.set(0, 1.40, 0);
+                aiCoachGroup.add(cTorso);
+
+                const cCollar = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.016, 8, 24), coachPoloMat);
+                cCollar.rotation.x = Math.PI / 2;
+                cCollar.position.set(0, 1.66, 0.01);
+                aiCoachGroup.add(cCollar);
+
+                // Coach Head
+                aiCoachHead = new THREE.Group();
+                aiCoachHead.position.set(0, 1.82, 0);
+
+                const cHead = new THREE.Mesh(new THREE.SphereGeometry(0.155, 24, 20), coachSkinMat);
+                aiCoachHead.add(cHead);
+
+                const cHair = new THREE.Mesh(new THREE.SphereGeometry(0.160, 24, 18, 0, Math.PI * 2, 0, Math.PI * 0.46), coachHairMat);
+                cHair.position.set(0, 0.035, -0.015);
+                aiCoachHead.add(cHair);
+
+                // Spectacles
+                [-0.045, 0.045].forEach(gx => {
+                    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.003, 6, 16), new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8 }));
+                    rim.position.set(gx, 0.018, 0.145);
+                    aiCoachHead.add(rim);
+                });
+                const cBridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.004, 0.004), new THREE.MeshStandardMaterial({ color: 0xd4af37 }));
+                cBridge.position.set(0, 0.022, 0.145);
+                aiCoachHead.add(cBridge);
+                aiCoachGroup.add(aiCoachHead);
+
+                // Legs & Shoes
+                [-0.12, 0.12].forEach(lx => {
+                    const cLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.85, 16), coachPantMat);
+                    cLeg.position.set(lx, 0.68, 0);
+                    aiCoachGroup.add(cLeg);
+
+                    const cShoe = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.06, 0.24), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 }));
+                    cShoe.position.set(lx, 0.03, 0.03);
+                    aiCoachGroup.add(cShoe);
+                });
+
+                // Arms: Left holds Clipboard, Right rests at hip
+                const cArmL = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.05, 0.52, 14), coachPoloMat);
+                cArmL.position.set(-0.28, 1.30, 0.08);
+                cArmL.rotation.set(-0.55, 0, 0.15);
+                aiCoachGroup.add(cArmL);
+
+                const cArmR = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.05, 0.52, 14), coachPoloMat);
+                cArmR.position.set(0.28, 1.25, 0);
+                aiCoachGroup.add(cArmR);
+
+                // Tactical Coaching Clipboard
+                const cBoard = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.012), new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.6 }));
+                cBoard.position.set(-0.28, 1.05, 0.26);
+                cBoard.rotation.set(-0.6, 0.1, 0);
+                const cPaper = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.22), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+                cPaper.position.set(-0.28, 1.05, 0.268);
+                cPaper.rotation.set(-0.6, 0.1, 0);
+                aiCoachGroup.add(cBoard, cPaper);
+
+                // Floating Coach Hologram Badge
+                const badgeCanvas = document.createElement('canvas');
+                badgeCanvas.width = 256; badgeCanvas.height = 64;
+                const bCtx = badgeCanvas.getContext('2d');
+                bCtx.fillStyle = 'rgba(10, 20, 35, 0.88)';
+                bCtx.roundRect(4, 4, 248, 56, 12);
+                bCtx.fill();
+                bCtx.strokeStyle = '#00d2ff';
+                bCtx.lineWidth = 3;
+                bCtx.stroke();
+                bCtx.fillStyle = '#00d2ff';
+                bCtx.font = 'bold 20px monospace';
+                bCtx.textAlign = 'center';
+                bCtx.fillText('AI COACH • MENTOR', 128, 36);
+
+                const badgeTex = new THREE.CanvasTexture(badgeCanvas);
+                const badgeSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: badgeTex, transparent: true }));
+                badgeSprite.position.set(0, 2.15, 0);
+                badgeSprite.scale.set(1.1, 0.275, 1);
+                aiCoachGroup.add(badgeSprite);
+
+                scene.add(aiCoachGroup);
+                window.aiCoachGroup = aiCoachGroup;
+            }
+            buildAICoachNPC();
 
             // 3D YOUNGER SELF AVATAR SEATED ON THE BENCH
             const subAvatarGroup = new THREE.Group();
@@ -5533,25 +5755,31 @@
                 return texture;
             }
 
-            // Realistically Sculpted 3D Athlete Builder (Head, Hairstyle, Face, Arms, Torso, Legs, Pro Cleats)
+            // Realistically Sculpted 3D Athlete Builder (Anatomy, Face, 6 Hairstyles, Blinking Eyelids, Arms, V-Taper Jersey, Muscular Legs, Pro Cleats, Sport Equipment)
             function buildRealisticAthlete(customInput) {
                 const custom = customInput || getAthleteCustomization();
-                const athleteBodyGroup = new THREE.Group();
-                athleteBodyGroup.name = 'athleteBody';
+                const athleteGroup = new THREE.Group();
+                athleteGroup.name = 'athleteBody';
 
+                const isLife = typeof isLifeMode !== 'undefined' ? isLifeMode : false;
+                const sport = (typeof currentSport !== 'undefined' ? currentSport : 'football');
                 const skinTone = custom.skinTone || '#c89366';
                 const skinToneHex = parseInt(skinTone.replace('#', ''), 16) || 0xc89366;
-                const skinMat = new THREE.MeshStandardMaterial({
-                    color: skinToneHex,
-                    roughness: 0.62,
-                    metalness: 0.08
+                const skinColor = new THREE.Color(skinToneHex);
+
+                const skinMat = new THREE.MeshPhysicalMaterial({
+                    color: skinColor,
+                    roughness: 0.52,
+                    metalness: 0.04,
+                    clearcoat: 0.12,
+                    clearcoatRoughness: 0.35
                 });
 
-                const hairColorHex = parseInt((custom.hairColor || '#111111').replace('#', ''), 16) || 0x111111;
+                const hairColorHex = parseInt((custom.hairColor || '#1a1410').replace('#', ''), 16) || 0x1a1410;
                 const hairMat = new THREE.MeshStandardMaterial({
                     color: hairColorHex,
-                    roughness: 0.78,
-                    metalness: 0.12
+                    roughness: 0.58,
+                    metalness: 0.20
                 });
 
                 const kitPrimary = parseInt((custom.kitPrimary || '#00d2ff').replace('#', ''), 16) || 0x00d2ff;
@@ -5560,489 +5788,1119 @@
                 const socksColorHex = parseInt((custom.socksColor || '#00d2ff').replace('#', ''), 16) || 0x00d2ff;
                 const cleatsColorHex = parseInt((custom.cleatsColor || '#ccff00').replace('#', ''), 16) || 0xccff00;
 
-                const shortsMat = new THREE.MeshStandardMaterial({ color: shortsColorHex, roughness: 0.45 });
-                const socksMat = new THREE.MeshStandardMaterial({ color: socksColorHex, roughness: 0.42 });
+                // Procedural Eye Texture with Hazel Iris, Striations, Limbal Ring, Specular Reflection
+                function createRealisticEyeTexture() {
+                    const cv = document.createElement('canvas');
+                    cv.width = 256; cv.height = 256;
+                    const ctx = cv.getContext('2d');
+
+                    // Sclera
+                    const scleraGrad = ctx.createRadialGradient(128, 128, 40, 128, 128, 128);
+                    scleraGrad.addColorStop(0, '#ffffff');
+                    scleraGrad.addColorStop(0.85, '#f1f5f9');
+                    scleraGrad.addColorStop(1, '#94a3b8');
+                    ctx.fillStyle = scleraGrad;
+                    ctx.fillRect(0, 0, 256, 256);
+
+                    // Limbal ring (outer iris border)
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 80, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fill();
+
+                    // Hazel / Amber / Chestnut Iris
+                    const irisGrad = ctx.createRadialGradient(128, 128, 15, 128, 128, 76);
+                    irisGrad.addColorStop(0, '#381a05');
+                    irisGrad.addColorStop(0.4, '#854d19');
+                    irisGrad.addColorStop(0.8, '#4a250a');
+                    irisGrad.addColorStop(1, '#111827');
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 76, 0, Math.PI * 2);
+                    ctx.fillStyle = irisGrad;
+                    ctx.fill();
+
+                    // Radial Striations
+                    ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+                    ctx.lineWidth = 1.5;
+                    for (let a = 0; a < Math.PI * 2; a += Math.PI / 18) {
+                        ctx.beginPath();
+                        ctx.moveTo(128 + Math.cos(a) * 22, 128 + Math.sin(a) * 22);
+                        ctx.lineTo(128 + Math.cos(a) * 70, 128 + Math.sin(a) * 70);
+                        ctx.stroke();
+                    }
+
+                    // Deep Pupil
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 28, 0, Math.PI * 2);
+                    ctx.fillStyle = '#020617';
+                    ctx.fill();
+
+                    // Specular Highlight
+                    ctx.beginPath();
+                    ctx.arc(106, 106, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fill();
+
+                    const tex = new THREE.CanvasTexture(cv);
+                    tex.needsUpdate = true;
+                    return tex;
+                }
+
+                // Procedural Multi-Material Jersey Textures (Front & Back isolated)
+                function createJerseyTextures(c) {
+                    const primary = c.kitPrimary || '#00d2ff';
+                    const accent = c.kitAccent || '#ffffff';
+                    const pattern = c.kitPattern || 'stripes';
+                    const number = String(c.squadNumber || (isLife ? '✦' : '7'));
+                    const name = (c.jerseyName || (isLife ? 'SEEKER' : 'LEGACY')).toUpperCase();
+
+                    function drawBasePattern(ctx, w, h) {
+                        ctx.fillStyle = primary;
+                        ctx.fillRect(0, 0, w, h);
+
+                        if (pattern === 'stripes') {
+                            ctx.fillStyle = accent;
+                            const stripeW = w / 7;
+                            for (let x = stripeW; x < w; x += stripeW * 2) {
+                                ctx.fillRect(x, 0, stripeW, h);
+                            }
+                        } else if (pattern === 'sash') {
+                            ctx.save();
+                            ctx.fillStyle = accent;
+                            ctx.beginPath();
+                            ctx.moveTo(w * 0.15, 0);
+                            ctx.lineTo(w * 0.45, 0);
+                            ctx.lineTo(w * 0.85, h);
+                            ctx.lineTo(w * 0.55, h);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                        } else if (pattern === 'hoops') {
+                            ctx.fillStyle = accent;
+                            const hoopH = h / 7;
+                            for (let y = hoopH; y < h; y += hoopH * 2) {
+                                ctx.fillRect(0, y, w, hoopH);
+                            }
+                        } else if (pattern === 'gradient') {
+                            const grad = ctx.createLinearGradient(0, 0, 0, h);
+                            grad.addColorStop(0, primary);
+                            grad.addColorStop(1, accent);
+                            ctx.fillStyle = grad;
+                            ctx.fillRect(0, 0, w, h);
+                        } else if (pattern === 'cyber' || pattern === 'cyber_chevrons') {
+                            ctx.fillStyle = accent;
+                            for (let y = 80; y < h; y += 140) {
+                                ctx.beginPath();
+                                ctx.moveTo(w / 2, y);
+                                ctx.lineTo(w * 0.85, y + 60);
+                                ctx.lineTo(w * 0.80, y + 85);
+                                ctx.lineTo(w / 2, y + 35);
+                                ctx.lineTo(w * 0.20, y + 85);
+                                ctx.lineTo(w * 0.15, y + 60);
+                                ctx.closePath();
+                                ctx.fill();
+                            }
+                        }
+                    }
+
+                    // FRONT
+                    const fCv = document.createElement('canvas');
+                    fCv.width = 512; fCv.height = 512;
+                    const fCtx = fCv.getContext('2d');
+                    drawBasePattern(fCtx, 512, 512);
+
+                    // Front Swoosh
+                    fCtx.save();
+                    fCtx.fillStyle = accent;
+                    fCtx.beginPath();
+                    fCtx.moveTo(125, 145);
+                    fCtx.quadraticCurveTo(165, 130, 200, 140);
+                    fCtx.quadraticCurveTo(170, 155, 125, 145);
+                    fCtx.fill();
+                    fCtx.restore();
+
+                    // Front Club Crest
+                    fCtx.save();
+                    fCtx.translate(355, 140);
+                    fCtx.beginPath();
+                    fCtx.moveTo(0, -28);
+                    fCtx.lineTo(24, -28);
+                    fCtx.quadraticCurveTo(26, 16, 0, 32);
+                    fCtx.quadraticCurveTo(-26, 16, -24, -28);
+                    fCtx.closePath();
+                    fCtx.fillStyle = '#0a101d';
+                    fCtx.fill();
+                    fCtx.lineWidth = 3;
+                    fCtx.strokeStyle = '#f59e0b';
+                    fCtx.stroke();
+                    fCtx.fillStyle = '#fbbf24';
+                    fCtx.font = '14px sans-serif';
+                    fCtx.textAlign = 'center';
+                    fCtx.fillText('★', 0, -34);
+                    fCtx.fillStyle = '#f59e0b';
+                    fCtx.font = '900 20px "Arial Black", sans-serif';
+                    fCtx.textBaseline = 'middle';
+                    fCtx.fillText(isLife ? '✦' : 'LL', 0, 2);
+                    fCtx.restore();
+
+                    // Front Squad Number
+                    fCtx.save();
+                    fCtx.fillStyle = accent;
+                    fCtx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+                    fCtx.shadowBlur = 6;
+                    fCtx.font = '900 110px "Impact", "Arial Black", sans-serif';
+                    fCtx.textAlign = 'center';
+                    fCtx.textBaseline = 'middle';
+                    fCtx.fillText(number, 256, 310);
+                    fCtx.restore();
+
+                    // BACK
+                    const bCv = document.createElement('canvas');
+                    bCv.width = 512; bCv.height = 512;
+                    const bCtx = bCv.getContext('2d');
+                    drawBasePattern(bCtx, 512, 512);
+
+                    bCtx.save();
+                    bCtx.fillStyle = accent;
+                    bCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    bCtx.shadowBlur = 4;
+                    bCtx.font = '900 48px "Arial Black", sans-serif';
+                    bCtx.textAlign = 'center';
+                    const shortName = name.trim().split(' ').pop().slice(0, 12);
+                    bCtx.fillText(shortName, 256, 130);
+
+                    bCtx.font = '900 200px "Impact", "Arial Black", sans-serif';
+                    bCtx.strokeStyle = '#050811';
+                    bCtx.lineWidth = 12;
+                    bCtx.strokeText(number, 256, 330);
+                    bCtx.fillText(number, 256, 330);
+                    bCtx.restore();
+
+                    return {
+                        front: new THREE.CanvasTexture(fCv),
+                        back: new THREE.CanvasTexture(bCv)
+                    };
+                }
+
+                const jTex = createJerseyTextures(custom);
+                const sideMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const topMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const bottomMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.6 });
+                const frontMat = new THREE.MeshStandardMaterial({ map: jTex.front, roughness: 0.6 });
+                const backMat = new THREE.MeshStandardMaterial({ map: jTex.back, roughness: 0.6 });
+                const jerseyMaterials = [sideMat, sideMat, topMat, bottomMat, frontMat, backMat];
+
+                const collarMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.45 });
+                const shortsMat = new THREE.MeshStandardMaterial({ color: shortsColorHex, roughness: 0.52 });
+                const socksMat = new THREE.MeshStandardMaterial({ color: socksColorHex, roughness: 0.48 });
                 const sockTrimMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.4 });
-                const cleatsMat = new THREE.MeshStandardMaterial({ color: cleatsColorHex, roughness: 0.25, metalness: 0.35 });
-                const soleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
-                const studMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9, roughness: 0.2 });
+                const cleatsUpperMat = new THREE.MeshStandardMaterial({ color: cleatsColorHex, roughness: 0.24, metalness: 0.32 });
+                const soleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.85 });
+                const studMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.95, roughness: 0.15 });
 
-                // 1. HEAD & ANATOMICAL FACE (Head pivot at y = 1.90)
+                // ==============================================================
+                // 1. ANATOMICALLY SCULPTED ATHLETE HEAD & FACE (Parametric Head, Blinking Lids, Dynamic Lips)
+                // ==============================================================
+                const cl = (v, min, max) => Math.min(Math.max(v, min), max);
+                const sm = (e0, e1, x) => {
+                    const t = cl((x - e0) / (e1 - e0), 0, 1);
+                    return t * t * (3 - 2 * t);
+                };
+                const gs = (x, y, cx, cy, sx, sy) => Math.exp(-(((x - cx) ** 2) / (2 * sx * sx) + ((y - cy) ** 2) / (2 * sy * sy)));
+                const hw = (uy, pw) => {
+                    const a = Math.abs(uy);
+                    const p = uy >= 0 ? 2.1 : pw;
+                    return Math.pow(Math.max(0, 1 - Math.pow(a, p)), 1 / p);
+                };
+
+                const RX = 0.088, RY = 0.114, RZf = 0.098, RZb = 0.106;
+                const sx = RX / 0.081, sy = RY / 0.108;
+                const pw = 2.45;
+
+                function bumpZ(px, py) {
+                    const x = px / sx, y = py / sy, ax = Math.abs(x);
+                    let z = 0;
+                    z += 0.0062 * Math.exp(-((y - 0.040) ** 2) / (2 * (0.0066 ** 2))) * sm(0.062, 0.012, ax); // brow ridge
+                    z -= 0.0050 * gs(ax, y, 0.031, 0.008, 0.016, 0.012);                                      // eye socket
+                    z += 0.0068 * gs(ax, y, 0.052, -0.020, 0.020, 0.016);                                     // cheekbone
+                    z += 0.0075 * gs(ax, y, 0.044, -0.046, 0.024, 0.020);                                     // cheek fullness
+                    z += 0.0030 * gs(x, y, 0, 0.07, 0.045, 0.02);                                             // forehead
+                    z -= 0.0030 * gs(ax, y, 0.070, 0.030, 0.015, 0.030);                                      // temple
+                    z += 0.0105 * gs(x, y, 0, 0.0, 0.0054, 0.034);                                            // nose bridge
+                    z += 0.0165 * gs(x, y, 0, -0.031, 0.0086, 0.0078);                                        // nose tip
+                    z += 0.0080 * gs(ax, y, 0.0138, -0.0315, 0.0062, 0.0070);                                 // nose wings
+                    z -= 0.0028 * gs(ax, y, 0.0085, -0.0415, 0.0055, 0.0035);                                 // under nostrils
+                    z += 0.0042 * gs(x, y, 0, -0.060, 0.028, 0.015);                                          // lip pad
+                    z -= 0.0012 * gs(x, y, 0, -0.0505, 0.0032, 0.0075);                                       // philtrum
+                    z += 0.0085 * gs(x, y, 0, -0.101, 0.020, 0.013);                                          // chin
+                    z -= 0.0028 * gs(x, y, 0, -0.0795, 0.016, 0.0045);                                        // lower-lip groove
+                    return z;
+                }
+
+                function surfZ(x, y) {
+                    const uy = cl(y / RY, -0.999, 0.999);
+                    const w = hw(uy, pw);
+                    const dx = cl(x / (w * RX), -0.995, 0.995);
+                    const dz = Math.sqrt(Math.max(0, 1 - dx * dx));
+                    return dz * w * RZf + sm(0, 0.5, dz) * bumpZ(x, y);
+                }
+
+                // Sculpted continuous cranium mesh
+                const headGeo = new THREE.SphereGeometry(1, 112, 84);
+                headGeo.rotateY(-Math.PI / 2);
+                const hPos = headGeo.attributes.position;
+                const hUv = headGeo.attributes.uv;
+                for (let i = 0; i < hPos.count; i++) {
+                    const ux = hPos.getX(i), uy = hPos.getY(i), uz = hPos.getZ(i);
+                    const r = Math.hypot(ux, uz);
+                    const dx = r > 1e-6 ? ux / r : 0;
+                    const dz = r > 1e-6 ? uz / r : 1;
+                    const w = hw(uy, pw);
+                    const px = dx * w * RX;
+                    const py = uy * RY;
+                    let pz = dz * w * (dz > 0 ? RZf : RZb);
+                    pz += sm(0, 0.5, dz) * bumpZ(px, py);
+                    hPos.setXYZ(i, px, py, pz);
+                    hUv.setXY(i, cl((px + RX) / (2 * RX), 0, 1), cl((py + RY) / (2 * RY), 0, 1));
+                }
+                headGeo.computeVertexNormals();
+
+                // Soft anatomical face painting (blush, eye contours, nostrils, warm skin tone)
+                function paintFace(skinHex) {
+                    const W = 1024;
+                    const c = document.createElement('canvas');
+                    c.width = c.height = W;
+                    const x = c.getContext('2d');
+                    const X = v => (v + RX) / (2 * RX) * W;
+                    const Y = v => (RY - v) / (2 * RY) * W;
+
+                    x.fillStyle = skinHex;
+                    x.fillRect(0, 0, W, W);
+
+                    const baseColor = new THREE.Color(skinHex);
+                    const sr = [baseColor.r * 255, baseColor.g * 255, baseColor.b * 255];
+                    const mixRGB = (a, b, t) => a.map((v, idx) => v + (b[idx] - v) * t);
+
+                    const blush = mixRGB(sr, [205, 70, 75], 0.45);
+                    const dark = sr.map(v => v * 0.65);
+                    const warm = mixRGB(sr, [150, 70, 60], 0.35);
+
+                    const blob = (cx, cy, rx, ry, rgb, a) => {
+                        x.save();
+                        x.translate(X(cx * sx), Y(cy * sy));
+                        x.scale(rx * sx / (2 * RX) * W, ry * sy / (2 * RY) * W);
+                        const grad = x.createRadialGradient(0, 0, 0, 0, 0, 1);
+                        grad.addColorStop(0, `rgba(${rgb.map(Math.round).join(',')},${a})`);
+                        grad.addColorStop(1, `rgba(${rgb.map(Math.round).join(',')},0)`);
+                        x.fillStyle = grad;
+                        x.beginPath();
+                        x.arc(0, 0, 1, 0, Math.PI * 2);
+                        x.fill();
+                        x.restore();
+                    };
+
+                    blob(0, 0.075, 0.045, 0.028, [255, 255, 255], 0.05);
+                    [-1, 1].forEach(s => {
+                        blob(s * 0.046, -0.040, 0.030, 0.024, blush, 0.30);
+                        blob(s * 0.032, -0.004, 0.020, 0.009, mixRGB(sr, [120, 90, 150], 0.25), 0.18);
+                        blob(s * 0.032, 0.017, 0.022, 0.013, dark, 0.25);
+                        blob(s * 0.058, 0.015, 0.012, 0.02, warm, 0.10);
+                    });
+                    blob(0, -0.033, 0.010, 0.009, blush, 0.22);
+                    blob(0, -0.064, 0.030, 0.016, warm, 0.14);
+                    blob(0, -0.102, 0.016, 0.010, [255, 255, 255], 0.04);
+
+                    // Delicate nostril shading
+                    x.fillStyle = 'rgba(55, 22, 20, 0.65)';
+                    [-1, 1].forEach(s => {
+                        x.beginPath();
+                        x.ellipse(X(s * 0.0083 * sx), Y(-0.0412 * sy), 0.0032 * sx / (2 * RX) * W, 0.0021 * sy / (2 * RY) * W, 0, 0, Math.PI * 2);
+                        x.fill();
+                    });
+
+                    // Subtle micro-skin pores
+                    for (let i = 0; i < 2200; i++) {
+                        const px = Math.random() * W;
+                        const py = Math.random() * W;
+                        x.fillStyle = (Math.random() < 0.5) ? 'rgba(255, 235, 225, 0.02)' : 'rgba(90, 50, 40, 0.02)';
+                        x.fillRect(px, py, 2, 2);
+                    }
+
+                    const tex = new THREE.CanvasTexture(c);
+                    tex.encoding = THREE.sRGBEncoding;
+                    tex.needsUpdate = true;
+                    return tex;
+                }
+
+                const faceMap = paintFace(skinTone);
+                const realisticSkinMat = new THREE.MeshPhysicalMaterial({
+                    map: faceMap,
+                    roughness: 0.54,
+                    metalness: 0.02,
+                    clearcoat: 0.10,
+                    clearcoatRoughness: 0.45
+                });
+
                 const headGroup = new THREE.Group();
-                headGroup.position.set(0, 1.90, 0);
+                headGroup.position.set(0, 1.86, 0);
 
-                // Muscular Neck connecting torso to head
-                const neckGeo = new THREE.CylinderGeometry(0.11, 0.14, 0.22, 18);
-                const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-                neckMesh.position.set(0, -0.16, 0.01);
+                const headMesh = new THREE.Mesh(headGeo, realisticSkinMat);
+                headMesh.castShadow = true;
+                headMesh.receiveShadow = true;
+                headGroup.add(headMesh);
+
+                // Muscular Neck syncing seamlessly with collar
+                const neckGeo = new THREE.CylinderGeometry(0.052, 0.076, 0.26, 28);
+                const neckMesh = new THREE.Mesh(neckGeo, realisticSkinMat);
+                neckMesh.position.set(0, -RY + 0.015, -0.012);
+                neckMesh.rotation.x = 0.10;
                 headGroup.add(neckMesh);
 
-                // Anatomical Cranium
-                const craniumGeo = new THREE.SphereGeometry(0.185, 24, 20);
-                craniumGeo.scale(1.0, 1.14, 1.12);
-                const craniumMesh = new THREE.Mesh(craniumGeo, skinMat);
-                craniumMesh.position.set(0, 0.04, -0.015);
-                headGroup.add(craniumMesh);
+                // Embedded Anatomical Almond Eyes & Blinking Eyelid Rig
+                const eyeTex = createRealisticEyeTexture();
+                const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex });
+                const ER = 0.0162;
+                const EX = 0.0315 * sx;
+                const EYy = 0.006 * sy;
 
-                // Defined Jawline
-                const jawGeo = new THREE.CylinderGeometry(0.155, 0.095, 0.16, 16);
-                const jawMesh = new THREE.Mesh(jawGeo, skinMat);
-                jawMesh.position.set(0, -0.065, 0.02);
-                jawMesh.rotation.x = 0.08;
-                headGroup.add(jawMesh);
+                let eyeMeshL, eyeMeshR, lidUpL, lidLoL, lidUpR, lidLoR;
 
-                // Defined Chin
-                const chinGeo = new THREE.SphereGeometry(0.062, 14, 12);
-                const chinMesh = new THREE.Mesh(chinGeo, skinMat);
-                chinMesh.position.set(0, -0.135, 0.075);
-                headGroup.add(chinMesh);
+                [-1, 1].forEach(side => {
+                    const isLeft = side < 0;
+                    const x = side * EX;
+                    const z = surfZ(x, EYy) - ER * 0.48;
 
-                // Brow Ridge
-                const browGeo = new THREE.BoxGeometry(0.22, 0.04, 0.05);
-                const browMesh = new THREE.Mesh(browGeo, skinMat);
-                browMesh.position.set(0, 0.055, 0.165);
-                browMesh.rotation.x = -0.05;
-                headGroup.add(browMesh);
+                    const eg = new THREE.Group();
+                    eg.position.set(x, EYy, z);
 
-                // Eyes: Sclera + Iris
-                const scleraGeo = new THREE.SphereGeometry(0.032, 12, 10);
-                const scleraMat = new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.2 });
-                const irisGeo = new THREE.SphereGeometry(0.016, 10, 8);
-                const irisMat = new THREE.MeshStandardMaterial({ color: 0x1c120c, roughness: 0.2 });
+                    const gaze = new THREE.Group();
+                    eg.add(gaze);
 
-                const eyeL = new THREE.Mesh(scleraGeo, scleraMat);
-                eyeL.position.set(-0.062, 0.032, 0.168);
-                headGroup.add(eyeL);
-                const irisL = new THREE.Mesh(irisGeo, irisMat);
-                irisL.position.set(-0.062, 0.032, 0.192);
-                headGroup.add(irisL);
+                    const ball = new THREE.Mesh(new THREE.SphereGeometry(ER, 36, 24), eyeMat);
+                    ball.rotation.y = -Math.PI / 2;
+                    gaze.add(ball);
 
-                const eyeR = new THREE.Mesh(scleraGeo, scleraMat);
-                eyeR.position.set(0.062, 0.032, 0.168);
-                headGroup.add(eyeR);
-                const irisR = new THREE.Mesh(irisGeo, irisMat);
-                irisR.position.set(0.062, 0.032, 0.192);
-                headGroup.add(irisR);
+                    // Clearcoat Cornea Specular Shell
+                    const cornea = new THREE.Mesh(
+                        new THREE.SphereGeometry(ER * 1.018, 30, 20),
+                        new THREE.MeshPhysicalMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.12,
+                            roughness: 0,
+                            metalness: 0,
+                            clearcoat: 1,
+                            clearcoatRoughness: 0,
+                            depthWrite: false
+                        })
+                    );
+                    gaze.add(cornea);
 
-                // Sculpted Nose
-                const noseGeo = new THREE.ConeGeometry(0.032, 0.09, 8);
-                const noseMesh = new THREE.Mesh(noseGeo, skinMat);
-                noseMesh.rotation.x = 1.35;
-                noseMesh.position.set(0, -0.012, 0.192);
-                headGroup.add(noseMesh);
+                    // Sculpted Eyelids with baked facial UV coordinates
+                    const RL = ER * 1.085;
+                    const upGroup = new THREE.Group();
+                    const loGroup = new THREE.Group();
 
-                // Mouth / Athletic Lips
-                const mouthGeo = new THREE.BoxGeometry(0.075, 0.018, 0.022);
-                const lipMat = new THREE.MeshStandardMaterial({
-                    color: skinToneHex,
-                    roughness: 0.5
+                    const ug = new THREE.SphereGeometry(RL, 36, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                    const lg = new THREE.SphereGeometry(RL, 36, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+
+                    const bake = (geo, rot) => {
+                        const m4 = new THREE.Matrix4().makeRotationX(rot);
+                        const v = new THREE.Vector3();
+                        const pa = geo.attributes.position;
+                        const uv = geo.attributes.uv;
+                        for (let i = 0; i < pa.count; i++) {
+                            v.set(pa.getX(i), pa.getY(i), pa.getZ(i)).applyMatrix4(m4);
+                            uv.setXY(i, cl((x + v.x + RX) / (2 * RX), 0, 1), cl((EYy + v.y + RY) / (2 * RY), 0, 1));
+                        }
+                    };
+                    bake(ug, -0.35);
+                    bake(lg, 0.45);
+
+                    const um = new THREE.Mesh(ug, realisticSkinMat);
+                    const lm = new THREE.Mesh(lg, realisticSkinMat);
+                    upGroup.add(um);
+                    loGroup.add(lm);
+
+                    // Rest rotation: Eyes wide open
+                    upGroup.rotation.x = -0.65;
+                    loGroup.rotation.x = 0.55;
+
+                    const lashGeo = new THREE.TorusGeometry(RL * 1.002, 0.00085, 6, 36, Math.PI * 0.9);
+                    lashGeo.rotateZ(Math.PI * 0.05);
+                    lashGeo.rotateX(Math.PI / 2);
+                    const lash = new THREE.Mesh(lashGeo, new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 }));
+                    upGroup.add(lash);
+
+                    eg.add(upGroup, loGroup);
+                    headGroup.add(eg);
+
+                    if (isLeft) {
+                        eyeMeshL = ball;
+                        lidUpL = upGroup;
+                        lidLoL = loGroup;
+                    } else {
+                        eyeMeshR = ball;
+                        lidUpR = upGroup;
+                        lidLoR = loGroup;
+                    }
+
+                    // Sculpted Natural Eyebrows
+                    const browCurve = new THREE.CatmullRomCurve3([
+                        new THREE.Vector3(side * 0.012 * sx, 0.0335 * sy, surfZ(side * 0.012 * sx, 0.0335 * sy) + 0.0015),
+                        new THREE.Vector3(side * 0.032 * sx, 0.0405 * sy, surfZ(side * 0.032 * sx, 0.0405 * sy) + 0.0022),
+                        new THREE.Vector3(side * 0.052 * sx, 0.0345 * sy, surfZ(side * 0.052 * sx, 0.0345 * sy) + 0.0016)
+                    ]);
+                    const browGeo = new THREE.TubeGeometry(browCurve, 18, 0.0036, 8, false);
+                    const browMesh = new THREE.Mesh(browGeo, new THREE.MeshStandardMaterial({ color: hairColorHex, roughness: 0.85 }));
+                    headGroup.add(browMesh);
+
+                    // Anatomical Ear with Inner Concha Depth
+                    const earOuterGeo = new THREE.SphereGeometry(1, 24, 18);
+                    earOuterGeo.scale(0.0055, 0.0235 * sy, 0.0155);
+                    const earOuter = new THREE.Mesh(earOuterGeo, realisticSkinMat);
+
+                    const earInnerGeo = new THREE.SphereGeometry(1, 16, 12);
+                    earInnerGeo.scale(0.0040, 0.014 * sy, 0.009);
+                    const earInner = new THREE.Mesh(earInnerGeo, new THREE.MeshStandardMaterial({ color: skinColor.clone().offsetHSL(0, 0.15, -0.14), roughness: 0.7 }));
+                    earInner.position.x = side * 0.0032;
+
+                    const earGroup = new THREE.Group();
+                    earGroup.add(earOuter, earInner);
+                    earGroup.position.set(side * RX * 0.985, -0.004 * sy, -0.0035);
+                    earGroup.rotation.set(0, side * 0.20, side * -0.05);
+                    headGroup.add(earGroup);
                 });
-                lipMat.color.offsetHSL(0, 0.08, -0.07);
-                const mouthMesh = new THREE.Mesh(mouthGeo, lipMat);
-                mouthMesh.position.set(0, -0.082, 0.155);
-                headGroup.add(mouthMesh);
 
-                // Ears
-                const earGeo = new THREE.SphereGeometry(0.048, 12, 10);
-                earGeo.scale(0.35, 1.0, 0.7);
-                const earL = new THREE.Mesh(earGeo, skinMat);
-                earL.position.set(-0.19, 0.015, -0.01);
-                headGroup.add(earL);
-                const earR = new THREE.Mesh(earGeo, skinMat);
-                earR.position.set(0.19, 0.015, -0.01);
-                headGroup.add(earR);
+                // Sculpted Organic Athletic Lips & Oral Cavity (Natural Warm Flush)
+                const lipColor = skinColor.clone().lerp(new THREE.Color(0xb25858), 0.32);
+                const lipMat = new THREE.MeshStandardMaterial({ color: lipColor, roughness: 0.48, metalness: 0.01 });
+                const Y0 = -0.0635 * sy;
+                const upperCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.024 * sx, Y0 - 0.002, surfZ(-0.024 * sx, Y0 - 0.002) + 0.0012),
+                    new THREE.Vector3(-0.010 * sx, Y0 + 0.003, surfZ(-0.010 * sx, Y0 + 0.003) + 0.0022),
+                    new THREE.Vector3(0, Y0 + 0.001, surfZ(0, Y0 + 0.001) + 0.0020),
+                    new THREE.Vector3(0.010 * sx, Y0 + 0.003, surfZ(0.010 * sx, Y0 + 0.003) + 0.0022),
+                    new THREE.Vector3(0.024 * sx, Y0 - 0.002, surfZ(0.024 * sx, Y0 - 0.002) + 0.0012)
+                ]);
+                const upperLip = new THREE.Mesh(new THREE.TubeGeometry(upperCurve, 20, 0.0034, 8, false), lipMat);
+                headGroup.add(upperLip);
 
-                // 2. HAIRSTYLES GENERATION
+                const lowerCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.023 * sx, Y0 - 0.002, surfZ(-0.023 * sx, Y0 - 0.002) + 0.0012),
+                    new THREE.Vector3(-0.011 * sx, Y0 - 0.006, surfZ(-0.011 * sx, Y0 - 0.006) + 0.0025),
+                    new THREE.Vector3(0, Y0 - 0.007, surfZ(0, Y0 - 0.007) + 0.0028),
+                    new THREE.Vector3(0.011 * sx, Y0 - 0.006, surfZ(0.011 * sx, Y0 - 0.006) + 0.0025),
+                    new THREE.Vector3(0.023 * sx, Y0 - 0.002, surfZ(0.023 * sx, Y0 - 0.002) + 0.0012)
+                ]);
+                const lowerLip = new THREE.Mesh(new THREE.TubeGeometry(lowerCurve, 20, 0.0040, 8, false), lipMat);
+                headGroup.add(lowerLip);
+
+                // ==============================================================
+                // 2. ATHLETIC HAIRSTYLES (Scalp-Fitted Procedural Shells)
+                // ==============================================================
                 const hairGroup = new THREE.Group();
                 const style = custom.hairStyle || 'fade_quiff';
 
+                function createScalpCap(scaleY = 1.05, scaleZ = 1.04, thetaEnd = Math.PI * 0.38) {
+                    const capGeo = new THREE.SphereGeometry(1, 48, 36, 0, Math.PI * 2, 0, thetaEnd);
+                    capGeo.rotateY(-Math.PI / 2);
+                    const pos = capGeo.attributes.position;
+                    for (let i = 0; i < pos.count; i++) {
+                        const ux = pos.getX(i), uy = pos.getY(i), uz = pos.getZ(i);
+                        const r = Math.hypot(ux, uz);
+                        const dx = r > 1e-6 ? ux / r : 0;
+                        const dz = r > 1e-6 ? uz / r : 1;
+                        const w = hw(uy, pw);
+                        const px = dx * w * (RX * 1.018);
+                        const py = uy * (RY * scaleY);
+                        let pz = dz * w * (dz > 0 ? (RZf * scaleZ) : (RZb * 1.025));
+                        pz += sm(0, 0.5, dz) * bumpZ(px, py);
+                        pos.setXYZ(i, px, py, pz);
+                    }
+                    capGeo.computeVertexNormals();
+                    return new THREE.Mesh(capGeo, hairMat);
+                }
+
                 if (style === 'fade_quiff') {
-                    const fadeGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.6);
-                    fadeGeo.scale(1.01, 1.14, 1.10);
-                    const fadeMesh = new THREE.Mesh(fadeGeo, hairMat);
-                    fadeMesh.position.set(0, 0.045, -0.015);
-                    hairGroup.add(fadeMesh);
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.37);
+                    hairGroup.add(scalp);
 
-                    const quiffGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.24, 16);
-                    quiffGeo.scale(1.0, 0.6, 1.35);
-                    const quiffMesh = new THREE.Mesh(quiffGeo, hairMat);
-                    quiffMesh.rotation.x = -0.35;
-                    quiffMesh.position.set(0, 0.23, 0.035);
-                    hairGroup.add(quiffMesh);
-
-                    const quiffTipGeo = new THREE.SphereGeometry(0.11, 14, 12);
-                    quiffTipGeo.scale(1.05, 0.75, 1.4);
-                    const quiffTip = new THREE.Mesh(quiffTipGeo, hairMat);
-                    quiffTip.position.set(0, 0.25, 0.02);
-                    hairGroup.add(quiffTip);
+                    // Swept athletic quiff crest
+                    const quiffGeo = new THREE.SphereGeometry(0.080, 22, 16);
+                    quiffGeo.scale(0.85, 0.50, 1.35);
+                    const quiff = new THREE.Mesh(quiffGeo, hairMat);
+                    quiff.position.set(0, 0.125, 0.005);
+                    quiff.rotation.x = -0.28;
+                    hairGroup.add(quiff);
 
                 } else if (style === 'buzz_cut') {
-                    const buzzGeo = new THREE.SphereGeometry(0.195, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.58);
-                    buzzGeo.scale(1.02, 1.15, 1.12);
-                    const buzzMesh = new THREE.Mesh(buzzGeo, hairMat);
-                    buzzMesh.position.set(0, 0.045, -0.015);
-                    hairGroup.add(buzzMesh);
+                    const buzz = createScalpCap(1.04, 1.03, Math.PI * 0.38);
+                    hairGroup.add(buzz);
 
-                    const hairlineGeo = new THREE.TorusGeometry(0.18, 0.015, 8, 24, Math.PI * 0.7);
-                    const hairlineMesh = new THREE.Mesh(hairlineGeo, hairMat);
-                    hairlineMesh.position.set(0, 0.08, 0.06);
-                    hairlineMesh.rotation.x = 0.55;
-                    hairlineMesh.rotation.z = -Math.PI * 0.85;
-                    hairGroup.add(hairlineMesh);
+                    [-1, 1].forEach(side => {
+                        const burn = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.045, 0.024), hairMat);
+                        burn.position.set(side * RX * 0.98, 0.010, 0.005);
+                        hairGroup.add(burn);
+                    });
 
                 } else if (style === 'top_knot') {
-                    const underGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
-                    underGeo.scale(1.01, 1.14, 1.10);
-                    const underMesh = new THREE.Mesh(underGeo, hairMat);
-                    underMesh.position.set(0, 0.045, -0.015);
-                    hairGroup.add(underMesh);
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.36);
+                    hairGroup.add(scalp);
 
-                    const topSweepGeo = new THREE.SphereGeometry(0.15, 16, 14);
-                    topSweepGeo.scale(0.9, 0.45, 1.2);
-                    const topSweep = new THREE.Mesh(topSweepGeo, hairMat);
-                    topSweep.position.set(0, 0.21, -0.02);
-                    hairGroup.add(topSweep);
+                    const sweepGeo = new THREE.SphereGeometry(0.095, 18, 14);
+                    sweepGeo.scale(0.85, 0.45, 1.15);
+                    const sweep = new THREE.Mesh(sweepGeo, hairMat);
+                    sweep.position.set(0, 0.13, -0.035);
+                    hairGroup.add(sweep);
 
-                    const bunGeo = new THREE.SphereGeometry(0.065, 16, 14);
-                    bunGeo.scale(1.0, 0.85, 0.95);
-                    const bunMesh = new THREE.Mesh(bunGeo, hairMat);
-                    bunMesh.position.set(0, 0.26, -0.09);
-                    hairGroup.add(bunMesh);
+                    const bun = new THREE.Mesh(new THREE.SphereGeometry(0.048, 16, 14), hairMat);
+                    bun.position.set(0, 0.155, -0.08);
+                    hairGroup.add(bun);
 
-                    const tieGeo = new THREE.TorusGeometry(0.048, 0.012, 8, 16);
-                    const tieMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.5 });
-                    const tieMesh = new THREE.Mesh(tieGeo, tieMat);
-                    tieMesh.rotation.x = Math.PI / 2.5;
-                    tieMesh.position.set(0, 0.23, -0.08);
-                    hairGroup.add(tieMesh);
+                    const tie = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.006, 8, 16), collarMat);
+                    tie.position.set(0, 0.142, -0.07);
+                    tie.rotation.x = 0.45;
+                    hairGroup.add(tie);
 
                 } else if (style === 'flowing_waves') {
-                    const waveBaseGeo = new THREE.SphereGeometry(0.198, 22, 18, 0, Math.PI * 2, 0, Math.PI * 0.65);
-                    waveBaseGeo.scale(1.03, 1.16, 1.14);
-                    const waveBase = new THREE.Mesh(waveBaseGeo, hairMat);
-                    waveBase.position.set(0, 0.045, -0.015);
-                    hairGroup.add(waveBase);
+                    const scalp = createScalpCap(1.06, 1.05, Math.PI * 0.50);
+                    hairGroup.add(scalp);
 
-                    const lockLGeo = new THREE.CylinderGeometry(0.04, 0.025, 0.24, 10);
-                    const lockL = new THREE.Mesh(lockLGeo, hairMat);
-                    lockL.position.set(-0.17, 0.02, 0.04);
-                    lockL.rotation.z = -0.25;
-                    lockL.rotation.x = 0.2;
-                    hairGroup.add(lockL);
-
-                    const lockRGeo = new THREE.CylinderGeometry(0.04, 0.025, 0.24, 10);
-                    const lockR = new THREE.Mesh(lockRGeo, hairMat);
-                    lockR.position.set(0.17, 0.02, 0.04);
-                    lockR.rotation.z = 0.25;
-                    lockR.rotation.x = 0.2;
-                    hairGroup.add(lockR);
-
-                    const napeGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.22, 14);
-                    napeGeo.scale(1.1, 1.0, 0.7);
-                    const napeMesh = new THREE.Mesh(napeGeo, hairMat);
-                    napeMesh.position.set(0, -0.04, -0.13);
-                    napeMesh.rotation.x = -0.22;
-                    hairGroup.add(napeMesh);
-
-                } else if (style === 'braids_dreads') {
-                    const braidBaseGeo = new THREE.SphereGeometry(0.192, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
-                    braidBaseGeo.scale(1.02, 1.15, 1.10);
-                    const braidBase = new THREE.Mesh(braidBaseGeo, hairMat);
-                    braidBase.position.set(0, 0.045, -0.015);
-                    hairGroup.add(braidBase);
-
-                    for (let i = -3.5; i <= 3.5; i += 1.0) {
-                        const braidGeo = new THREE.CylinderGeometry(0.022, 0.016, 0.36, 8);
-                        const braid = new THREE.Mesh(braidGeo, hairMat);
-                        const angle = (i / 4.0) * 0.75;
-                        braid.position.set(Math.sin(angle) * 0.16, 0.14, -0.02);
-                        braid.rotation.x = 1.15;
-                        braid.rotation.y = angle * 0.5;
-                        braid.rotation.z = -angle * 0.4;
-                        hairGroup.add(braid);
+                    for (let a = -0.28; a <= 0.28; a += 0.14) {
+                        const strandGeo = new THREE.CylinderGeometry(0.018, 0.008, 0.20, 10);
+                        strandGeo.scale(1.1, 0.6, 1.3);
+                        const strand = new THREE.Mesh(strandGeo, hairMat);
+                        strand.position.set(a * 0.35, 0.04, -0.10 - Math.abs(a) * 0.03);
+                        strand.rotation.set(-0.35, a * 0.25, 0);
+                        hairGroup.add(strand);
                     }
 
-                } else { // classic_crop
-                    const cropGeo = new THREE.SphereGeometry(0.196, 22, 18, 0, Math.PI * 2, 0, Math.PI * 0.58);
-                    cropGeo.scale(1.03, 1.16, 1.13);
-                    const cropMesh = new THREE.Mesh(cropGeo, hairMat);
-                    cropMesh.position.set(0, 0.045, -0.015);
-                    hairGroup.add(cropMesh);
+                } else if (style === 'braids_dreads') {
+                    const scalp = createScalpCap(1.05, 1.04, Math.PI * 0.46);
+                    hairGroup.add(scalp);
 
-                    const sweepGeo = new THREE.BoxGeometry(0.24, 0.08, 0.26);
-                    const sweepMesh = new THREE.Mesh(sweepGeo, hairMat);
-                    sweepMesh.position.set(0.03, 0.20, 0.02);
-                    sweepMesh.rotation.z = -0.15;
-                    hairGroup.add(sweepMesh);
+                    const bandMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+                    for (let i = 0; i < 12; i++) {
+                        const angle = (i / 12) * Math.PI * 2;
+                        const r = 0.118;
+                        const dx = Math.cos(angle) * r;
+                        const dz = Math.sin(angle) * r;
+
+                        const braidGeo = new THREE.CylinderGeometry(0.009, 0.007, 0.18, 8);
+                        const braid = new THREE.Mesh(braidGeo, hairMat);
+                        braid.position.set(dx, 0.04, dz);
+                        braid.rotation.set(dz * 1.5, 0, -dx * 1.5);
+                        hairGroup.add(braid);
+
+                        const bandGeo = new THREE.TorusGeometry(0.011, 0.0035, 6, 12);
+                        const band = new THREE.Mesh(bandGeo, bandMat);
+                        band.position.set(dx * 1.04, -0.02, dz * 1.04);
+                        band.rotation.x = Math.PI / 2;
+                        hairGroup.add(band);
+                    }
+
+                } else if (style === 'classic_crop') {
+                    const scalp = createScalpCap(1.06, 1.05, Math.PI * 0.48);
+                    hairGroup.add(scalp);
+
+                    const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.036, 0.12), hairMat);
+                    fringe.position.set(0, 0.115, 0.045);
+                    fringe.rotation.x = 0.35;
+                    hairGroup.add(fringe);
                 }
+
                 headGroup.add(hairGroup);
+                athleteGroup.add(headGroup);
 
-                // Moisture Headband (if enabled)
-                if (custom.headband) {
-                    const hbandGeo = new THREE.TorusGeometry(0.188, 0.022, 10, 28);
-                    hbandGeo.scale(1.0, 1.0, 1.12);
-                    const hbandMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.5 });
-                    const hbandMesh = new THREE.Mesh(hbandGeo, hbandMat);
-                    hbandMesh.rotation.x = Math.PI / 2.3;
-                    hbandMesh.position.set(0, 0.07, 0.01);
-                    headGroup.add(hbandMesh);
+                // ==============================================================
+                // 3. ATHLETIC V-TAPER TORSO & COLLAR (Collar tracks torso)
+                // ==============================================================
+                const torsoGeo = new THREE.BoxGeometry(0.50, 0.54, 0.26, 8, 8, 8);
+                const tPos = torsoGeo.attributes.position;
+                for (let i = 0; i < tPos.count; i++) {
+                    let x = tPos.getX(i);
+                    let y = tPos.getY(i);
+                    let z = tPos.getZ(i);
+
+                    // Waist taper
+                    if (y < 0) {
+                        const factor = 0.83 + (y + 0.27) * 0.45;
+                        x *= factor;
+                        z *= 0.88;
+                    } else {
+                        // Broad chest & sloping athletic shoulders
+                        x *= 1.04;
+                        if (z > 0) z *= 1.05;
+                        if (y > 0.20 && Math.abs(x) > 0.18) {
+                            y -= (Math.abs(x) - 0.18) * 0.35;
+                        }
+                    }
+                    tPos.setXYZ(i, x, y, z);
+                }
+                torsoGeo.computeVertexNormals();
+
+                const torso = new THREE.Mesh(torsoGeo, jerseyMaterials);
+                torso.position.set(0, 1.44, 0);
+
+                // Ribbed Collar Ring (Mounted to top of jersey at y = 0.26)
+                const collarGeo = new THREE.TorusGeometry(0.115, 0.016, 12, 32);
+                const collarMesh = new THREE.Mesh(collarGeo, collarMat);
+                collarMesh.position.set(0, 0.26, 0.012);
+                collarMesh.rotation.x = Math.PI / 2.2;
+                torso.add(collarMesh);
+
+                athleteGroup.add(torso);
+
+                // ==============================================================
+                // 4. SEAMLESS SHOULDERS & ARMS
+                // ==============================================================
+                function createHand(isLeft) {
+                    const handGroup = new THREE.Group();
+                    const palmGeo = new THREE.BoxGeometry(0.042, 0.076, 0.062);
+                    const palmMesh = new THREE.Mesh(palmGeo, skinMat);
+                    handGroup.add(palmMesh);
+
+                    const thumbGeo = new THREE.CylinderGeometry(0.008, 0.007, 0.036, 8);
+                    const thumb = new THREE.Mesh(thumbGeo, skinMat);
+                    thumb.position.set(isLeft ? 0.020 : -0.020, -0.014, 0.022);
+                    thumb.rotation.set(0.25, 0, isLeft ? -0.42 : 0.42);
+                    handGroup.add(thumb);
+
+                    const fingerOffsets = [-0.020, -0.006, 0.006, 0.020];
+                    const fingerLengths = [0.030, 0.038, 0.034, 0.026];
+                    fingerOffsets.forEach((zOff, fIdx) => {
+                        const fGeo = new THREE.CylinderGeometry(0.0075, 0.0065, fingerLengths[fIdx], 8);
+                        const finger = new THREE.Mesh(fGeo, skinMat);
+                        finger.position.set(0, -0.045, zOff);
+                        finger.rotation.x = 0.22;
+                        handGroup.add(finger);
+                    });
+                    return handGroup;
                 }
 
-                athleteBodyGroup.add(headGroup);
+                const sleeveGeo = new THREE.CylinderGeometry(0.088, 0.080, 0.18, 18);
+                const sleeveTrimGeo = new THREE.TorusGeometry(0.080, 0.008, 8, 24);
 
-                // 3. TORSO & DYNAMIC JERSEY (Pivot at y = 1.42)
-                const torso = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.58, 0.56, 0.32),
-                    createRealisticJerseyTextures(custom)
-                );
-                torso.position.set(0, 1.42, 0);
-                athleteBodyGroup.add(torso);
-
-                // 3D Ribbed V-Neck Collar
-                const collarGeo = new THREE.TorusGeometry(0.13, 0.024, 10, 24, Math.PI * 1.3);
-                const collarMat = new THREE.MeshStandardMaterial({ color: kitAccent, roughness: 0.4 });
-                const collarMesh = new THREE.Mesh(collarGeo, collarMat);
-                collarMesh.position.set(0, 1.69, 0.03);
-                collarMesh.rotation.x = Math.PI / 2.3;
-                collarMesh.rotation.z = Math.PI * 0.85;
-                athleteBodyGroup.add(collarMesh);
-
-                // Shorts Pelvis (from y = 1.00 to 1.20)
-                const pelvisGeo = new THREE.BoxGeometry(0.52, 0.22, 0.30);
-                const pelvisMesh = new THREE.Mesh(pelvisGeo, shortsMat);
-                pelvisMesh.position.set(0, 1.11, 0);
-                athleteBodyGroup.add(pelvisMesh);
-
-                // Shorts Waistband Trim
-                const waistbandGeo = new THREE.BoxGeometry(0.53, 0.035, 0.31);
-                const waistbandMesh = new THREE.Mesh(waistbandGeo, sockTrimMat);
-                waistbandMesh.position.set(0, 1.21, 0);
-                athleteBodyGroup.add(waistbandMesh);
-
-                // 4. ARTICULATED ARMS (Shoulder pivot at y = 1.58, x = ±0.34)
+                // Left Arm (x = -0.27, y = 1.58)
                 const armLGroup = new THREE.Group();
-                armLGroup.position.set(-0.35, 1.58, 0);
+                armLGroup.position.set(-0.27, 1.58, 0);
 
-                const sleeveGeo = new THREE.SphereGeometry(0.115, 16, 12);
-                const sleeveMat = new THREE.MeshStandardMaterial({ color: kitPrimary, roughness: 0.35 });
-                const sleeveL = new THREE.Mesh(sleeveGeo, sleeveMat);
-                sleeveL.position.set(0, -0.02, 0);
+                const shoulderLGeo = new THREE.SphereGeometry(0.092, 18, 16);
+                shoulderLGeo.scale(0.92, 1.10, 0.98);
+                const shoulderL = new THREE.Mesh(shoulderLGeo, sideMat);
+                shoulderL.position.set(0, 0.0, 0);
+                armLGroup.add(shoulderL);
+
+                const sleeveL = new THREE.Mesh(sleeveGeo, sideMat);
+                sleeveL.position.set(0, -0.06, 0);
                 armLGroup.add(sleeveL);
 
-                const upperArmGeo = new THREE.CylinderGeometry(0.088, 0.078, 0.28, 16);
+                const sleeveTrimL = new THREE.Mesh(sleeveTrimGeo, collarMat);
+                sleeveTrimL.rotation.x = Math.PI / 2;
+                sleeveTrimL.position.set(0, -0.15, 0);
+                armLGroup.add(sleeveTrimL);
+
+                const upperArmGeo = new THREE.CylinderGeometry(0.075, 0.065, 0.26, 18);
                 const upperArmL = new THREE.Mesh(upperArmGeo, skinMat);
-                upperArmL.position.set(0, -0.16, 0);
+                upperArmL.position.set(0, -0.20, 0);
                 armLGroup.add(upperArmL);
 
-                // Captain's Armband (Left Arm)
                 if (custom.armband) {
-                    const armbandGeo = new THREE.CylinderGeometry(0.092, 0.090, 0.08, 18);
+                    const armbandGeo = new THREE.CylinderGeometry(0.079, 0.077, 0.078, 20);
                     const armbandCanvas = document.createElement('canvas');
                     armbandCanvas.width = 128; armbandCanvas.height = 64;
                     const abCtx = armbandCanvas.getContext('2d');
                     abCtx.fillStyle = '#f59e0b';
                     abCtx.fillRect(0, 0, 128, 64);
+                    abCtx.strokeStyle = '#111111';
+                    abCtx.lineWidth = 4;
+                    abCtx.strokeRect(2, 2, 124, 60);
                     abCtx.fillStyle = '#111111';
-                    abCtx.font = '900 42px "Arial Black", sans-serif';
+                    abCtx.font = '900 44px "Arial Black", sans-serif';
                     abCtx.textAlign = 'center';
                     abCtx.textBaseline = 'middle';
                     abCtx.fillText('C', 64, 32);
                     const abTex = new THREE.CanvasTexture(armbandCanvas);
                     const armbandMat = new THREE.MeshStandardMaterial({ map: abTex, roughness: 0.3 });
                     const armbandMesh = new THREE.Mesh(armbandGeo, armbandMat);
-                    armbandMesh.position.set(0, -0.16, 0);
+                    armbandMesh.position.set(0, -0.20, 0);
                     armLGroup.add(armbandMesh);
                 }
 
-                const elbowGeo = new THREE.SphereGeometry(0.076, 14, 12);
+                const elbowGeo = new THREE.SphereGeometry(0.065, 14, 12);
                 const elbowL = new THREE.Mesh(elbowGeo, skinMat);
-                elbowL.position.set(0, -0.32, 0);
+                elbowL.position.set(0, -0.33, 0);
                 armLGroup.add(elbowL);
 
-                const lowerArmGeo = new THREE.CylinderGeometry(0.075, 0.062, 0.26, 16);
+                const lowerArmGeo = new THREE.CylinderGeometry(0.063, 0.050, 0.25, 18);
                 const lowerArmL = new THREE.Mesh(lowerArmGeo, skinMat);
-                lowerArmL.position.set(0, -0.47, 0);
+                lowerArmL.position.set(0, -0.46, 0);
                 armLGroup.add(lowerArmL);
 
                 if (custom.wristTape && custom.wristTape !== 'none') {
                     const tapeColor = custom.wristTape === 'accent' ? kitAccent : 0xffffff;
                     const tapeMat = new THREE.MeshStandardMaterial({ color: tapeColor, roughness: 0.6 });
-                    const tapeGeo = new THREE.CylinderGeometry(0.066, 0.064, 0.07, 16);
+                    const tapeGeo = new THREE.CylinderGeometry(0.054, 0.052, 0.060, 16);
                     const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
-                    tapeMesh.position.set(0, -0.58, 0);
+                    tapeMesh.position.set(0, -0.56, 0);
                     armLGroup.add(tapeMesh);
                 }
 
-                const handGeo = new THREE.BoxGeometry(0.052, 0.10, 0.075);
-                const handL = new THREE.Mesh(handGeo, skinMat);
-                handL.position.set(0, -0.66, 0);
+                const handL = createHand(true);
+                handL.position.set(0, -0.63, 0);
                 armLGroup.add(handL);
-                const thumbGeo = new THREE.BoxGeometry(0.024, 0.045, 0.028);
-                const thumbL = new THREE.Mesh(thumbGeo, skinMat);
-                thumbL.position.set(0.026, -0.64, 0.02);
-                thumbL.rotation.z = -0.3;
-                armLGroup.add(thumbL);
 
-                athleteBodyGroup.add(armLGroup);
+                athleteGroup.add(armLGroup);
 
-                // Right Arm Group
+                // Right Arm (x = +0.27, y = 1.58)
                 const armRGroup = new THREE.Group();
-                armRGroup.position.set(0.35, 1.58, 0);
+                armRGroup.position.set(0.27, 1.58, 0);
 
-                const sleeveR = new THREE.Mesh(sleeveGeo, sleeveMat);
-                sleeveR.position.set(0, -0.02, 0);
+                const shoulderR = new THREE.Mesh(shoulderLGeo, sideMat);
+                shoulderR.position.set(0, 0.0, 0);
+                armRGroup.add(shoulderR);
+
+                const sleeveR = new THREE.Mesh(sleeveGeo, sideMat);
+                sleeveR.position.set(0, -0.06, 0);
                 armRGroup.add(sleeveR);
 
+                const sleeveTrimR = new THREE.Mesh(sleeveTrimGeo, collarMat);
+                sleeveTrimR.rotation.x = Math.PI / 2;
+                sleeveTrimR.position.set(0, -0.15, 0);
+                armRGroup.add(sleeveTrimR);
+
                 const upperArmR = new THREE.Mesh(upperArmGeo, skinMat);
-                upperArmR.position.set(0, -0.16, 0);
+                upperArmR.position.set(0, -0.20, 0);
                 armRGroup.add(upperArmR);
 
                 const elbowR = new THREE.Mesh(elbowGeo, skinMat);
-                elbowR.position.set(0, -0.32, 0);
+                elbowR.position.set(0, -0.33, 0);
                 armRGroup.add(elbowR);
 
                 const lowerArmR = new THREE.Mesh(lowerArmGeo, skinMat);
-                lowerArmR.position.set(0, -0.47, 0);
+                lowerArmR.position.set(0, -0.46, 0);
                 armRGroup.add(lowerArmR);
 
                 if (custom.wristTape && custom.wristTape !== 'none') {
                     const tapeColor = custom.wristTape === 'accent' ? kitAccent : 0xffffff;
                     const tapeMat = new THREE.MeshStandardMaterial({ color: tapeColor, roughness: 0.6 });
-                    const tapeGeo = new THREE.CylinderGeometry(0.066, 0.064, 0.07, 16);
+                    const tapeGeo = new THREE.CylinderGeometry(0.054, 0.052, 0.060, 16);
                     const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
-                    tapeMesh.position.set(0, -0.58, 0);
+                    tapeMesh.position.set(0, -0.56, 0);
                     armRGroup.add(tapeMesh);
                 }
 
-                const handR = new THREE.Mesh(handGeo, skinMat);
-                handR.position.set(0, -0.66, 0);
+                const handR = createHand(false);
+                handR.position.set(0, -0.63, 0);
                 armRGroup.add(handR);
-                const thumbR = new THREE.Mesh(thumbGeo, skinMat);
-                thumbR.position.set(-0.026, -0.64, 0.02);
-                thumbR.rotation.z = 0.3;
-                armRGroup.add(thumbR);
 
-                athleteBodyGroup.add(armRGroup);
+                athleteGroup.add(armRGroup);
 
-                // 5. ARTICULATED LEGS, SOCKS & PRO CLEATS (Hip pivot at y = 1.02, x = ±0.15)
-                const legLGroup = new THREE.Group();
-                legLGroup.position.set(-0.15, 1.02, 0);
+                // ==============================================================
+                // 5. ATHLETIC SHORTS & PELVIS (y = 1.00 to 1.22)
+                // ==============================================================
+                const pelvisGeo = new THREE.BoxGeometry(0.46, 0.20, 0.26, 6, 4, 6);
+                const pelvisMesh = new THREE.Mesh(pelvisGeo, shortsMat);
+                pelvisMesh.position.set(0, 1.12, 0);
+                athleteGroup.add(pelvisMesh);
 
-                const shortsLegGeo = new THREE.CylinderGeometry(0.14, 0.13, 0.16, 16);
+                const waistbandGeo = new THREE.BoxGeometry(0.47, 0.032, 0.27);
+                const waistbandMesh = new THREE.Mesh(waistbandGeo, sockTrimMat);
+                waistbandMesh.position.set(0, 1.21, 0);
+                athleteGroup.add(waistbandMesh);
+
+                const shortsLegGeo = new THREE.CylinderGeometry(0.120, 0.112, 0.20, 18);
                 const shortsLegL = new THREE.Mesh(shortsLegGeo, shortsMat);
-                shortsLegL.position.set(0, -0.07, 0);
-                legLGroup.add(shortsLegL);
+                shortsLegL.position.set(-0.135, 1.02, 0);
+                athleteGroup.add(shortsLegL);
 
-                const upperLegGeo = new THREE.CylinderGeometry(0.125, 0.098, 0.30, 16);
-                const upperLegL = new THREE.Mesh(upperLegGeo, skinMat);
-                upperLegL.position.set(0, -0.24, 0);
-                legLGroup.add(upperLegL);
+                const shortsLegR = new THREE.Mesh(shortsLegGeo, shortsMat);
+                shortsLegR.position.set(0.135, 1.02, 0);
+                athleteGroup.add(shortsLegR);
 
-                const kneeGeo = new THREE.SphereGeometry(0.088, 14, 12);
+                // ==============================================================
+                // 6. MUSCULAR LEGS, SOCKS & PRO CLEATS
+                // ==============================================================
+                function createProCleat(isLeft) {
+                    const cleatGroup = new THREE.Group();
+
+                    const bootGeo = new THREE.BoxGeometry(0.122, 0.072, 0.26, 4, 3, 5);
+                    const bPos = bootGeo.attributes.position;
+                    for (let i = 0; i < bPos.count; i++) {
+                        let x = bPos.getX(i);
+                        let y = bPos.getY(i);
+                        let z = bPos.getZ(i);
+
+                        if (z > 0.04) {
+                            const toeFactor = Math.max(0.45, 1.0 - (z - 0.04) * 3.8);
+                            x *= toeFactor;
+                            if (z > 0.09) y += 0.016;
+                        }
+                        if (z < -0.06) {
+                            x *= 0.88;
+                            y *= 0.95;
+                        }
+                        bPos.setXYZ(i, x, y, z);
+                    }
+                    bootGeo.computeVertexNormals();
+
+                    const bootMesh = new THREE.Mesh(bootGeo, cleatsUpperMat);
+                    bootMesh.position.set(0, 0.045, 0.035);
+                    cleatGroup.add(bootMesh);
+
+                    const soleGeo = new THREE.BoxGeometry(0.126, 0.016, 0.27);
+                    const soleMesh = new THREE.Mesh(soleGeo, soleMat);
+                    soleMesh.position.set(0, 0.008, 0.035);
+                    cleatGroup.add(soleMesh);
+
+                    const studOffsets = [
+                        [-0.038, -0.07], [0.038, -0.07],
+                        [-0.040, 0.05], [0.040, 0.05],
+                        [-0.028, 0.11], [0.028, 0.11]
+                    ];
+                    const studGeo = new THREE.CylinderGeometry(0.007, 0.011, 0.016, 8);
+                    studOffsets.forEach(([sx, sz]) => {
+                        const stud = new THREE.Mesh(studGeo, studMat);
+                        stud.position.set(sx, -0.008, sz);
+                        cleatGroup.add(stud);
+                    });
+
+                    const swooshGeo = new THREE.BoxGeometry(0.005, 0.022, 0.11);
+                    const swooshMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+                    const swoosh = new THREE.Mesh(swooshGeo, swooshMat);
+                    swoosh.position.set(isLeft ? -0.063 : 0.063, 0.046, 0.04);
+                    swoosh.rotation.y = isLeft ? 0.12 : -0.12;
+                    cleatGroup.add(swoosh);
+
+                    return cleatGroup;
+                }
+
+                const thighGeo = new THREE.CylinderGeometry(0.092, 0.072, 0.32, 20);
+                const kneeGeo = new THREE.SphereGeometry(0.068, 16, 14);
+                kneeGeo.scale(1.0, 1.15, 0.95);
+                const calfGeo = new THREE.CylinderGeometry(0.074, 0.048, 0.38, 20);
+                const sockCuffGeo = new THREE.TorusGeometry(0.074, 0.011, 8, 24);
+
+                // Left Leg (x = -0.135, y = 1.02)
+                const legLGroup = new THREE.Group();
+                legLGroup.position.set(-0.135, 1.02, 0);
+
+                const thighL = new THREE.Mesh(thighGeo, skinMat);
+                thighL.position.set(0, -0.16, 0.005);
+                legLGroup.add(thighL);
+
                 const kneeL = new THREE.Mesh(kneeGeo, skinMat);
-                kneeL.position.set(0, -0.39, 0.015);
+                kneeL.position.set(0, -0.33, 0.015);
                 legLGroup.add(kneeL);
 
-                const lowerLegGeo = new THREE.CylinderGeometry(0.096, 0.074, 0.42, 16);
-                const lowerLegL = new THREE.Mesh(lowerLegGeo, socksMat);
-                lowerLegL.position.set(0, -0.60, 0);
-                legLGroup.add(lowerLegL);
+                const calfL = new THREE.Mesh(calfGeo, socksMat);
+                calfL.position.set(0, -0.54, 0);
+                legLGroup.add(calfL);
 
-                const sockCuffGeo = new THREE.TorusGeometry(0.095, 0.016, 10, 24);
                 const sockCuffL = new THREE.Mesh(sockCuffGeo, sockTrimMat);
-                sockCuffL.position.set(0, -0.42, 0);
+                sockCuffL.position.set(0, -0.36, 0);
                 sockCuffL.rotation.x = Math.PI / 2;
                 legLGroup.add(sockCuffL);
 
-                // Pro Cleats (Left)
-                const bootUpperGeo = new THREE.BoxGeometry(0.145, 0.085, 0.30);
-                const bootL = new THREE.Mesh(bootUpperGeo, cleatsMat);
-                bootL.position.set(0, -0.87, 0.04);
-                legLGroup.add(bootL);
+                const cleatL = createProCleat(true);
+                cleatL.position.set(0, -0.74, 0);
+                legLGroup.add(cleatL);
 
-                const toeGeo = new THREE.CylinderGeometry(0.07, 0.04, 0.12, 12);
-                toeGeo.scale(1.0, 0.6, 1.2);
-                const toeL = new THREE.Mesh(toeGeo, cleatsMat);
-                toeL.position.set(0, -0.87, 0.15);
-                legLGroup.add(toeL);
+                athleteGroup.add(legLGroup);
 
-                const soleGeo = new THREE.BoxGeometry(0.15, 0.02, 0.31);
-                const soleL = new THREE.Mesh(soleGeo, soleMat);
-                soleL.position.set(0, -0.94, 0.04);
-                legLGroup.add(soleL);
-
-                const studGeo = new THREE.CylinderGeometry(0.014, 0.010, 0.04, 8);
-                const studPositions = [
-                    [-0.045, -0.98, 0.14], [0.045, -0.98, 0.14],
-                    [-0.048, -0.98, 0.03], [0.048, -0.98, 0.03],
-                    [-0.045, -0.98, -0.07], [0.045, -0.98, -0.07]
-                ];
-                studPositions.forEach(pos => {
-                    const stud = new THREE.Mesh(studGeo, studMat);
-                    stud.position.set(pos[0], pos[1], pos[2]);
-                    legLGroup.add(stud);
-                });
-
-                athleteBodyGroup.add(legLGroup);
-
-                // Right Leg Group
+                // Right Leg (x = +0.135, y = 1.02)
                 const legRGroup = new THREE.Group();
-                legRGroup.position.set(0.15, 1.02, 0);
+                legRGroup.position.set(0.135, 1.02, 0);
 
-                const shortsLegR = new THREE.Mesh(shortsLegGeo, shortsMat);
-                shortsLegR.position.set(0, -0.07, 0);
-                legRGroup.add(shortsLegR);
-
-                const upperLegR = new THREE.Mesh(upperLegGeo, skinMat);
-                upperLegR.position.set(0, -0.24, 0);
-                legRGroup.add(upperLegR);
+                const thighR = new THREE.Mesh(thighGeo, skinMat);
+                thighR.position.set(0, -0.16, 0.005);
+                legRGroup.add(thighR);
 
                 const kneeR = new THREE.Mesh(kneeGeo, skinMat);
-                kneeR.position.set(0, -0.39, 0.015);
+                kneeR.position.set(0, -0.33, 0.015);
                 legRGroup.add(kneeR);
 
-                const lowerLegR = new THREE.Mesh(lowerLegGeo, socksMat);
-                lowerLegR.position.set(0, -0.60, 0);
-                legRGroup.add(lowerLegR);
+                const calfR = new THREE.Mesh(calfGeo, socksMat);
+                calfR.position.set(0, -0.54, 0);
+                legRGroup.add(calfR);
 
                 const sockCuffR = new THREE.Mesh(sockCuffGeo, sockTrimMat);
-                sockCuffR.position.set(0, -0.42, 0);
+                sockCuffR.position.set(0, -0.36, 0);
                 sockCuffR.rotation.x = Math.PI / 2;
                 legRGroup.add(sockCuffR);
 
-                const bootR = new THREE.Mesh(bootUpperGeo, cleatsMat);
-                bootR.position.set(0, -0.87, 0.04);
-                legRGroup.add(bootR);
+                const cleatR = createProCleat(false);
+                cleatR.position.set(0, -0.74, 0);
+                legRGroup.add(cleatR);
 
-                const toeR = new THREE.Mesh(toeGeo, cleatsMat);
-                toeR.position.set(0, -0.87, 0.15);
-                legRGroup.add(toeR);
+                athleteGroup.add(legRGroup);
 
-                const soleR = new THREE.Mesh(soleGeo, soleMat);
-                soleR.position.set(0, -0.94, 0.04);
-                legRGroup.add(soleR);
+                // ==============================================================
+                // 7. SIGNATURE SPORT EQUIPMENT & GEAR ACCESSORIES
+                // ==============================================================
+                const gearGroup = new THREE.Group();
+                gearGroup.name = 'sportGear';
 
-                studPositions.forEach(pos => {
-                    const stud = new THREE.Mesh(studGeo, studMat);
-                    stud.position.set(pos[0], pos[1], pos[2]);
-                    legRGroup.add(stud);
-                });
+                if (sport === 'football' && !isLife) {
+                    const bGeo = new THREE.SphereGeometry(0.115, 24, 20);
+                    const bMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35 });
+                    const matchBall = new THREE.Mesh(bGeo, bMat);
+                    [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4].forEach(a => {
+                        const seam = new THREE.Mesh(new THREE.TorusGeometry(0.116, 0.0035, 6, 24), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+                        seam.rotation.y = a;
+                        matchBall.add(seam);
+                    });
+                    matchBall.position.set(0.26, 0.12, 0.28);
+                    gearGroup.add(matchBall);
 
-                athleteBodyGroup.add(legRGroup);
+                } else if (sport === 'cricket' && !isLife) {
+                    // Batting Pads
+                    [-0.135, 0.135].forEach((lx) => {
+                        const padGeo = new THREE.CylinderGeometry(0.082, 0.068, 0.42, 16, 1, false, -Math.PI * 0.45, Math.PI * 0.9);
+                        const padMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+                        const pad = new THREE.Mesh(padGeo, padMat);
+                        pad.position.set(lx, 0.48, 0.035);
+                        gearGroup.add(pad);
+                    });
+
+                    // Willow Bat in Right Hand
+                    const batGroup = new THREE.Group();
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.52, 0.028), new THREE.MeshStandardMaterial({ color: 0xd9b370, roughness: 0.45 }));
+                    blade.position.y = -0.24;
+                    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 }));
+                    grip.position.y = 0.09;
+                    batGroup.add(blade, grip);
+                    batGroup.position.set(0, -0.05, 0.04);
+                    batGroup.rotation.set(-0.25, 0, -0.15);
+                    handR.add(batGroup);
+
+                    // Batting Gloves
+                    [-0.27, 0.27].forEach(gx => {
+                        const glv = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.08, 0.075), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 }));
+                        glv.position.set(gx, 0.95, 0.0);
+                        gearGroup.add(glv);
+                    });
+
+                } else if (sport === 'basketball' && !isLife) {
+                    // Basketball
+                    const bGeo = new THREE.SphereGeometry(0.125, 24, 20);
+                    const bMat = new THREE.MeshStandardMaterial({ color: 0xd96a1f, roughness: 0.55 });
+                    const bball = new THREE.Mesh(bGeo, bMat);
+                    [0, Math.PI / 2].forEach(a => {
+                        const seam = new THREE.Mesh(new THREE.TorusGeometry(0.126, 0.004, 6, 24), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+                        seam.rotation.y = a;
+                        bball.add(seam);
+                    });
+                    bball.position.set(-0.32, 0.95, 0.18);
+                    gearGroup.add(bball);
+
+                    // Headband
+                    const hb = new THREE.Mesh(new THREE.TorusGeometry(0.145, 0.014, 10, 32), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+                    hb.rotation.x = Math.PI / 2 - 0.12;
+                    hb.position.set(0, 0.055, 0.015);
+                    headGroup.add(hb);
+
+                } else if (sport === 'tennis' && !isLife) {
+                    // Graphite Tennis Racket
+                    const rGroup = new THREE.Group();
+                    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.013, 0.22, 10), new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 }));
+                    handle.position.y = -0.10;
+                    rGroup.add(handle);
+
+                    const headMesh = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.011, 8, 24), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.3, metalness: 0.6 }));
+                    headMesh.scale.set(0.85, 1.25, 1.0);
+                    headMesh.position.y = 0.15;
+                    rGroup.add(headMesh);
+
+                    const strings = new THREE.Mesh(new THREE.CircleGeometry(0.105, 16), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+                    strings.scale.set(0.85, 1.25, 1.0);
+                    strings.position.y = 0.15;
+                    rGroup.add(strings);
+
+                    rGroup.position.set(0, -0.05, 0.05);
+                    rGroup.rotation.set(-0.25, 0.2, -0.1);
+                    handR.add(rGroup);
+
+                    // Tennis Ball in Left Hand
+                    const tb = new THREE.Mesh(new THREE.SphereGeometry(0.034, 16, 12), new THREE.MeshStandardMaterial({ color: 0xd7f23c, roughness: 0.8 }));
+                    tb.position.set(0, -0.03, 0.04);
+                    handL.add(tb);
+
+                    // Sun Visor on Head
+                    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.010, 0.09), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.4 }));
+                    visor.position.set(0, 0.065, 0.16);
+                    visor.rotation.x = 0.15;
+                    headGroup.add(visor);
+
+                } else if (sport === 'combat' && !isLife) {
+                    // 12oz Boxing Gloves
+                    [-0.27, 0.27].forEach(gx => {
+                        const glv = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 14), new THREE.MeshStandardMaterial({ color: 0xc1121f, roughness: 0.35, metalness: 0.1 }));
+                        glv.scale.set(1.0, 1.25, 1.1);
+                        glv.position.set(gx, 0.95, 0.02);
+                        gearGroup.add(glv);
+                    });
+
+                    // Championship Gold Waistband
+                    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.07, 0.28), new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 }));
+                    belt.position.set(0, 1.21, 0);
+                    gearGroup.add(belt);
+
+                } else if (isLife) {
+                    // Cyan Academic Stole around neck down chest
+                    [-0.075, 0.075].forEach(sx => {
+                        const stole = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.65, 0.012), new THREE.MeshStandardMaterial({ color: 0x00d2ff, roughness: 0.4 }));
+                        stole.position.set(sx, 1.38, 0.135);
+                        gearGroup.add(stole);
+                    });
+
+                    // Mortarboard Academic Cap
+                    const capBase = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.07, 24), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 }));
+                    capBase.position.set(0, 0.11, 0);
+                    headGroup.add(capBase);
+
+                    const mortar = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.016, 0.34), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 }));
+                    mortar.position.set(0, 0.15, 0);
+                    mortar.rotation.y = 0.4;
+                    headGroup.add(mortar);
+
+                    const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.12, 8), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+                    tassel.position.set(0.14, 0.09, 0.10);
+                    headGroup.add(tassel);
+
+                    // Diploma Scroll in Hand
+                    const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.24, 16), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 }));
+                    scroll.rotation.z = Math.PI / 2;
+                    scroll.position.set(0, -0.04, 0.02);
+                    const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.021, 0.005, 8, 16), new THREE.MeshStandardMaterial({ color: 0xd64545 }));
+                    ribbon.rotation.y = Math.PI / 2;
+                    ribbon.position.copy(scroll.position);
+                    handR.add(scroll, ribbon);
+                }
+
+                athleteGroup.add(gearGroup);
 
                 return {
-                    athleteBodyGroup,
+                    athleteBodyGroup: athleteGroup,
                     avatarLimbs: {
                         armLGroup,
                         armRGroup,
                         legLGroup,
                         legRGroup,
                         torsoMesh: torso,
-                        headMesh: headGroup
+                        headMesh: headGroup,
+                        eyes: {
+                            eyeL: eyeMeshL,
+                            eyeR: eyeMeshR,
+                            lidUpL,
+                            lidLoL,
+                            lidUpR,
+                            lidLoR
+                        }
                     }
                 };
             }
-
             // Limb refs object for idle breathing & locomotion animation loop
             const avatarLimbs = {
                 armLGroup: null,
@@ -6050,7 +6908,8 @@
                 legLGroup: null,
                 legRGroup: null,
                 torsoMesh: null,
-                headMesh: null
+                headMesh: null,
+                eyes: null
             };
             let torsoMesh = null;
             let headMesh = null;
@@ -6080,6 +6939,7 @@
                 avatarLimbs.legRGroup = built.avatarLimbs.legRGroup;
                 avatarLimbs.torsoMesh = built.avatarLimbs.torsoMesh;
                 avatarLimbs.headMesh = built.avatarLimbs.headMesh;
+                avatarLimbs.eyes = built.avatarLimbs.eyes;
                 torsoMesh = built.avatarLimbs.torsoMesh;
                 headMesh = built.avatarLimbs.headMesh;
             }
@@ -6166,15 +7026,35 @@
                 innerRingMesh.position.y = 0.266;
                 championPedestalGroup.add(innerRingMesh);
 
-                // 5. Overhead Vertical Champion Spotlight
+                // 5. Studio Three-Point Lighting for High-Fidelity Character Shading
                 if (!pedestalSpotlight) {
-                    pedestalSpotlight = new THREE.SpotLight(auraHex, 2.8, 32, Math.PI / 4.2, 0.35, 1.2);
+                    pedestalSpotlight = new THREE.SpotLight(auraHex, 0.95, 14, Math.PI / 5.5, 0.55, 1.2);
                     pedestalSpotlight.position.set(0, 15, 0);
                     pedestalSpotlight.target = avatarGroup;
                     pedestalSpotlight.castShadow = true;
                     scene.add(pedestalSpotlight);
+
+                    // Front Key Light (Warm Key)
+                    const keyLight = new THREE.DirectionalLight(0xfff5ea, 0.80);
+                    keyLight.position.set(2.5, 4.2, 5.0);
+                    keyLight.target = avatarGroup;
+                    scene.add(keyLight);
+
+                    // Front Fill Light (Cool Soft Fill)
+                    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.40);
+                    fillLight.position.set(-3.5, 3.5, 4.0);
+                    fillLight.target = avatarGroup;
+                    scene.add(fillLight);
+
+                    // Back Rim Light (Athlete Silhouette / Hair Glow)
+                    const rimLight = new THREE.DirectionalLight(auraHex, 0.85);
+                    rimLight.position.set(0, 3.8, -3.5);
+                    rimLight.target = avatarGroup;
+                    scene.add(rimLight);
+                    window.pedestalRimLight = rimLight;
                 } else {
                     pedestalSpotlight.color.setHex(auraHex);
+                    if (window.pedestalRimLight) window.pedestalRimLight.color.setHex(auraHex);
                 }
 
                 scene.add(championPedestalGroup);
@@ -6206,8 +7086,19 @@
                 if (pedestalSpotlight) {
                     pedestalSpotlight.color.setHex(auraHex);
                 }
+                if (window.pedestalRimLight) {
+                    window.pedestalRimLight.color.setHex(auraHex);
+                }
             }
             window.updateAthleteCustomizationLive = update3DJerseyAndCard;
+            window.updateAthleteCustomization = (custom) => {
+                const updated = Object.assign({}, getAthleteCustomization(), custom);
+                saveAthleteCustomization(updated);
+                update3DJerseyAndCard(updated);
+                return updated;
+            };
+            window.getAthleteCustomization = getAthleteCustomization;
+            window.saveAthleteCustomization = saveAthleteCustomization;
 
             const selectionRingGeo = new THREE.RingGeometry(0.95, 1.25, 32);
             const selectionRingMat = new THREE.MeshBasicMaterial({
@@ -6537,6 +7428,7 @@
                 updateActiveNode(activeNodeIndex);
                 updateSubBenchWidget();
             }
+            window.rebuild3DSpline = rebuild3DSpline;
 
             function updateHUDEmptyState() {
                 activeNodeIndex = -1;
@@ -7218,11 +8110,13 @@
                 renderAttachedPhotosPreview();
                 document.getElementById('log-input-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Preserve Memory' : 'Log Match Milestone';
+                populateMilestonePresets(currentSport, isLifeMode);
+                resetLedgerChips();
                 modalLogPlay.classList.add('active');
                 if (window.LegacyMotion) window.LegacyMotion.trapFocus(modalLogPlay);
                 playSoftSound('click');
                 setTimeout(() => {
-                    document.getElementById('log-input-title')?.focus();
+                    document.getElementById('log-milestone-preset')?.focus();
                 }, 120);
             }
 
@@ -7254,55 +8148,531 @@
                 });
             });
 
-            // Inspiration spark themes
-            const inspirationSelector = document.getElementById('log-inspiration-selector');
-            if (inspirationSelector) {
-                const inspirationThemes = {
-                    genesis: {
-                        title: isLifeMode ? 'The First Spark of Curiosity' : 'Day One: Stepping on the Field',
-                        journalHint: 'Recall where you were, who believed in you first, and what you felt when you took your very first step...'
+            // ==============================================================
+            // 1-TAP MILESTONE PRESETS & ZERO-TYPING INTELLIGENT WORKFLOW
+            // ==============================================================
+            const SPORT_MILESTONE_PRESETS = {
+                football: [
+                    {
+                        id: 'stoppage_winner',
+                        label: '⚽ 93\' Stoppage-Time Match Winner',
+                        title: "93' Stoppage-Time Match Winner",
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Home Fortress Stadium',
+                        people: 'Starting XI & 45,000 Fans',
+                        sentiment: '95',
+                        journal: 'The stadium erupted in pure delirium as the ball hit the back of the net in the dying seconds. Every drop of sweat, every sprint during pre-season came down to this singular moment.'
                     },
-                    obstacle: {
-                        title: isLifeMode ? 'Weathering the Heavy Storm' : 'The Grueling Comeback After Adversity',
-                        journalHint: 'What made this trial seem impossible, and where did you discover the quiet grit to keep moving forward?'
+                    {
+                        id: 'hat_trick',
+                        label: '🎩 Hat-Trick Ball & Clinical Finishing',
+                        title: 'Match Ball: Career First Hat-Trick',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Metropolitan Arena',
+                        people: 'Squad & Coaching Staff',
+                        sentiment: '95',
+                        journal: 'Took home the signed match ball tonight. Clinical finishing, flawless service from the midfield, and a night that will forever be etched in my legacy.'
                     },
-                    breakthrough: {
-                        title: isLifeMode ? 'The Moment Everything Clicked' : 'The Championship Clutch Victory',
-                        journalHint: 'What did the roar or the silence feel like? Who rushed to embrace you?'
+                    {
+                        id: 'debut_cap',
+                        label: '🌟 Starting XI Senior Debut',
+                        title: 'First Cap: Starting XI Senior Debut',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'Main Stadium',
+                        people: 'Head Coach & Parents in Stands',
+                        sentiment: '90',
+                        journal: 'Stepping over that white touchline into the roar of the crowd for the very first time. Nervous energy transformed into hyper-focus the second the whistle blew.'
                     },
-                    turning_point: {
-                        title: isLifeMode ? 'The Crossroads Decision' : 'A Crucial Shift in Tactics & Discipline',
-                        journalHint: 'What belief did you let go of, and what new truth did you embrace on this pivotal day?'
+                    {
+                        id: 'derby_clean',
+                        label: '🛡️ Derby Clean Sheet & Defensive Stand',
+                        title: 'Derby Clean Sheet & Defensive Stand',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Hostile Away Grounds',
+                        people: 'Defensive Line & Keeper',
+                        sentiment: '85',
+                        journal: 'A masterclass in resilience and discipline. When the pressure was relentless in the second half, our backline held immovable like iron.'
                     },
-                    graduation: {
-                        title: isLifeMode ? 'Entering the Next Chapter' : 'Debuting on the Elite Stage',
-                        journalHint: 'Stepping into a bigger world. Describe the nervous excitement and determination.'
+                    {
+                        id: 'injury_comeback',
+                        label: '💪 Return to Pitch After Rehab',
+                        title: 'Return to Pitch After 6-Month Rehab',
+                        era: 'Comeback & Resilience Season',
+                        landmark: true,
+                        location: 'Training Ground Stadium',
+                        people: 'Physio Team, Teammates, Family',
+                        sentiment: '85',
+                        journal: 'Six months of solitary weight-room sessions and doubt evaporated in an instant when I strapped on the boots and took the pitch again. Stronger than ever.'
                     },
-                    mentorship: {
-                        title: isLifeMode ? 'Words from a Guiding Light' : 'Coach’s Halftime Speech',
-                        journalHint: 'What sentence did they utter that has stayed in your mind ever since?'
-                    },
-                    peace: {
-                        title: isLifeMode ? 'An Afternoon of Pure Stillness' : 'Quiet Reflection After the Final Whistle',
-                        journalHint: 'Sitting back, taking a breath, and noticing all the little blessings along this path...'
+                    {
+                        id: 'championship_lift',
+                        label: '🏆 League Championship Trophy Lift',
+                        title: 'League Championship Trophy Lift',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'National Stadium',
+                        people: 'Entire Club, Staff, Supporters',
+                        sentiment: '95',
+                        journal: 'Confetti falling from the rafters, hands lifting silverware high into the night sky. A season of sacrifices validated in gold.'
                     }
-                };
+                ],
+                cricket: [
+                    {
+                        id: 'maiden_century',
+                        label: '🏏 Maiden First-Class Century (104*)',
+                        title: 'Maiden First-Class Century (104*)',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Historic County Oval',
+                        people: 'Batting Partner & Dressing Room',
+                        sentiment: '95',
+                        journal: 'Raising the bat to a standing ovation as the triple-digit milestone arrived through a crisp cover drive. Pure composure under intense seam bowling.'
+                    },
+                    {
+                        id: 'five_fer',
+                        label: '🎯 Fiery 5-Wicket Haul (5/28)',
+                        title: 'Fiery 5-Wicket Haul (5/28)',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'State Cricket Ground',
+                        people: 'Wicketkeeper & Slip Cordon',
+                        sentiment: '95',
+                        journal: 'Finding the exact seam angle and rhythm. Watching timber fly and bails light up five times in a match-defining spell.'
+                    },
+                    {
+                        id: 'clutch_death_overs',
+                        label: '⚡ Defending 7 Runs in the Final Over',
+                        title: 'Defending 7 Runs in the Final Over',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Packed Floodlit Stadium',
+                        people: 'Captain & Bowler Union',
+                        sentiment: '90',
+                        journal: 'Six nerve-shredding yorkers under the blinding floodlights. Ice in the veins when the entire tournament was on the line.'
+                    },
+                    {
+                        id: 'captaincy_debut',
+                        label: '©️ First Match Leading as Captain',
+                        title: 'Leading the Team as Captain for the First Time',
+                        era: 'High School & Early Ambition',
+                        landmark: true,
+                        location: 'Home Pavilion Ground',
+                        people: 'Vice-Captain & Squad',
+                        sentiment: '90',
+                        journal: 'Walking out for the toss wearing the captain blazer. The weight of responsibility turned into pride as the team rallied together.'
+                    }
+                ],
+                basketball: [
+                    {
+                        id: 'buzzer_beater',
+                        label: '🏀 Game 7 Buzzer-Beater Fadeaway',
+                        title: 'Game 7 Buzzer-Beater Fadeaway',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Sold-Out Home Court',
+                        people: 'Roster, Head Coach, Family',
+                        sentiment: '95',
+                        journal: 'Three seconds on the clock, isolation at the top of the key. Rose over two defenders, high arc, bottom of the net as the red horn sounded.'
+                    },
+                    {
+                        id: 'double_double',
+                        label: '📊 Playoff Double-Double: 28 Pts, 14 Reb',
+                        title: 'Playoff Double-Double: 28 Pts, 14 Rebounds',
+                        era: 'Collegiate / Trial Era',
+                        landmark: false,
+                        location: 'Conference Championship Center',
+                        people: 'Starting Five & Bench Mob',
+                        sentiment: '90',
+                        journal: 'Dominating the paint on both ends of the floor. Boxing out, setting hard screens, and attacking the rim with relentless energy.'
+                    },
+                    {
+                        id: 'dagger_three',
+                        label: '🔥 Clutch Step-Back 3 & Defensive Lockdown',
+                        title: 'Clutch Step-Back Three & Defensive Lockdown',
+                        era: 'Championship & Breakthrough',
+                        landmark: false,
+                        location: 'Downtown Arena',
+                        people: 'Teammates & Home Crowd',
+                        sentiment: '90',
+                        journal: 'Created separation with a sharp step-back and knocked down the dagger three, followed by a steal on the immediate transition.'
+                    }
+                ],
+                tennis: [
+                    {
+                        id: 'five_set_epic',
+                        label: '🎾 Five-Set Epic: 5th Set Tiebreak (7-6)',
+                        title: 'Five-Set Epic: Conquering the 5th Set Tiebreak (7-6)',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Center Court',
+                        people: 'Coach Box & Supportive Parents',
+                        sentiment: '95',
+                        journal: 'Four hours and forty minutes of grueling baseline rallies under searing sun. Digging deep into mental reserves to close out match point.'
+                    },
+                    {
+                        id: 'flawless_serve',
+                        label: '⚡ 18 Aces in Straight-Set Masterclass',
+                        title: 'Serving 18 Aces in Flawless Straight-Set Match',
+                        era: 'Collegiate / Trial Era',
+                        landmark: false,
+                        location: 'Grand Slam Qualifying Courts',
+                        people: 'Hitting Partner & Coach',
+                        sentiment: '90',
+                        journal: 'The serve was untouchable today. Hitting spots with surgical precision on both wide corners and down the T.'
+                    },
+                    {
+                        id: 'first_title',
+                        label: '🏆 First Tour Title Trophy',
+                        title: 'First Tour Title Championship Trophy',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Metropolitan Tennis Stadium',
+                        people: 'Team & Family',
+                        sentiment: '95',
+                        journal: 'Holding the championship trophy after surviving the week. All the early morning drill sessions proved their worth.'
+                    }
+                ],
+                combat: [
+                    {
+                        id: 'ko_victory',
+                        label: '🥊 Title Fight: 2nd-Round Counter KO',
+                        title: 'Title Fight: 2nd-Round Counter-Hook Knockout',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'The Grand Arena Octagon',
+                        people: 'Corner Team, Head Coach, Cutman',
+                        sentiment: '95',
+                        journal: 'Slipped the jab and countered with a clean left hook that ended the contest. Precision beats power and timing beats speed.'
+                    },
+                    {
+                        id: 'black_belt',
+                        label: '🥋 Black Belt Promotion & Mastery',
+                        title: 'Earning the Black Belt Promotion',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: true,
+                        location: 'Home Dojo & Academy',
+                        people: 'Grandmaster, Sensei, Training Partners',
+                        sentiment: '95',
+                        journal: 'A decade of sweat, bruises, mat burns, and discipline culminating in tying the black belt around my waist. The journey truly begins now.'
+                    },
+                    {
+                        id: 'five_round_war',
+                        label: '⚔️ 5-Round Championship War Victory',
+                        title: 'Unanimous Decision in 5-Round Championship War',
+                        era: 'Comeback & Resilience Season',
+                        landmark: false,
+                        location: 'Fight Night Colosseum',
+                        people: 'Corner Crew & Physio',
+                        sentiment: '85',
+                        journal: 'Battered and bloodied, but never yielded an inch of ground. Imposed will across all twenty-five minutes of combat.'
+                    }
+                ],
+                track: [
+                    {
+                        id: 'sub_102',
+                        label: '⚡ Sub-10.2s 100m Dash & New PR',
+                        title: 'Sub-10.2s 100m Dash & New Personal Record',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'National Athletics Stadium',
+                        people: 'Sprint Coach & Track Club',
+                        sentiment: '95',
+                        journal: 'Explosive block clearance, seamless transition drive, and hitting max velocity at 60 meters. Glancing at the timer board and seeing the historic PR.'
+                    },
+                    {
+                        id: 'gold_podium',
+                        label: '🥇 State Championship Gold atop Podium',
+                        title: 'State Championship Gold Medal atop the Podium',
+                        era: 'High School & Early Ambition',
+                        landmark: true,
+                        location: 'State Track Facility',
+                        people: 'Parents & School Teammates',
+                        sentiment: '95',
+                        journal: 'Standing atop the center podium hearing the cheers. That medal around the neck represents months of solitary sprint repeats in cold rain.'
+                    }
+                ],
+                swimming: [
+                    {
+                        id: 'anchor_gold',
+                        label: '🏊 Anchor Leg Touchpad Gold by 0.04s',
+                        title: 'Clutch Relay Anchor Leg: Gold by 0.04s',
+                        era: 'Championship & Breakthrough',
+                        landmark: true,
+                        location: 'Aquatic Competition Center',
+                        people: 'Relay Quartet & Head Coach',
+                        sentiment: '95',
+                        journal: 'Dove into the wake half a body-length behind. Hammered the kick, nailed the underwater turn, and touched the touchpad four hundredths ahead.'
+                    },
+                    {
+                        id: 'national_cut',
+                        label: '⏱️ Securing National Qualifying Cut',
+                        title: 'Hitting the National Qualifying Standard Cut',
+                        era: 'Collegiate / Trial Era',
+                        landmark: true,
+                        location: 'Olympic Trials Pool',
+                        people: 'Swim Club & Family',
+                        sentiment: '90',
+                        journal: 'Glanced at the timing board: green light and the national qualifying standard secured. The work is just getting started.'
+                    }
+                ],
+                life: [
+                    {
+                        id: 'graduation_day',
+                        label: '🎓 University Graduation & Honors',
+                        title: 'University Graduation & Academic Honors',
+                        era: 'Youth & Formative Years',
+                        landmark: true,
+                        location: 'University Grand Quadrangle',
+                        people: 'Parents, Mentors, Lifelong Friends',
+                        sentiment: '95',
+                        journal: 'Walking across the stage in cap and gown, seeing tears of joy in my parents\' eyes. The closing of one profound chapter and the birth of another.'
+                    },
+                    {
+                        id: 'first_home',
+                        label: '🏡 Keys in Hand: Our First Home',
+                        title: 'Keys in Hand: Our First Home',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: true,
+                        location: 'New Hearth & Home',
+                        people: 'Partner & Family',
+                        sentiment: '90',
+                        journal: 'Turning the key in the front door of our empty living room, sunlight streaming through bare windows. A sanctuary where our next decade will unfold.'
+                    },
+                    {
+                        id: 'rising_strong',
+                        label: '🌿 Rising Strong: Overcoming Valley',
+                        title: 'Rising Strong: Emerging from Life\'s Deepest Valley',
+                        era: 'Comeback & Resilience Season',
+                        landmark: true,
+                        location: 'Mountain Trail Sanctuary',
+                        people: 'Closest Confidant',
+                        sentiment: '85',
+                        journal: 'When everything seemed broken, taking it one day at a time healed what words could not. Immense gratitude for the quiet strength that lives inside us.'
+                    },
+                    {
+                        id: 'mentoring_torch',
+                        label: '🕯️ Passing the Torch: Mentorship',
+                        title: 'Passing the Torch: Mentoring the Next Generation',
+                        era: 'Mastery & Legacy Chapters',
+                        landmark: false,
+                        location: 'Community Center Hall',
+                        people: 'Young Proteges & Peers',
+                        sentiment: '90',
+                        journal: 'Seeing the spark ignite in their eyes just as it did in mine years ago. True legacy isn\'t what you collect, but what you leave behind in others.'
+                    }
+                ]
+            };
 
-                inspirationSelector.addEventListener('change', (e) => {
-                    const val = e.target.value;
-                    if (val && inspirationThemes[val]) {
-                        const data = inspirationThemes[val];
-                        const titleInput = document.getElementById('log-input-title');
-                        const journalInput = document.getElementById('log-input-journal');
-                        if (titleInput && (!titleInput.value.trim() || Object.values(inspirationThemes).some(t => t.title === titleInput.value))) {
-                            titleInput.value = data.title;
-                        }
-                        if (journalInput) {
-                            journalInput.placeholder = data.journalHint;
-                        }
-                        playSoftSound('click');
+            function populateMilestonePresets(sportKey, isLife) {
+                const sel = document.getElementById('log-milestone-preset');
+                if (!sel) return;
+                sel.innerHTML = '<option value="">✨ Custom / Blank Entry (Pick Preset to Auto-Fill)</option>';
+                const key = isLife ? 'life' : (sportKey || 'football');
+                const list = SPORT_MILESTONE_PRESETS[key] || SPORT_MILESTONE_PRESETS.football || [];
+                list.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.label;
+                    sel.appendChild(opt);
+                });
+            }
+
+            function resetLedgerChips() {
+                document.querySelectorAll('.ledger-chip').forEach(chip => {
+                    chip.classList.remove('active-chip', 'bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                    chip.classList.add('bg-stone-900', 'text-stone-300', 'border-white/10');
+                });
+            }
+
+            // Wire Preset Dropdown Change Handler
+            const presetSelector = document.getElementById('log-milestone-preset');
+            if (presetSelector) {
+                presetSelector.addEventListener('change', (e) => {
+                    const id = e.target.value;
+                    if (!id) return;
+                    const key = isLifeMode ? 'life' : (currentSport || 'football');
+                    const presets = SPORT_MILESTONE_PRESETS[key] || SPORT_MILESTONE_PRESETS.football || [];
+                    const found = presets.find(p => p.id === id);
+                    if (found) {
+                        const titleEl = document.getElementById('log-input-title');
+                        const eraEl = document.getElementById('log-input-era');
+                        const favEl = document.getElementById('log-input-favorite');
+                        const locEl = document.getElementById('log-input-location');
+                        const pplEl = document.getElementById('log-input-people');
+                        const jnlEl = document.getElementById('log-input-journal');
+                        const dateEl = document.getElementById('log-input-date');
+
+                        if (titleEl) titleEl.value = found.title;
+                        if (eraEl) eraEl.value = found.era;
+                        if (favEl) favEl.checked = !!found.landmark;
+                        if (locEl) locEl.value = found.location;
+                        if (pplEl) pplEl.value = found.people;
+                        if (jnlEl) jnlEl.value = found.journal;
+                        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+
+                        // Sync resonance chip
+                        const targetChip = Array.from(document.querySelectorAll('.resonance-chip')).find(c => c.dataset.score === found.sentiment);
+                        if (targetChip) targetChip.click();
+
+                        resetLedgerChips();
+                        playSoftSound('chime');
                     }
                 });
+            }
+
+            // Wire Match Ledger Chips
+            document.querySelectorAll('.ledger-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('active-chip');
+                    const isActive = chip.classList.contains('active-chip');
+                    if (isActive) {
+                        chip.classList.remove('bg-stone-900', 'text-stone-300', 'border-white/10');
+                        chip.classList.add('bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                    } else {
+                        chip.classList.remove('bg-amber-500/25', 'text-amber-200', 'border-amber-400', 'font-semibold', 'shadow-sm');
+                        chip.classList.add('bg-stone-900', 'text-stone-300', 'border-white/10');
+                    }
+
+                    const group = chip.dataset.group;
+                    const val = chip.dataset.val;
+
+                    if (isActive) {
+                        if (group === 'setting') {
+                            const locInput = document.getElementById('log-input-location');
+                            if (locInput) {
+                                if (!locInput.value) locInput.value = val;
+                                else if (!locInput.value.includes(val)) locInput.value += ` (${val})`;
+                            }
+                        } else if (group === 'people') {
+                            const pplInput = document.getElementById('log-input-people');
+                            if (pplInput) {
+                                if (!pplInput.value) pplInput.value = val;
+                                else if (!pplInput.value.includes(val)) pplInput.value += `, ${val}`;
+                            }
+                        } else if (group === 'outcome') {
+                            if (val.includes('Victory') || val.includes('Record')) {
+                                const fav = document.getElementById('log-input-favorite');
+                                if (fav) fav.checked = true;
+                            }
+                        }
+                    }
+                    playSoftSound('click');
+                });
+            });
+
+            // Wire Auto-Generate Story Button
+            const btnAutoStory = document.getElementById('btn-auto-story');
+            if (btnAutoStory) {
+                btnAutoStory.addEventListener('click', () => {
+                    const title = document.getElementById('log-input-title')?.value.trim() || 'Milestone Moment';
+                    const location = document.getElementById('log-input-location')?.value.trim();
+                    const people = document.getElementById('log-input-people')?.value.trim();
+                    const era = document.getElementById('log-input-era')?.value || 'Crucial Era';
+
+                    const activeChips = Array.from(document.querySelectorAll('.ledger-chip.active-chip')).map(c => c.dataset.val);
+                    const outcome = activeChips.find(v => v.includes('Victory') || v.includes('Draw') || v.includes('Defeat') || v.includes('Lesson') || v.includes('Record')) || '';
+                    const role = activeChips.find(v => v === 'Starter' || v === 'Captain' || v === 'MVP') || '';
+
+                    let story = `${title}. A defining chapter in my ${era.toLowerCase()}`;
+                    if (role) story += ` stepping up as ${role}`;
+                    if (location) story += ` at ${location}`;
+                    story += `.`;
+
+                    if (outcome) {
+                        story += ` The contest concluded with a memorable ${outcome.toLowerCase()}.`;
+                    }
+                    if (people) {
+                        story += ` Sharing this moment alongside ${people} made the journey unforgettable.`;
+                    } else {
+                        story += ` Every minute of relentless preparation and dedication came alive when it mattered most.`;
+                    }
+
+                    const journalInput = document.getElementById('log-input-journal');
+                    if (journalInput) {
+                        journalInput.value = story;
+                        journalInput.classList.add('ring-2', 'ring-amber-400/50');
+                        setTimeout(() => journalInput.classList.remove('ring-2', 'ring-amber-400/50'), 600);
+                    }
+                    playSoftSound('chime');
+                });
+            }
+
+            // Wire Voice Dictation Button (Web Speech API)
+            const btnDictate = document.getElementById('btn-dictate-journal');
+            const dictateIcon = document.getElementById('dictate-icon');
+            const dictateLabel = document.getElementById('dictate-label');
+            let recognition = null;
+            let isRecording = false;
+
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (btnDictate) {
+                if (SpeechRec) {
+                    recognition = new SpeechRec();
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
+
+                    recognition.onstart = () => {
+                        isRecording = true;
+                        if (dictateIcon) dictateIcon.textContent = '🔴';
+                        if (dictateLabel) dictateLabel.textContent = 'Listening...';
+                        btnDictate.classList.add('bg-red-500/20', 'border-red-400', 'text-red-300', 'animate-pulse');
+                    };
+
+                    recognition.onresult = (event) => {
+                        let finalTranscript = '';
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript;
+                            }
+                        }
+                        if (finalTranscript) {
+                            const journalInput = document.getElementById('log-input-journal');
+                            if (journalInput) {
+                                const curr = journalInput.value.trim();
+                                journalInput.value = curr ? `${curr} ${finalTranscript.trim()}` : finalTranscript.trim();
+                            }
+                        }
+                    };
+
+                    recognition.onerror = (e) => {
+                        console.warn('Speech recognition error:', e.error);
+                        stopRecording();
+                    };
+
+                    recognition.onend = () => {
+                        stopRecording();
+                    };
+
+                    function stopRecording() {
+                        isRecording = false;
+                        if (dictateIcon) dictateIcon.textContent = '🎙️';
+                        if (dictateLabel) dictateLabel.textContent = 'Dictate';
+                        btnDictate.classList.remove('bg-red-500/20', 'border-red-400', 'text-red-300', 'animate-pulse');
+                    }
+
+                    btnDictate.addEventListener('click', () => {
+                        if (!isRecording) {
+                            try {
+                                recognition.start();
+                                playSoftSound('click');
+                            } catch (e) {
+                                console.warn(e);
+                            }
+                        } else {
+                            recognition.stop();
+                            stopRecording();
+                            playSoftSound('click');
+                        }
+                    });
+                } else {
+                    btnDictate.title = 'Voice dictation supported in Chrome, Edge, Safari';
+                    btnDictate.classList.add('opacity-60');
+                }
             }
 
             document.getElementById('btn-close-log-modal').addEventListener('click', () => {
@@ -7568,6 +8938,8 @@
                 updateActiveNode(index);
                 flyToNode(index, instant, openModal);
             }
+            window.visitNode = visitNode;
+            window.flyToNode = flyToNode;
 
             function toggleTour() {
                 if (isTourActive) {
@@ -7776,6 +9148,7 @@
                 }
                 playSoftSound('click');
             }
+            window.openInspectModalForNode = openInspectModalForNode;
 
             document.getElementById('snippet-clickable-area').addEventListener('click', () => {
                 visitNode(activeNodeIndex, true);
@@ -7819,6 +9192,8 @@
                         if (currentMem.people) document.getElementById('log-input-people').value = currentMem.people;
                     }
 
+                    populateMilestonePresets(currentSport, isLifeMode);
+                    resetLedgerChips();
                     document.getElementById('btn-submit-memory-text').textContent = isLifeMode ? 'Add Memory to Node' : 'Add Milestone to Node';
                     modalLogPlay.classList.add('active');
                     playSoftSound('click');
@@ -10385,9 +11760,27 @@
                 }
                 playSoftSound('chime');
             }
+            window.openProfileEditor = openProfileEditor;
 
             function closeProfileEditor() {
                 if (modalEditProfile) modalEditProfile.classList.remove('active');
+                if (typeof gsap !== 'undefined' && camera && controls && defaultCamPos) {
+                    gsap.to(camera.position, {
+                        x: defaultCamPos.x,
+                        y: defaultCamPos.y,
+                        z: defaultCamPos.z,
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        onUpdate: () => controls.update()
+                    });
+                    gsap.to(controls.target, {
+                        x: 0,
+                        y: 1.25,
+                        z: 0,
+                        duration: 1.2,
+                        ease: 'power2.out'
+                    });
+                }
             }
 
             if (btnCloseEditProfile) btnCloseEditProfile.addEventListener('click', closeProfileEditor);
@@ -10500,6 +11893,23 @@
                 });
                 if (tabKey === 'avatar') {
                     initAvatarStudioUI();
+                    if (typeof gsap !== 'undefined' && camera && controls) {
+                        gsap.to(camera.position, {
+                            x: 0,
+                            y: 1.45,
+                            z: 3.2,
+                            duration: 1.2,
+                            ease: 'power2.out',
+                            onUpdate: () => controls.update()
+                        });
+                        gsap.to(controls.target, {
+                            x: 0,
+                            y: 1.25,
+                            z: 0,
+                            duration: 1.2,
+                            ease: 'power2.out'
+                        });
+                    }
                 }
             }
 
@@ -12192,6 +13602,16 @@
                     return;
                 }
 
+                // Click on 3D AI Coach NPC in Technical Area
+                if (aiCoachGroup) {
+                    const coachHits = raycaster.intersectObjects([aiCoachGroup], true);
+                    if (coachHits.length > 0) {
+                        const coachBtn = document.getElementById('btn-open-companion') || btnAICompanion;
+                        if (coachBtn) coachBtn.click();
+                        return;
+                    }
+                }
+
                 // Click on Younger Self substitute bench
                 const benchHits = raycaster.intersectObjects(benchGroup.children, true);
                 if (benchHits.length > 0) {
@@ -12916,6 +14336,65 @@
             document.getElementById('tab-btn-view-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
             document.getElementById('btn-open-trophy-cabinet')?.addEventListener('click', () => switchViewMode('cabinet'));
 
+            // ── TIME TRAVEL SLIDER INTERACTION (2018 - 2026) ──
+            const yearSlider = document.getElementById('arena-year-slider');
+            const yearValLabel = document.getElementById('time-dial-year-val');
+            let currentFilteredYear = 2026;
+
+            function updateTimeTravelYear(yr) {
+                currentFilteredYear = parseInt(yr);
+                if (yearValLabel) yearValLabel.textContent = currentFilteredYear;
+
+                // Update Stadium Jumbotron scoreboard text live
+                if (currentFieldModelGroup) {
+                    currentFieldModelGroup.traverse(child => {
+                        if (child.name && child.name.includes('Jumbotron') && child.material && child.material.map) {
+                            const jbCanvas = child.material.map.image;
+                            if (jbCanvas && jbCanvas.getContext) {
+                                const jbCtx = jbCanvas.getContext('2d');
+                                jbCtx.fillStyle = '#060a12';
+                                jbCtx.fillRect(0, 0, 512, 256);
+                                jbCtx.strokeStyle = '#00d2ff';
+                                jbCtx.lineWidth = 6;
+                                jbCtx.strokeRect(6, 6, 500, 244);
+                                
+                                jbCtx.fillStyle = 'rgba(0, 210, 255, 0.15)';
+                                jbCtx.fillRect(10, 10, 492, 40);
+                                jbCtx.fillStyle = '#00d2ff';
+                                jbCtx.font = 'bold 22px monospace';
+                                jbCtx.textAlign = 'center';
+                                jbCtx.fillText('LEGACYLANE ARENA • ' + (currentSport || 'CAREER').toUpperCase(), 256, 38);
+                                
+                                jbCtx.fillStyle = '#ffffff';
+                                jbCtx.font = '900 76px "Arial Black", sans-serif';
+                                jbCtx.fillText(String(currentFilteredYear), 256, 125);
+                                
+                                const totalMem = getActiveMemories().length;
+                                const yearProgress = Math.max(1, Math.min(totalMem, Math.round(totalMem * ((currentFilteredYear - 2018) / 8))));
+                                const fans = Math.round(25000 + 45000 * ((currentFilteredYear - 2018) / 8));
+                                
+                                jbCtx.fillStyle = '#f59e0b';
+                                jbCtx.font = 'bold 24px monospace';
+                                jbCtx.fillText(yearProgress + ' MILESTONES  ·  ' + fans.toLocaleString() + ' FANS', 256, 185);
+                                
+                                jbCtx.fillStyle = '#10b981';
+                                jbCtx.font = 'bold 16px monospace';
+                                jbCtx.fillText('● HISTORICAL ERA SYNCHRONIZED', 256, 225);
+                                
+                                child.material.map.needsUpdate = true;
+                                if (child.material.emissiveMap) child.material.emissiveMap.needsUpdate = true;
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (yearSlider) {
+                yearSlider.addEventListener('input', (e) => {
+                    updateTimeTravelYear(e.target.value);
+                });
+            }
+
             // Expose globally for accessibility & script access
             window.inspectTrophy = inspectTrophy;
             window.closeTrophyInspection = closeTrophyInspection;
@@ -12924,6 +14403,9 @@
             window.camera = camera;
             window.controls = controls;
             window.avatarGroup = avatarGroup;
+            window.avatarLimbs = avatarLimbs;
+            window.aiCoachGroup = aiCoachGroup;
+            window.benchGroup = benchGroup;
             window.championPedestalGroup = championPedestalGroup;
 
             /* ------------------------------------------------------------------
@@ -12976,11 +14458,40 @@
 
                 const memories = getActiveMemories();
 
-                // ── AVATAR: idle breathing ──
-                const breatheAmt = Math.sin(time * 2.1) * 0.018;
-                torsoMesh.position.y = 1.15 + breatheAmt;
-                headMesh.position.y  = 2.0  + breatheAmt * 0.6;
-                if (hairMesh) hairMesh.position.y = 2.32 + breatheAmt * 0.6;
+                // ── AVATAR: idle breathing (Anatomically anchored to 1.44 torso, 1.88 head, 1.58 arms) ──
+                const breatheAmt = Math.sin(time * 2.1) * 0.008;
+                if (torsoMesh) torsoMesh.position.y = 1.44 + breatheAmt;
+                if (headMesh) headMesh.position.y  = 1.88 + breatheAmt * 0.6;
+                if (avatarLimbs.armLGroup) avatarLimbs.armLGroup.position.y = 1.58 + breatheAmt * 0.4;
+                if (avatarLimbs.armRGroup) avatarLimbs.armRGroup.position.y = 1.58 + breatheAmt * 0.4;
+
+                // ── BIOLOGICAL BLINKING & EYE SACCADES (Avatar v5 Engine) ──
+                if (avatarLimbs && avatarLimbs.eyes) {
+                    const blinkCycle = time % 3.6;
+                    const blinkProgress = (blinkCycle < 0.16) ? Math.sin((blinkCycle / 0.16) * Math.PI) : 0;
+                    const upRot = THREE.MathUtils.lerp(-0.65, 0.15, blinkProgress);
+                    const loRot = THREE.MathUtils.lerp(0.55, -0.15, blinkProgress);
+                    avatarLimbs.eyes.lidUpL.rotation.x = upRot;
+                    avatarLimbs.eyes.lidLoL.rotation.x = loRot;
+                    avatarLimbs.eyes.lidUpR.rotation.x = upRot;
+                    avatarLimbs.eyes.lidLoR.rotation.x = loRot;
+
+                    const gazeX = Math.max(-0.25, Math.min(0.25, mouse.x * 0.25)) + Math.sin(time * 0.7) * 0.02;
+                    const gazeY = Math.max(-0.18, Math.min(0.18, mouse.y * 0.18)) + Math.sin(time * 0.9) * 0.015;
+                    avatarLimbs.eyes.eyeL.rotation.y = -Math.PI / 2 + gazeX;
+                    avatarLimbs.eyes.eyeL.rotation.z = gazeY;
+                    avatarLimbs.eyes.eyeR.rotation.y = -Math.PI / 2 + gazeX;
+                    avatarLimbs.eyes.eyeR.rotation.z = gazeY;
+                }
+
+                // ── AI COACH HEAD TRACKING ──
+                if (aiCoachHead && avatarGroup) {
+                    const cWorldPos = new THREE.Vector3();
+                    aiCoachHead.getWorldPosition(cWorldPos);
+                    const lookVector = avatarGroup.position.clone().sub(cWorldPos);
+                    const targetAngle = Math.atan2(lookVector.x, lookVector.z);
+                    aiCoachHead.rotation.y = THREE.MathUtils.lerp(aiCoachHead.rotation.y, targetAngle * 0.5, 0.05);
+                }
 
                 // ── FREE WALK MODE LOCOMOTION (WASD) ──
                 if (isFreeWalkMode) {

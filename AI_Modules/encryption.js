@@ -1,7 +1,10 @@
 import crypto from 'crypto';
 
-// Default 32-byte secret key fallback for AES-256 (if ENCRYPTION_KEY is not in env)
-const DEFAULT_KEY = process.env.ENCRYPTION_KEY || 'legacylane-secure-memory-encryption-key-32b!';
+// 32-byte secret key for AES-256-GCM encryption
+if (!process.env.ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL SECURITY CONFIGURATION ERROR: ENCRYPTION_KEY environment variable is required.');
+}
+const DEFAULT_KEY = process.env.ENCRYPTION_KEY || 'legacylane_dev_vault_key_32bytes_v1!';
 const ALGORITHM = 'aes-256-gcm';
 
 /**

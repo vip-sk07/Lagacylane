@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -52,13 +53,63 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
       callback(null, true);
     } else {
-      callback(null, true);
+      callback(new Error('Blocked by CORS policy: Origin not allowed'));
     }
   },
   credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// ── JWT AUTHENTICATION ENGINE (SRS §5.3 / Security S1) ──
+const JWT_SECRET = process.env.JWT_SECRET || 'legacylane_secret_master_token_key_2026_x!';
+
+function generateToken(user) {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({
+    userId: user.User_ID || user.id,
+    email: user.Email || user.email,
+    role: user.ProfileType || user.role || 'Athlete',
+    exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60) // 30 days expiry
+  })).toString('base64url');
+  const signature = crypto.createHmac('sha256', JWT_SECRET).update(`${header}.${payload}`).digest('base64url');
+  return `${header}.${payload}.${signature}`;
+}
+
+function verifyToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.trim().replace(/^Bearer\s+/i, '').split('.');
+  if (parts.length !== 3) return null;
+  const [header, payload, signature] = parts;
+  const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(`${header}.${payload}`).digest('base64url');
+  if (signature.length !== expectedSig.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
+    return null;
+  }
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (data.exp && data.exp < Math.floor(Date.now() / 1000)) return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractAuthUser(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    return verifyToken(authHeader);
+  }
+  return null;
+}
+
+function requireAuth(req, res, next) {
+  const user = extractAuthUser(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Unauthorized: A valid authentication token is required.' });
+  }
+  req.user = user;
+  next();
+}
 
 // ── RATE LIMITING (SRS §5.3 Security Requirements) ──
 const authLimiter = rateLimit({
@@ -181,7 +232,8 @@ async (req, res) => {
       memoriesCount: 0
     };
 
-    res.status(201).json({ message: 'Account created successfully', user: newUser });
+    const token = generateToken(newUser);
+    res.status(201).json({ message: 'Account created successfully', user: newUser, token });
   } catch (err) {
     console.error('Registration Error:', err);
     res.status(500).json({ error: 'Server error creating account.' });
@@ -231,7 +283,8 @@ async (req, res) => {
       memoriesCount
     };
 
-    res.json({ message: 'Login successful', user: userPayload });
+    const token = generateToken(userPayload);
+    res.json({ message: 'Login successful', user: userPayload, token });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ error: 'Server error during login.' });
@@ -373,16 +426,12 @@ app.post('/api/auth/google', async (req, res) => {
       avatarUrl:   userRow.AvatarURL
     };
 
-    res.json({ message: 'Google Sign-In successful', user: userPayload });
+    const token = generateToken(userPayload);
+    res.json({ message: 'Google Sign-In successful', user: userPayload, token });
   } catch (err) {
     console.error('Google Auth Error:', err.message);
     res.status(401).json({ error: err.message || 'Google authentication failed.' });
   }
-});
-
-// GET /api/auth/google/client-id  — returns the public client ID for frontend Google Sign-In button
-app.get('/api/auth/google/client-id', (req, res) => {
-  res.json({ clientId: GOOGLE_CLIENT_ID });
 });
 
 // ----------------------------------------------------
@@ -1431,16 +1480,22 @@ app.get('/api/vault/:ownerId', async (req, res) => {
   try {
     const { ownerId } = req.params;
     const { viewerId } = req.query;
+    const authUser = extractAuthUser(req);
+    const effectiveViewerId = viewerId || (authUser ? authUser.userId : null);
 
-    // Only enforce ACL when a different viewer is specified
-    if (viewerId && ownerId !== viewerId) {
+    if (!effectiveViewerId) {
+      return res.status(401).json({ error: 'Authentication required: viewer identification or valid token must be supplied.' });
+    }
+
+    // Only enforce ACL when a different viewer is requesting access
+    if (ownerId !== effectiveViewerId) {
       const grant = db.prepare(`
         SELECT PermissionLevel, Status FROM FamilyAccessControl
         WHERE Owner_User_ID = ? AND Family_User_ID = ? AND Status = 'active'
-      `).get(ownerId, viewerId);
+      `).get(ownerId, effectiveViewerId);
 
       if (!grant) {
-        return res.status(403).json({ error: 'Access denied. You do not have permission to view this vault.' });
+        return res.status(403).json({ error: 'Access denied: You do not have active family circle permissions to view this vault.' });
       }
     }
 
@@ -1482,7 +1537,7 @@ app.put('/api/memories/:id/vault', async (req, res) => {
   }
 });
 
-// Verify or initialize user's 4-digit numeric Vault PIN
+// Verify or initialize user's 4-digit numeric Vault PIN (bcrypt hashed)
 app.post('/api/vault/verify-pin', async (req, res) => {
   try {
     const { userId, pin } = req.body;
@@ -1492,20 +1547,30 @@ app.post('/api/vault/verify-pin', async (req, res) => {
 
     let user = db.prepare('SELECT User_ID, VaultPIN FROM Users WHERE User_ID = ?').get(userId);
     if (!user) {
-      db.prepare(`
-        INSERT OR IGNORE INTO Users (User_ID, Name, Email, PasswordHash, ProfileType, VaultPIN)
-        VALUES (?, 'Athlete', ?, 'session_local', 'Standard', ?)
-      `).run(userId, `${userId}@legacylane.local`, String(pin));
-      return res.json({ valid: true, initialized: true, message: 'Vault PIN successfully established.' });
+      return res.status(404).json({ error: 'User account not found.' });
     }
 
     if (!user.VaultPIN) {
-      // User is setting their initial Vault PIN
-      db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(String(pin), userId);
+      // User is setting their initial Vault PIN -> hash with bcrypt!
+      const hashedPin = await bcrypt.hash(String(pin), 10);
+      db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(hashedPin, userId);
       return res.json({ valid: true, initialized: true, message: 'Vault PIN successfully established.' });
     }
 
-    if (user.VaultPIN === String(pin)) {
+    // Support bcrypt hashes and auto-upgrade legacy plain text
+    let isMatch = false;
+    if (user.VaultPIN.startsWith('$2a$') || user.VaultPIN.startsWith('$2b$')) {
+      isMatch = await bcrypt.compare(String(pin), user.VaultPIN);
+    } else {
+      isMatch = (user.VaultPIN === String(pin));
+      if (isMatch) {
+        // Upgrade legacy plaintext PIN to bcrypt hash in DB
+        const upgradedHash = await bcrypt.hash(String(pin), 10);
+        db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(upgradedHash, userId);
+      }
+    }
+
+    if (isMatch) {
       return res.json({ valid: true, message: 'Vault PIN verified. Access granted.' });
     } else {
       return res.status(401).json({ valid: false, error: 'Incorrect Vault PIN. Please try again.' });
@@ -1834,6 +1899,23 @@ app.get('/api/share/keepsake/:memoryId', async (req, res) => {
 app.get('/api/users/:userId/export', async (req, res) => {
   try {
     const { userId } = req.params;
+    const authUser = extractAuthUser(req);
+    const passwordConfirm = req.query.password || req.headers['x-confirmation-password'];
+    let isAuthorized = false;
+
+    if (authUser && (authUser.userId === userId || authUser.role === 'Admin')) {
+      isAuthorized = true;
+    } else if (passwordConfirm) {
+      const u = db.prepare('SELECT PasswordHash FROM Users WHERE User_ID = ?').get(userId);
+      if (u && bcrypt.compareSync(passwordConfirm, u.PasswordHash)) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(403).json({ error: 'Access denied: Authentication required to export account data.' });
+    }
+
     const user = db.prepare('SELECT User_ID, Name, Email, ProfileType, CreatedAt FROM Users WHERE User_ID = ?').get(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -1864,6 +1946,22 @@ app.get('/api/users/:userId/export', async (req, res) => {
 app.delete('/api/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const authUser = extractAuthUser(req);
+    const passwordConfirm = req.body?.password || req.headers['x-confirmation-password'];
+    let isAuthorized = false;
+
+    if (authUser && (authUser.userId === userId || authUser.role === 'Admin')) {
+      isAuthorized = true;
+    } else if (passwordConfirm) {
+      const u = db.prepare('SELECT PasswordHash FROM Users WHERE User_ID = ?').get(userId);
+      if (u && bcrypt.compareSync(passwordConfirm, u.PasswordHash)) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(403).json({ error: 'Access denied: Valid user authentication or password confirmation required to delete account.' });
+    }
 
     // Delete from SQLite (cascades to AthleteProfiles, UserConnections, FamilyAccessControl via FK)
     db.prepare('DELETE FROM Users WHERE User_ID = ?').run(userId);
