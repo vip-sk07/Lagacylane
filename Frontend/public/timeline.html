@@ -256,116 +256,6 @@
             background: rgba(0, 230, 118, 0.6);
         }
 
-        /* -------------------------------------------------------------
-           LIGHT MODE & THEME ADAPTATION SYSTEM
-           ------------------------------------------------------------- */
-        body {
-            transition: background-color 0.4s ease, color 0.4s ease;
-        }
-
-        body.theme-light {
-            background-color: #f0f4f8;
-            color: #0f172a;
-        }
-
-        body.theme-light .tactical-glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(15, 23, 42, 0.12);
-            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-            color: #0f172a;
-        }
-
-        body.theme-light .tactical-glass-card {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(15, 23, 42, 0.12);
-            box-shadow: 0 24px 50px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-            color: #0f172a;
-        }
-
-        body.theme-light .drawer-overlay {
-            background: rgba(240, 244, 248, 0.85);
-        }
-
-        body.theme-light .text-stone-100,
-        body.theme-light .text-stone-200 {
-            color: #0f172a !important;
-        }
-
-        body.theme-light .text-stone-300 {
-            color: #334155 !important;
-        }
-
-        body.theme-light .text-stone-400 {
-            color: #64748b !important;
-        }
-
-        body.theme-light .text-stone-500 {
-            color: #94a3b8 !important;
-        }
-
-        body.theme-light .bg-stone-800,
-        body.theme-light .bg-stone-900,
-        body.theme-light .bg-stone-950,
-        body.theme-light .bg-black\/35,
-        body.theme-light .bg-black\/40 {
-            background-color: #f8fafc !important;
-            border-color: #e2e8f0 !important;
-            color: #0f172a !important;
-        }
-
-        body.theme-light input,
-        body.theme-light textarea,
-        body.theme-light select {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            border-color: #cbd5e1 !important;
-        }
-
-        body.theme-light input:focus,
-        body.theme-light textarea:focus,
-        body.theme-light select:focus {
-            border-color: #f59e0b !important;
-            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-        }
-
-        body.theme-light .border-white\/10,
-        body.theme-light .border-white\/15,
-        body.theme-light .border-white\/20,
-        body.theme-light .border-white\/5 {
-            border-color: rgba(15, 23, 42, 0.12) !important;
-        }
-
-        body.theme-light #left-sidebar {
-            background: rgba(255, 255, 255, 0.96);
-            border-right-color: rgba(15, 23, 42, 0.12);
-            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.08);
-            color: #0f172a;
-        }
-
-        body.theme-light .sidebar-nav-item {
-            color: #334155;
-        }
-
-        body.theme-light .sidebar-nav-item:hover {
-            background: rgba(15, 23, 42, 0.06);
-            color: #0f172a;
-        }
-
-        body.theme-light .ai-drawer-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
-            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.12);
-            border-left-color: rgba(245, 158, 11, 0.6);
-            color: #0f172a;
-        }
-
-        body.theme-light .btn-hover-lift {
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-        }
-
         /* Pulse glow animation for FAB */
         @keyframes pulseGlow {
             0%, 100% {
@@ -756,12 +646,6 @@
             </div>
 
             <!-- View Mode Tabs: Arena HQ vs 3D Trophy Room vs Dedicated 3D Walk -->
-            <!-- Arena Time Travel Dial (2018 - 2026) -->
-            <div id="arena-time-travel" class="tactical-glass px-3 py-1.5 rounded-2xl flex items-center gap-2 border border-amber-500/30 shadow-sm text-xs">
-                <span class="text-amber-400 font-bold flex items-center gap-1">⏳ <span id="time-dial-year-val">2026</span></span>
-                <input type="range" id="arena-year-slider" min="2018" max="2026" value="2026" class="w-18 sm:w-24 md:w-28 accent-amber-500 h-1.5 bg-stone-800 rounded-lg cursor-pointer" title="Time travel through career milestones">
-            </div>
-
             <div id="view-mode-tabs" class="tactical-glass p-1 rounded-2xl flex items-center gap-1 shadow-sm border border-white/10">
                 <button id="tab-btn-view-ground" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-stone-950 shadow-sm transition cursor-pointer" title="Athlete Home Arena & Customization HQ">
                     🏟️ Arena HQ
@@ -776,14 +660,8 @@
                 </a>
             </div>
 
-            <!-- Right: Quick Actions (Theme Switcher + Add Memory CTA + Audio) -->
+            <!-- Right: Quick Actions (Add Memory CTA + Audio) -->
             <div class="flex items-center gap-2">
-                <!-- Light / Dark Mode Toggle -->
-                <button id="theme-toggle-btn" type="button" class="tactical-glass px-3 py-2 rounded-xl flex items-center gap-1.5 border border-white/10 hover:border-amber-400/40 transition btn-hover-lift cursor-pointer shadow-sm" title="Toggle Light / Dark Mode">
-                    <span id="theme-toggle-icon">🌙</span>
-                    <span id="theme-toggle-text" class="hidden sm:inline font-mono text-xs text-stone-300 font-medium">Dark</span>
-                </button>
-
                 <!-- Primary + Add Memory CTA -->
                 <button id="header-btn-add-memory" type="button" class="btn-hover-lift px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-stone-950 font-bold text-xs tracking-wide shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition border border-amber-300/50 cursor-pointer" title="Record a new milestone (Hotkey: N)">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -3374,37 +3252,22 @@
             }
 
             /* ------------------------------------------------------------------
-               3C. LIGHT MODE / DARK MODE THEME CONTROLLER
+               3C. DARK TACTICAL THEME ENFORCER (LIGHT MODE REMOVED)
                ------------------------------------------------------------------ */
-            function applyTheme(theme) {
-                const isLight = theme === 'light';
-                localStorage.setItem('legacy_theme', theme);
-                document.body.classList.toggle('theme-light', isLight);
+            function applyTheme() {
+                localStorage.setItem('legacy_theme', 'dark');
+                document.body.classList.remove('theme-light');
 
-                const iconEl = document.getElementById('theme-toggle-icon');
-                const textEl = document.getElementById('theme-toggle-text');
-                if (iconEl) iconEl.textContent = isLight ? '☀️' : '🌙';
-                if (textEl) textEl.textContent = isLight ? 'Light' : 'Dark';
-
-                if (isLight) {
-                    const lightBg = isLifeMode ? 0xe2f1ea : 0xe2e8f0;
-                    scene.background = new THREE.Color(lightBg);
-                    if (scene.fog) scene.fog.color = new THREE.Color(lightBg);
-                    ambientLight.color.setHex(0xffffff);
-                    ambientLight.intensity = isLifeMode ? 2.0 : 1.8;
-                    dirLight.intensity = 1.6;
-                } else {
-                    const darkBg = isLifeMode ? 0x06151b
-                        : (currentSport === 'basketball' ? 0x070b14
-                        : (currentSport === 'tennis' ? 0x06101e
-                        : (currentSport === 'cricket' ? 0x081510
-                        : (currentSport === 'track' ? 0x130909 : 0x08101a))));
-                    scene.background = new THREE.Color(darkBg);
-                    if (scene.fog) scene.fog.color = new THREE.Color(darkBg);
-                    ambientLight.color.setHex(isLifeMode ? 0x0c1e28 : 0x09131f);
-                    ambientLight.intensity = isLifeMode ? 0.45 : 0.38;
-                    dirLight.intensity = isLifeMode ? 0.75 : 0.55;
-                }
+                const darkBg = isLifeMode ? 0x06151b
+                    : (currentSport === 'basketball' ? 0x070b14
+                    : (currentSport === 'tennis' ? 0x06101e
+                    : (currentSport === 'cricket' ? 0x081510
+                    : (currentSport === 'track' ? 0x130909 : 0x08101a))));
+                scene.background = new THREE.Color(darkBg);
+                if (scene.fog) scene.fog.color = new THREE.Color(darkBg);
+                ambientLight.color.setHex(isLifeMode ? 0x0c1e28 : 0x09131f);
+                ambientLight.intensity = isLifeMode ? 0.45 : 0.38;
+                dirLight.intensity = isLifeMode ? 0.75 : 0.55;
 
                 // Invalidate textures cache and re-render nodes so procedural graphics match theme
                 if (typeof nodeGraphicTextures !== 'undefined' && nodeGraphicTextures.clear) {
@@ -3413,15 +3276,6 @@
                 if (typeof rebuild3DSpline === 'function') {
                     rebuild3DSpline();
                 }
-            }
-
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
-                    const currentIsLight = document.body.classList.contains('theme-light');
-                    applyTheme(currentIsLight ? 'dark' : 'light');
-                    playSoftSound('click');
-                });
             }
 
             const headerAudioToggle = document.getElementById('header-audio-toggle');
@@ -5115,11 +4969,7 @@
 
                 clearAllEnvironments();
 
-                if (document.body.classList.contains('theme-light')) {
-                    const lightBg = sport === 'life' ? 0xe2f1ea : 0xe2e8f0;
-                    scene.background = new THREE.Color(lightBg);
-                    if (scene.fog) scene.fog.color = new THREE.Color(lightBg);
-                } else if (sport === 'life') {
+                if (sport === 'life') {
                     scene.background = new THREE.Color(0x06151b);
                     if (scene.fog) scene.fog.color = new THREE.Color(0x06151b);
                 } else if (sport === 'basketball') {
@@ -13519,7 +13369,7 @@
                13. INITIALIZATION & CINEMATIC INTRO ANIMATION
                ------------------------------------------------------------------ */
             renderDomainSwitcher();
-            applyTheme(localStorage.getItem('legacy_theme') || 'dark');
+            applyTheme();
             rebuild3DSpline();
             updateSubBenchWidget();
             fetchMemoriesFromBackend();
