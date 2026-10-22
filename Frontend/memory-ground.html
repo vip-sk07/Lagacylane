@@ -2084,6 +2084,7 @@
   gcam.position.copy(gl_pos);
 
   let last = performance.now(), T = 0, mx = 0, my = 0;
+  let curVx = 0, curVz = 0, walkPhase = 0;
   canvas.addEventListener('pointermove', e => {
     mx = (e.clientX / app.clientWidth - 0.5);
     my = (e.clientY / app.clientHeight - 0.5);
@@ -2096,8 +2097,9 @@
     T += dt;
 
     if (view === 'ground') {
-      // Keyboard free-walk controls
+      // Keyboard free-walk controls with momentum & normalization
       let mv = false;
+      let moveSpeed = 0;
       const kx = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0);
       const kz = (keys.s || keys.arrowdown ? 1 : 0) - (keys.w || keys.arrowup ? 1 : 0);
 
@@ -2105,23 +2107,57 @@
         walking = false;
         target = null;
         stopTour();
-        P.position.x = clamp(P.position.x + kx * 8 * dt, -24, 24);
-        P.position.z = clamp(P.position.z + kz * 8 * dt, -118, -42);
-        faceAng = Math.atan2(kx, kz);
-        mv = true;
+
+        // Normalize diagonal movement vector
+        const mag = Math.hypot(kx, kz) || 1;
+        const normX = kx / mag;
+        const normZ = kz / mag;
+
+        // Grounded athletic speeds: walk 4.2 units/s, sprint 6.8 units/s with Shift
+        const maxSpd = (keys.shift ? 6.8 : 4.2);
+        const targetVx = normX * maxSpd;
+        const targetVz = normZ * maxSpd;
+
+        // Smooth acceleration inertia
+        curVx += (targetVx - curVx) * Math.min(1, dt * 9);
+        curVz += (targetVz - curVz) * Math.min(1, dt * 9);
+
+        P.position.x = clamp(P.position.x + curVx * dt, -24, 24);
+        P.position.z = clamp(P.position.z + curVz * dt, -118, -42);
+
+        faceAng = Math.atan2(curVx, curVz);
+        moveSpeed = Math.hypot(curVx, curVz);
+        mv = (moveSpeed > 0.15);
       } else if (walking && target) {
+        // Natural waypoint transit with smooth deceleration on arrival
         const d = target.clone().sub(P.position);
         d.y = 0;
         const L = d.length();
-        if (L < 0.65) {
+        if (L < 0.4) {
           P.position.x = target.x;
           P.position.z = target.z;
+          curVx = 0;
+          curVz = 0;
           arrive();
         } else {
           d.normalize();
-          const sp = Math.min(L, Math.max(24.0 * dt, L * 5.0 * dt));
-          P.position.addScaledVector(d, sp);
+          // Natural athletic jog: 6.2 units/s cruise, easing smoothly down when approaching beacon
+          const cruiseSpeed = 6.2;
+          const sp = (L < 3.5) ? THREE.MathUtils.lerp(1.6, cruiseSpeed, L / 3.5) : cruiseSpeed;
+          const step = Math.min(L, sp * dt);
+          P.position.addScaledVector(d, step);
           faceAng = Math.atan2(d.x, d.z);
+          moveSpeed = sp;
+          mv = true;
+        }
+      } else {
+        // Smooth deceleration when releasing keys
+        curVx *= Math.max(0, 1 - dt * 10);
+        curVz *= Math.max(0, 1 - dt * 10);
+        if (Math.hypot(curVx, curVz) > 0.05) {
+          P.position.x = clamp(P.position.x + curVx * dt, -24, 24);
+          P.position.z = clamp(P.position.z + curVz * dt, -118, -42);
+          moveSpeed = Math.hypot(curVx, curVz);
           mv = true;
         }
       }
@@ -2129,15 +2165,22 @@
       // Smooth avatar rotation
       let da = faceAng - P.rotation.y;
       da = Math.atan2(Math.sin(da), Math.cos(da));
-      P.rotation.y += da * Math.min(1, dt * 10);
+      P.rotation.y += da * Math.min(1, dt * 8);
 
-      // Limb walk animation & bobbing
-      const sw = mv ? Math.sin(T * 11) * 0.7 : 0;
-      limbs.legL.rotation.x = sw;
-      limbs.legR.rotation.x = -sw;
-      limbs.armL.rotation.x = -sw * 0.8;
-      limbs.armR.rotation.x = sw * 0.8;
-      P.position.y = mv ? Math.abs(Math.sin(T * 11)) * 0.06 : 0;
+      // Stride animation synced to actual movement speed (natural athletic cadence)
+      if (mv) {
+        walkPhase += moveSpeed * dt * 2.1;
+      }
+      const targetSw = mv ? Math.sin(walkPhase) * 0.42 : 0;
+      const targetArm = mv ? -Math.sin(walkPhase) * 0.32 : 0;
+      limbs.legL.rotation.x = THREE.MathUtils.lerp(limbs.legL.rotation.x, targetSw, Math.min(1, dt * 12));
+      limbs.legR.rotation.x = THREE.MathUtils.lerp(limbs.legR.rotation.x, -targetSw, Math.min(1, dt * 12));
+      limbs.armL.rotation.x = THREE.MathUtils.lerp(limbs.armL.rotation.x, targetArm, Math.min(1, dt * 12));
+      limbs.armR.rotation.x = THREE.MathUtils.lerp(limbs.armR.rotation.x, -targetArm, Math.min(1, dt * 12));
+
+      // Subtle vertical bobbing (0.022 units)
+      const targetY = mv ? Math.abs(Math.sin(walkPhase)) * 0.022 : 0;
+      P.position.y += (targetY - P.position.y) * Math.min(1, dt * 10);
       ring.scale.setScalar(0.9 + 0.1 * Math.sin(T * 3));
 
       // Milestone beacon animations
