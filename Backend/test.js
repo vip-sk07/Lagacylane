@@ -127,20 +127,25 @@ async function runTests() {
 
   // 9. Test GDPR Archive Export
   await test('GET /api/users/:userId/export (GDPR Data Export)', async () => {
-    const res = await fetch(`${baseUrl}/api/users/${testUserId}/export`);
+    const res = await fetch(`${baseUrl}/api/users/${testUserId}/export?password=securePassword123`);
     const data = await res.json();
     if (!res.ok || !data.timelineMemories || !data.aiChatHistory) {
-      throw new Error('Data export failed');
+      throw new Error(data.error || 'Data export failed');
     }
   });
 
   // 10. Test Account & Memory Deletion
   await test('DELETE /api/users/:userId (GDPR Cascading Account Wipe)', async () => {
     const res = await fetch(`${baseUrl}/api/users/${testUserId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-confirmation-password': 'securePassword123'
+      },
+      body: JSON.stringify({ password: 'securePassword123' })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error('Account deletion failed');
+    if (!res.ok) throw new Error(data.error || 'Account deletion failed');
   });
 
   console.log(`\n🏁 Test Results: ${passed}/${total} Tests Passed (${Math.round((passed/total)*100)}% Success Rate)`);

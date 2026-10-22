@@ -312,28 +312,57 @@
         #left-sidebar {
             position: fixed;
             left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 50;
+            top: 0;
+            bottom: 0;
+            z-index: 60;
             pointer-events: auto;
-            width: 224px;
-            background: rgba(7, 12, 22, 0.94);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-left: none;
-            border-radius: 0 22px 22px 0;
-            box-shadow: 8px 0 56px rgba(0,0,0,0.75), inset -1px 0 0 rgba(255,255,255,0.04);
-            transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
+            width: 256px;
+            background: rgba(7, 12, 22, 0.96);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 12px 0 60px rgba(0,0,0,0.85);
+            transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            padding: 10px 8px;
+            padding: 14px 8px;
             gap: 2px;
-            max-height: 88vh;
         }
-        #left-sidebar.collapsed { width: 56px; }
-        #left-sidebar::-webkit-scrollbar { width: 0; }
+        #left-sidebar.collapsed { width: 56px; padding: 14px 8px; }
+        #left-sidebar::-webkit-scrollbar { width: 4px; }
+        #left-sidebar::-webkit-scrollbar-track { background: transparent; }
+        #left-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .sidebar-section-title {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #78716c;
+            padding: 10px 8px 4px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s ease, max-height 0.2s ease;
+        }
+        .sidebar-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        #left-sidebar.collapsed .sidebar-section-title {
+            opacity: 0;
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
 
         .sidebar-header-row {
             display: flex; align-items: center; justify-content: space-between;
@@ -499,78 +528,77 @@
         </div>
 
         <!-- Tag & Category Filter Chips (SRS 4.1 & 71) -->
-        <div id="sidebar-filter-chips-wrapper" class="flex flex-wrap gap-1 px-1 py-1 overflow-x-auto" style="scrollbar-width:none">
-            <button class="filter-chip active px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition" data-filter="all">All</button>
-            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="favorite">★ Landmark</button>
-            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="insight">💎 Keepsake</button>
-            <button class="filter-chip px-2 py-0.5 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition" data-filter="vault">🔒 Vault</button>
+        <div id="sidebar-filter-chips-wrapper" class="grid grid-cols-4 gap-1 px-0.5 py-1">
+            <button class="filter-chip active text-center py-1 rounded-lg text-[9px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition truncate" data-filter="all">All</button>
+            <button class="filter-chip text-center py-1 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition truncate" data-filter="favorite" title="Landmarks">★ Landmark</button>
+            <button class="filter-chip text-center py-1 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition truncate" data-filter="insight" title="Keepsakes">💎 Keepsake</button>
+            <button class="filter-chip text-center py-1 rounded-lg text-[9px] font-semibold bg-white/5 hover:bg-white/10 text-stone-300 border border-white/5 transition truncate" data-filter="vault" title="Vault">🔒 Vault</button>
         </div>
 
         <div class="sidebar-divider"></div>
 
-        <!-- Write Memory -->
-        <button id="btn-open-log-modal" class="sidebar-nav-item">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            <span id="btn-open-log-label" class="sidebar-nav-label">Write Memory</span>
+        <!-- SECTION 1: ARENA & WORLDS -->
+        <div class="sidebar-section-title">Arena &amp; Worlds</div>
+        <button id="btn-sidebar-arena" type="button" class="sidebar-nav-item accent-amber" title="Home Arena Stadium HQ">
+            <svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span class="sidebar-nav-label">Arena Stadium HQ</span>
         </button>
-
-        <!-- Reflect with Younger Self -->
-        <button id="btn-open-ai-companion" class="sidebar-nav-item accent-amber">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            <span class="sidebar-nav-label">Reflect with Younger Self</span>
-        </button>
-
-        <!-- Wellness Insights -->
-        <button id="btn-open-wellness-modal" class="sidebar-nav-item accent-emerald">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-            <span class="sidebar-nav-label">Wellness Insights</span>
-        </button>
-
-        <!-- Family Vault & Circle -->
-        <button id="btn-open-family-modal" class="sidebar-nav-item accent-purple">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <span class="sidebar-nav-label">Family & Vault</span>
-        </button>
-
-        <!-- Personal Chronicle -->
-        <button id="btn-open-pro-card" class="sidebar-nav-item">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span id="pro-card-btn-label" class="sidebar-nav-label">Personal Chronicle</span>
-        </button>
-
-        <!-- Journey Hub -->
-        <a href="journey-selection.html" class="sidebar-nav-item accent-cyan">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-            <span class="sidebar-nav-label">Journey Hub</span>
-        </a>
-
-        <!-- Trophy Room -->
-        <button id="btn-open-trophy-cabinet" type="button" class="sidebar-nav-item accent-amber">
+        <button id="btn-open-trophy-cabinet" type="button" class="sidebar-nav-item accent-amber" title="3D Trophy Cabinet &amp; Accolades">
             <svg style="width:16px;height:16px;flex-shrink:0" class="text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 4v3a4 4 0 01-8 0V4M4 7h16M7 4h10M10 11v2a2 2 0 004 0v-2M9 20h6m-3-4v4" />
             </svg>
-            <span class="sidebar-nav-label">Trophy Room</span>
+            <span class="sidebar-nav-label">Trophy Cabinet</span>
+        </button>
+        <a href="memory-ground.html" class="sidebar-nav-item accent-cyan" title="Launch Dedicated 3D Walk tailored to your sport">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="5" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 22l2-7 3 3v4m-5-4l-2-4 4-4 3 2 3-2"/></svg>
+            <span class="sidebar-nav-label">Dedicated 3D Walk</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-cyan-400/25 text-[8px] font-mono font-bold text-cyan-200">LIVE</span>
+        </a>
+        <a href="journey-selection.html" class="sidebar-nav-item accent-cyan" title="Switch Sport or Personal Sanctuary">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            <span class="sidebar-nav-label">Multi-Sport Playbooks</span>
+        </a>
+
+        <!-- SECTION 2: TIMELINE & VAULT -->
+        <div class="sidebar-section-title">Timeline &amp; Vault</div>
+        <button id="btn-open-log-modal" type="button" class="sidebar-nav-item accent-amber" title="Record a new milestone (Hotkey: N)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span id="btn-open-log-label" class="sidebar-nav-label">+ Add Milestone</span>
+        </button>
+        <button id="btn-open-pro-card" type="button" class="sidebar-nav-item" title="Open Career Ledger">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span id="pro-card-btn-label" class="sidebar-nav-label">Career Ledger</span>
+        </button>
+        <button id="btn-open-family-modal" type="button" class="sidebar-nav-item accent-purple" title="Access Encrypted Vault">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span class="sidebar-nav-label">Family Vault &amp; PIN</span>
         </button>
 
-        <!-- Settings & Privacy -->
-        <button id="btn-open-settings-modal" type="button" class="sidebar-nav-item">
+        <!-- SECTION 3: AI COACH & WELLNESS -->
+        <div class="sidebar-section-title">AI Mentorship</div>
+        <button id="btn-open-ai-companion" type="button" class="sidebar-nav-item accent-amber" title="Chat with Younger Self AI">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <span class="sidebar-nav-label">Reflect with Younger Self</span>
+        </button>
+        <button id="btn-open-wellness-modal" type="button" class="sidebar-nav-item accent-emerald" title="View Emotional Resonance &amp; Wellness">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            <span class="sidebar-nav-label">Resilience &amp; Wellness</span>
+        </button>
+
+        <!-- SECTION 4: PREFERENCES & SESSION -->
+        <div class="sidebar-section-title">Preferences</div>
+        <button id="btn-open-settings-modal" type="button" class="sidebar-nav-item" title="Customize Athlete Profile &amp; Kit">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span class="sidebar-nav-label">Settings & Privacy</span>
+            <span class="sidebar-nav-label">Athlete Dossier &amp; Profile</span>
         </button>
-
-        <!-- Sign Out -->
-        <button id="btn-global-sign-out" type="button" class="sidebar-nav-item hover:text-rose-300">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-            <span class="sidebar-nav-label">Sign Out</span>
-        </button>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- Audio Toggle -->
-        <button id="btn-global-audio-toggle" title="Toggle Soft Chimes">
+        <button id="btn-global-audio-toggle" type="button" class="sidebar-nav-item" title="Toggle Soft Chimes">
             <svg id="audio-icon-unmuted" style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/></svg>
             <svg id="audio-icon-muted" style="width:16px;height:16px;flex-shrink:0;display:none;color:#57534e" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
-            <span class="sidebar-audio-label">Sound Effects</span>
+            <span class="sidebar-audio-label">Stadium Soundscape</span>
+        </button>
+        <button id="btn-global-sign-out" type="button" class="sidebar-nav-item hover:text-rose-300" title="Sign Out">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span class="sidebar-nav-label">Sign Out</span>
         </button>
 
         <div class="sidebar-divider"></div>
@@ -604,15 +632,15 @@
 
     </div><!-- /#left-sidebar -->
 
-    <!-- Floating Action Button (FAB) for Instant 1-Click Memory Logging (Hotkey: N) -->
-    <button id="fab-add-memory" type="button" class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-stone-950 font-bold shadow-2xl flex items-center justify-center border-2 border-amber-200/80 cursor-pointer transition transform hover:scale-110 active:scale-95 pointer-events-auto" title="Add Memory (Hotkey: N)">
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+    <!-- Floating Action Button (FAB) for Instant 1-Click Memory Logging (Mobile Hotkey: N) -->
+    <button id="fab-add-memory" type="button" class="fixed bottom-6 right-6 z-40 w-12 h-12 md:hidden rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-stone-950 font-bold shadow-2xl flex items-center justify-center border-2 border-amber-200/80 cursor-pointer transition transform hover:scale-110 active:scale-95 pointer-events-auto" title="Add Memory (Hotkey: N)">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
         </svg>
     </button>
 
     <!-- UI Overlay Controls -->
-    <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 overflow-hidden">
+    <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6 pl-16 sm:pl-20 overflow-hidden">
 
         <!-- ==========================================================================
              1. TOP NAVIGATION BAR & MULTI-SPORT SWITCHER
@@ -696,18 +724,37 @@
                         </span>
                     </div>
 
-                    <!-- Action Controls: Edit Character & 3D Live Walk & Memory Navigation -->
+                    <!-- Action Controls: Stepper Navigation & Primary Inspect & Edit -->
                     <div class="flex items-center gap-2">
-                        <button id="btn-customize-character" type="button" title="Customize 3D Character (Jersey, Persona, Aura Glow & Profile)" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 flex items-center gap-1.5 font-bold text-xs border border-amber-500/40 transition shadow-sm cursor-pointer">
-                            <span>✏️</span>
-                            <span>Edit Character</span>
+                        <!-- Stepper navigation group -->
+                        <div class="flex items-center rounded-xl bg-stone-900/90 border border-white/10 p-0.5 shadow-sm">
+                            <button id="btn-prev-play" title="Previous Milestone" class="btn-hover-lift px-2.5 py-1 text-stone-300 hover:text-white rounded-lg flex items-center gap-1 font-mono text-xs font-semibold hover:bg-white/10 transition">
+                                <span>❮</span>
+                                <span class="hidden sm:inline">Prev</span>
+                            </button>
+                            <div class="w-px h-3.5 bg-white/10 mx-0.5"></div>
+                            <button id="btn-next-play" title="Next Milestone" class="btn-hover-lift px-2.5 py-1 text-stone-300 hover:text-white rounded-lg flex items-center gap-1 font-mono text-xs font-semibold hover:bg-white/10 transition">
+                                <span class="hidden sm:inline">Next</span>
+                                <span>❯</span>
+                            </button>
+                        </div>
+
+                        <!-- Inspect Keepsake CTA -->
+                        <button id="btn-inspect-dock" type="button" title="Inspect Full Chapter &amp; Keepsakes" class="btn-hover-lift px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+                            <span>🔍</span>
+                            <span>Inspect</span>
                         </button>
-                        <button id="btn-prev-play" title="Visit Previous Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❮</button>
-                        <button id="btn-next-play" title="Visit Next Node" class="btn-hover-lift w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 flex items-center justify-center font-bold text-sm border border-white/10 transition">❯</button>
-                        <button id="btn-free-walk-toggle" type="button" title="Walk freely through chronological memories in dedicated 3D Live Walk" class="btn-hover-lift px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 flex items-center gap-1.5 font-bold text-xs border border-cyan-500/40 transition shadow-sm cursor-pointer">
+
+                        <!-- Customize Athlete -->
+                        <button id="btn-customize-character" type="button" title="Customize 3D Character (Jersey, Persona, Aura Glow &amp; Profile)" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 hover:text-white border border-white/10 font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+                            <span>✏️</span>
+                            <span class="hidden sm:inline">Customize</span>
+                        </button>
+
+                        <!-- Dedicated 3D Walk Shortcut -->
+                        <button id="btn-free-walk-toggle" type="button" title="Walk freely through chronological memories in dedicated 3D Live Walk" class="btn-hover-lift px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-400/30 font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer">
                             <span id="free-walk-icon">🚶‍♂️</span>
-                            <span id="free-walk-label" class="hidden sm:inline">Walk Memories</span>
-                            <span class="px-1.5 py-0.2 rounded-full bg-cyan-400/25 text-[9px] font-mono font-bold text-cyan-200">3D LIVE</span>
+                            <span id="free-walk-label" class="hidden md:inline">3D Walk</span>
                         </button>
                     </div>
                 </div>
@@ -722,7 +769,7 @@
                         "Click '+ Write Memory' above to begin preserving moments, milestones, and reflections across your timeline."
                     </p>
                     <p id="snippet-cta-text" class="text-[11px] text-amber-300/90 font-medium tracking-normal mt-1.5 flex items-center gap-1 group-hover:underline">
-                        <span>Click to visit and inspect node memories, photos & keepsakes</span> →
+                        <span>Tap chapter to inspect full keepsake story, quotes &amp; photos</span> →
                     </p>
                 </div>
 
@@ -5547,9 +5594,19 @@
                     ctx.font = '17px "Plus Jakarta Sans", sans-serif';
                     ctx.fillText('🛡️ ' + team, 28, 172);
 
+                    // Tactical Action Prompt Badge
+                    ctx.beginPath();
+                    ctx.roundRect(28, 192, 456, 32, 8);
+                    ctx.fillStyle = 'rgba(0, 229, 255, 0.12)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
                     ctx.fillStyle = '#00e5ff';
-                    ctx.font = 'bold 12px monospace';
-                    ctx.fillText('✏️ CLICK ATHLETE TO CUSTOMIZE KIT & HAIR', 28, 206);
+                    ctx.font = 'bold 11px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚡ TAP ATHLETE TO CUSTOMIZE JERSEY, SQUAD # & HAIR', 256, 212);
                 } else {
                     ctx.beginPath();
                     ctx.roundRect(28, 36, 56, 44, 12);
@@ -5595,9 +5652,19 @@
                     const displayMotto = motto.length > 42 ? `"${motto.slice(0, 42)}..."` : `"${motto}"`;
                     ctx.fillText(displayMotto, 28, 172);
 
+                    // Sanctuary Action Prompt Badge
+                    ctx.beginPath();
+                    ctx.roundRect(28, 192, 456, 32, 8);
+                    ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
                     ctx.fillStyle = '#f59e0b';
-                    ctx.font = 'bold 12px monospace';
-                    ctx.fillText('✏️ CLICK SEEKER TO CUSTOMIZE SANCTUARY & AURA', 28, 206);
+                    ctx.font = 'bold 11px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🌿 TAP SEEKER TO CUSTOMIZE SANCTUARY & AURA GLOW', 256, 212);
                 }
 
                 const texture = new THREE.CanvasTexture(canvas);
@@ -7331,7 +7398,14 @@
                 document.getElementById('snippet-era-tag').textContent = play.era || (isLifeMode ? 'Life Journey' : 'Career Era');
                 document.getElementById('snippet-title').textContent = play.title;
                 document.getElementById('snippet-sentiment').textContent = play.sentimentLabel || `${play.sentiment}/100`;
-                document.getElementById('snippet-journal-preview').textContent = `"${play.journal}"`;
+
+                let journalText = play.journal || '';
+                if (play.isVaultLocked && !isSessionVaultUnlocked) {
+                    journalText = '🔒 Confidential Family Vault Memory • Tap to Unlock and Read Story';
+                } else if (/^[a-f0-9]{16,}:[a-f0-9]{16,}/i.test(journalText.trim())) {
+                    journalText = '🔒 Encrypted Milestone Chapter • Protected in Athlete Vault';
+                }
+                document.getElementById('snippet-journal-preview').textContent = `"${journalText}"`;
 
                 const landmarkBadge = document.getElementById('snippet-landmark-badge');
                 if (landmarkBadge) {
@@ -13573,6 +13647,11 @@
 
             document.getElementById('btn-customize-character')?.addEventListener('click', () => openProfileEditor('avatar'));
             document.getElementById('btn-free-walk-toggle')?.addEventListener('click', launchDedicated3DWalk);
+            document.getElementById('btn-inspect-dock')?.addEventListener('click', () => {
+                const mems = getActiveMemories();
+                if (mems.length > 0) openInspectModalForNode(activeNodeIndex >= 0 ? activeNodeIndex : 0);
+            });
+            document.getElementById('btn-sidebar-arena')?.addEventListener('click', () => switchViewMode('ground'));
             document.getElementById('btn-exit-free-walk')?.addEventListener('click', () => toggleFreeWalkMode(false));
 
             window.addEventListener('keydown', (e) => {
