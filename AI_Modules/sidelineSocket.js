@@ -6,7 +6,8 @@ import {
   buildYoungerSelfSystemPrompt, 
   calculateEraAge, 
   detectCrisisKeywords, 
-  detectBurnoutKeywords 
+  detectBurnoutKeywords,
+  parseMemoriesFromContext
 } from './personaOrchestrator.js';
 import { perceiveImage, normalizeImageSource } from './multimodalPerception.js';
 import { synthesizeLearnedInsights } from './learningEngine.js';
@@ -128,11 +129,14 @@ export function initSidelineWebSocketServer(options = {}) {
         const userPrompt = payload.prompt || payload.message || '';
         const selectedEra = payload.era || sessionState.era || 'Youth Era';
         const imageSource = payload.imageSource || payload.mediaUrl || payload.photo || null;
+        const clientMemories = Array.isArray(payload.clientMemories) ? payload.clientMemories : (Array.isArray(payload.memories) ? payload.memories : []);
+        if (payload.domain) sessionState.domain = payload.domain;
+        if (payload.journeyType) sessionState.journeyType = payload.journeyType;
         sessionState.era = selectedEra;
 
         if (!userPrompt.trim() && !imageSource) return;
 
-        await processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource);
+        await processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource, clientMemories);
 
       } catch (err) {
         console.error('Sideline WebSocket Processing Error:', err);
@@ -209,7 +213,7 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
 /**
  * Processes Chat Flow with Phase 2 RAG, Phase 3 Prompting, Multimodal Vision, and Token Streaming
  */
-export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource = null) {
+export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource = null, clientMemories = []) {
   // 1. Check Safety Guardrails (Severe Crisis / Despair)
   if (detectCrisisKeywords(userPrompt)) {
     const crisisText = `I hear how much pain you are in right now, and I want you to know that you are not alone. I'm stepping out of our younger self character because your safety and life matter deeply.\n\nPlease reach out for immediate support:\n• **988 Suicide & Crisis Lifeline**: Call or text **988** (24/7 free & confidential)\n• **Tele-MANAS**: Call **14416** or **1800 891 4416**\n\nPlease take a deep breath. We built this journey together, and your future still needs you.`;
@@ -238,10 +242,40 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     userId: sessionState.userId,
     selectedEra,
     userPrompt,
+    journeyType: sessionState.journeyType,
+    domain: sessionState.domain,
     topK: 4
   });
 
-  // 3. Multimodal Perception for Chat Image (if imageSource provided)
+  // 3. Harmonize client timeline memories with retrieved RAG context
+  const parsedMemories = parseMemoriesFromContext(ragContext, ragContext?.formattedContext, clientMemories, selectedEra);
+  let formattedContextChunks = ragContext?.formattedContext || '';
+
+  // If clientMemories are present and formatted context is sparse or mentions no memories logged,
+  // format authentic memory blocks directly from the screen's timeline nodes
+  if (parsedMemories.length > 0 && (!formattedContextChunks || formattedContextChunks.includes("haven't logged any memories"))) {
+    const formattedBlocks = parsedMemories.slice(0, 5).map((mem, i) => {
+      const dateStr = mem.date || 'Date Unknown';
+      const titleStr = mem.title || 'Milestone';
+      const emotionStr = Array.isArray(mem.tags) ? mem.tags.join(', ') : (mem.tags || 'Reflective');
+      const photoStr = mem.photo ? (mem.caption ? `"${mem.caption}" (${mem.photo})` : mem.photo) : null;
+      let block = `### Memory ${i + 1}: ${titleStr}\n- **Date**: ${dateStr}\n- **Era**: ${mem.era || selectedEra}\n- **Emotions**: ${emotionStr}\n- **Journal Excerpt**: "${(mem.journal || '').slice(0, 250)}"`;
+      if (typeof mem.sentiment === 'number') {
+        const energyLabel = mem.sentiment >= 75 ? 'Joyful & Triumphant' : mem.sentiment >= 50 ? 'Grounded & Hopeful' : 'Tested & Resilient';
+        block += `\n- **Emotional Energy**: ${energyLabel} (${mem.sentiment}/100)`;
+      }
+      if (photoStr) {
+        block += `\n- **Photo Captured**: ${photoStr}`;
+      }
+      if (mem.domain) {
+        block += `\n- **Domain**: ${mem.domain}`;
+      }
+      return block;
+    });
+    formattedContextChunks = formattedBlocks.join('\n\n');
+  }
+
+  // 4. Multimodal Perception for Chat Image (if imageSource provided)
   let normalizedChatImage = null;
   let chatImagePerception = null;
   if (imageSource) {
@@ -257,21 +291,25 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     }
   }
 
-  // 4. Synthesize Continuous Learning Trajectory Insights
+  // 5. Synthesize Continuous Learning Trajectory Insights
   const cognitiveInsights = synthesizeLearnedInsights({
     userId: sessionState.userId,
     era: selectedEra,
     domain: sessionState.domain || 'football',
-    memories: ragContext.memories || []
+    memories: parsedMemories.length > 0 ? parsedMemories : (ragContext?.memories || [])
   });
 
-  // 5. Construct System Prompt Contract with Cognitive Insights
+  // 6. Construct System Prompt Contract with Cognitive Insights
   const eraAge = calculateEraAge(selectedEra);
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
-    retrievedContextChunks: ragContext.formattedContext,
-    cognitiveInsights
+    retrievedContextChunks: formattedContextChunks,
+    cognitiveInsights,
+    journeyType: sessionState.journeyType,
+    domain: sessionState.domain,
+    userProvidedContext: userPrompt,
+    stagedPhotoPerception: chatImagePerception
   });
 
   const apiKey = process.env.GEMINI_API_KEY;

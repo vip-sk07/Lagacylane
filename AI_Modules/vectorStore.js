@@ -1,7 +1,38 @@
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 
-// In-Memory Vector Store Index for zero-config local development
+const CACHE_FILE = fileURLToPath(new URL('./local_vector_cache.json', import.meta.url));
+
+// In-Memory Vector Store Index with Persistent Disk Cache for zero-config local development
 const localVectorIndex = [];
+
+function loadLocalVectors() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const data = fs.readFileSync(CACHE_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        localVectorIndex.length = 0;
+        parsed.forEach(item => localVectorIndex.push(item));
+        console.log(`⚡ Persistent local vector cache loaded: ${localVectorIndex.length} embeddings.`);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not load persistent local vector cache:', err.message);
+  }
+}
+
+function persistLocalVectors() {
+  try {
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(localVectorIndex, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not persist local vector cache to disk:', err.message);
+  }
+}
+
+// Initialise persistent vector cache from disk
+loadLocalVectors();
 
 // Initialize Supabase Client if credentials are provided
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -103,17 +134,18 @@ export async function storeVectorEmbedding({ memoryId, userId, embedding, metada
     }
   }
 
-  // 2. Always maintain local in-memory vector index for instant local search & testing
+  // 2. Always maintain local vector index with disk persistence for instant local search & testing
   const existingIdx = localVectorIndex.findIndex(r => r.id === memoryId);
   if (existingIdx >= 0) {
     localVectorIndex[existingIdx] = record;
   } else {
     localVectorIndex.push(record);
   }
+  persistLocalVectors();
 
   return {
     success: true,
-    store: storedInSupabase ? 'Supabase pgvector' : 'Local In-Memory Vector Store',
+    store: storedInSupabase ? 'Supabase pgvector' : 'Local In-Memory Vector Store (Disk Persisted)',
     memoryId
   };
 }
@@ -178,7 +210,20 @@ export function removeUserVectors(userId) {
   const afterList = localVectorIndex.filter(r => r.user_id !== userId);
   localVectorIndex.length = 0;
   afterList.forEach(r => localVectorIndex.push(r));
+  persistLocalVectors();
   console.log(`Vector store: removed ${before - localVectorIndex.length} embeddings for user ${userId}`);
+}
+
+/**
+ * Clears the local vector index and deletes the persistent cache file.
+ */
+export function clearLocalVectorCache() {
+  localVectorIndex.length = 0;
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      fs.unlinkSync(CACHE_FILE);
+    }
+  } catch (_) {}
 }
 
 /**

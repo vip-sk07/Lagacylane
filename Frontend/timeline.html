@@ -11372,7 +11372,8 @@
                         era: selectedEra,
                         imageSource: photoToUpload,
                         domain: isLifeMode ? null : currentSport,
-                        journeyType: isLifeMode ? 'life' : 'sports'
+                        journeyType: isLifeMode ? 'life' : 'sports',
+                        clientMemories: eraMemories
                     }));
                 } else {
                     await sendAIMessageRESTFallback(trimmed, selectedEra, eraMemories, photoToUpload);
