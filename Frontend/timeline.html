@@ -15,6 +15,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Three.js Postprocessing Shaders & Passes for PBR Bloom & Tone Calibration -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <!-- Canvas Confetti CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -717,6 +725,10 @@
                 <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-2">
                         <span id="snippet-node-tag" class="px-3 py-1 rounded-xl bg-stone-800 text-stone-300 font-mono font-medium text-[11px] border border-white/10">Chapter 1: The Beginning</span>
+                        <button id="btn-toggle-dock-collapse" type="button" class="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 border border-white/10 text-[10px] font-mono transition flex items-center gap-1 cursor-pointer" title="Minimize / Maximize Bottom Chapter HUD to see full 3D Arena">
+                            <span id="dock-collapse-icon">▼</span>
+                            <span id="dock-collapse-label">HUD</span>
+                        </button>
                         <span id="snippet-era-tag" class="px-3 py-1 rounded-xl bg-amber-500/15 text-amber-300 font-mono font-medium text-[11px] border border-amber-500/30">Ready to Log</span>
                         <span id="snippet-landmark-badge" class="hidden px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-mono font-medium text-[10px] border border-amber-400/30 flex items-center gap-1">
                             <svg class="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -1603,6 +1615,49 @@
     </div>
 
     <!-- ==========================================================================
+         MODAL 1B: 3D DYNAMIC ARTIFACT & KEEPSAKE ROTATOR (CHAPTER KEEPSAKE VIEWER)
+         ========================================================================== -->
+    <div id="modal-3d-artifact" class="drawer-overlay">
+        <div class="drawer-card max-w-4xl w-full p-6 space-y-4 relative flex flex-col max-h-[92vh]">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <div class="flex items-center gap-2.5">
+                    <span id="artifact-category-badge" class="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-500/30">3D CHAPTER ARTIFACT</span>
+                    <h3 id="artifact-title-display" class="text-lg md:text-xl font-bold text-stone-100 truncate">Chapter Keepsake Artifact</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-artifact-switch-mesh" type="button" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 text-xs font-semibold border border-white/10 transition cursor-pointer flex items-center gap-1.5">
+                        <span id="btn-artifact-type-icon">🎽</span>
+                        <span id="btn-artifact-type-label">Switch Artifact</span>
+                    </button>
+                    <button id="btn-close-3d-artifact" type="button" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-stone-200 flex items-center justify-center text-sm transition cursor-pointer">✕</button>
+                </div>
+            </div>
+
+            <!-- 3D WebGL Canvas for Interactive Rotatable Keepsake -->
+            <div class="relative w-full h-80 md:h-96 rounded-2xl bg-gradient-to-b from-stone-950 via-stone-900 to-black overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
+                <canvas id="artifact-webgl-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+                <div class="absolute bottom-3 left-3 text-[10px] font-mono text-stone-400/80 bg-black/60 px-2.5 py-1 rounded-lg border border-white/5 backdrop-blur-sm pointer-events-none">
+                    👆 Click & Drag to Rotate 360° • Scroll to Zoom Artifact
+                </div>
+                <div id="artifact-meta-overlay" class="absolute top-3 right-3 text-right space-y-1 bg-black/60 p-2.5 rounded-xl border border-white/10 backdrop-blur-sm pointer-events-none">
+                    <div id="artifact-meta-era" class="text-[10px] font-mono text-cyan-300 font-bold">Pro Athlete Era</div>
+                    <div id="artifact-meta-resonance" class="text-[11px] font-semibold text-amber-300">Resonance: 90%</div>
+                </div>
+            </div>
+
+            <!-- Story Context & Actions -->
+            <div class="p-3.5 rounded-xl bg-stone-900/60 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                <p id="artifact-story-excerpt" class="text-stone-300 italic flex-1">"Loading milestone legacy story..."</p>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="btn-artifact-open-full-modal" type="button" class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 font-semibold transition cursor-pointer">
+                        📖 View Journal Story
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
          MODAL 2: MEMORY INSPECTION DRAWER (VISITED NODE VIEW)
          ========================================================================== -->
     <div id="modal-inspect-play" class="drawer-overlay">
@@ -1775,21 +1830,56 @@
                 </div>
             </div>
 
-            <!-- SRS 4.3.3 REQ-1: Era Selection Dropdown -->
-            <div class="space-y-1">
-                <div class="flex items-center justify-between text-[10px] font-mono text-stone-400 px-0.5">
-                    <span>CONVERSATION ERA / AGE:</span>
-                    <span id="ai-era-count" class="text-amber-300/90 font-medium">0 memories</span>
+            <!-- SRS 4.3.3 REQ-1: Era Selection Dropdown & Emotional Tone Tuner -->
+            <div class="space-y-2">
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[10px] font-mono text-stone-400 px-0.5">
+                        <span>CONVERSATION ERA / AGE:</span>
+                        <span id="ai-era-count" class="text-amber-300/90 font-medium">0 memories</span>
+                    </div>
+                    <select id="ai-era-select" class="w-full px-3 py-2 rounded-xl bg-stone-900/90 border border-amber-500/30 text-amber-200 text-xs font-medium focus:border-amber-400 focus:outline-none transition cursor-pointer">
+                        <option value="All Eras">✦ All Eras (Entire Living Journey)</option>
+                        <option value="Youth & Formative Years">🌱 Youth & Formative Years (Raw Ambition & Spark)</option>
+                        <option value="High School & Early Ambition">⚡ High School & Early Ambition (Tactics & Dreams)</option>
+                        <option value="Collegiate / Trial Era">🎓 Collegiate / Trial Era (Pressure & Tenacity)</option>
+                        <option value="Championship & Breakthrough">🏆 Championship & Breakthrough (Peak Confidence)</option>
+                        <option value="Comeback & Resilience Season">🔥 Comeback & Resilience Season (Unbreakable Grit)</option>
+                        <option value="Mastery & Legacy Chapters">👑 Mastery & Legacy Chapters (Mentorship & Wisdom)</option>
+                    </select>
                 </div>
-                <select id="ai-era-select" class="w-full px-3 py-2 rounded-xl bg-stone-900/90 border border-amber-500/30 text-amber-200 text-xs font-medium focus:border-amber-400 focus:outline-none transition cursor-pointer">
-                    <option value="All Eras">✦ All Eras (Entire Living Journey)</option>
-                    <option value="Youth & Formative Years">🌱 Youth & Formative Years (Age ~10-14)</option>
-                    <option value="High School & Early Ambition">⚡ High School & Early Ambition (Age ~15-18)</option>
-                    <option value="Collegiate / Trial Era">🎓 Collegiate / Trial Era (Age ~18-22)</option>
-                    <option value="Championship & Breakthrough">🏆 Championship & Breakthrough</option>
-                    <option value="Comeback & Resilience Season">🔥 Comeback & Resilience Season</option>
-                    <option value="Mastery & Legacy Chapters">👑 Mastery & Legacy Chapters</option>
-                </select>
+
+                <!-- Emotional Voice & Tone Tuning Sliders + TTS Neural Speech Toggle -->
+                <div class="p-2.5 rounded-xl bg-stone-900/70 border border-white/5 space-y-2">
+                    <div class="flex items-center justify-between text-[10px] font-mono">
+                        <span class="text-stone-300 font-semibold flex items-center gap-1.5">
+                            <span>🎙️</span>
+                            <span>VOICE & TONE TUNER</span>
+                        </span>
+                        <!-- Neural Speech (TTS) Toggle -->
+                        <button id="btn-ai-tts-toggle" type="button" class="px-2 py-0.5 rounded-lg bg-stone-800 text-stone-300 hover:text-white border border-white/10 text-[10px] flex items-center gap-1 transition cursor-pointer" title="When ON, your Younger Self speaks reflections aloud with ambient stadium acoustics">
+                            <span id="ai-tts-icon">🔇</span>
+                            <span id="ai-tts-label">Voice TTS: OFF</span>
+                        </button>
+                    </div>
+
+                    <!-- Persona Tuning Sliders -->
+                    <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                        <div>
+                            <div class="flex justify-between text-stone-400 mb-0.5">
+                                <span>Coaching Fire</span>
+                                <span id="val-coaching-fire" class="text-amber-300">70%</span>
+                            </div>
+                            <input type="range" id="slider-coaching-fire" min="0" max="100" value="70" class="w-full accent-amber-400 h-1 bg-stone-800 rounded-lg cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-stone-400 mb-0.5">
+                                <span>Soul Empathy</span>
+                                <span id="val-soul-empathy" class="text-cyan-300">85%</span>
+                            </div>
+                            <input type="range" id="slider-soul-empathy" min="0" max="100" value="85" class="w-full accent-cyan-400 h-1 bg-stone-800 rounded-lg cursor-pointer">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3284,6 +3374,46 @@
             const spotlight = new THREE.SpotLight(isLifeMode ? 0x06b6d4 : 0xffffff, isLifeMode ? 0.6 : 0.25, 120, Math.PI / 3.0, 0.4);
             spotlight.position.set(0, 35, 0);
             scene.add(spotlight);
+
+            // Rim / Edge Highlight Lights (Matching Cyan/Neon UI accents for deep 3D PBR presence)
+            const rimLightCyan = new THREE.DirectionalLight(0x00f0ff, 0.85);
+            rimLightCyan.position.set(-18, 14, -16);
+            scene.add(rimLightCyan);
+
+            const rimLightAmber = new THREE.DirectionalLight(0xffb703, 0.55);
+            rimLightAmber.position.set(16, 12, -18);
+            scene.add(rimLightAmber);
+
+            // Subtle ground bounce light for realistic athlete foot-shadows
+            const groundBounceLight = new THREE.HemisphereLight(0x1e293b, 0x07111e, 0.6);
+            scene.add(groundBounceLight);
+
+            // Postprocessing EffectComposer with subtle Neon Bloom (Graceful fallback if WebGL shader lacks support)
+            let effectComposer = null;
+            let bloomPass = null;
+            let isPostProcessingEnabled = true;
+
+            function initPostProcessing() {
+                try {
+                    if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined' && typeof THREE.UnrealBloomPass !== 'undefined') {
+                        const renderPass = new THREE.RenderPass(scene, camera);
+                        bloomPass = new THREE.UnrealBloomPass(
+                            new THREE.Vector2(window.innerWidth, window.innerHeight),
+                            0.38,  // bloom strength: elegant subtle neon aura, not blinding
+                            0.45,  // bloom radius
+                            0.82   // bloom threshold: only glowing neon nodes, rim lights & auras catch bloom
+                        );
+                        effectComposer = new THREE.EffectComposer(renderer);
+                        effectComposer.addPass(renderPass);
+                        effectComposer.addPass(bloomPass);
+                        console.log('⚡ [LegacyLane PBR] UnrealBloom EffectComposer active for cinematic rendering.');
+                    }
+                } catch (e) {
+                    console.warn('[LegacyLane] Postprocessing fallback to standard WebGL renderer:', e);
+                    effectComposer = null;
+                }
+            }
+            initPostProcessing();
 
             /* ------------------------------------------------------------------
                3B. SECURITY SANITIZER & XSS DEFENSE
@@ -5686,10 +5816,11 @@
 
                 const skinMat = new THREE.MeshPhysicalMaterial({
                     color: skinColor,
-                    roughness: 0.52,
-                    metalness: 0.04,
-                    clearcoat: 0.12,
-                    clearcoatRoughness: 0.35
+                    roughness: 0.44,
+                    metalness: 0.02,
+                    clearcoat: 0.28,
+                    clearcoatRoughness: 0.22,
+                    reflectivity: 0.55
                 });
 
                 const hairColorHex = parseInt((custom.hairColor || '#1a1410').replace('#', ''), 16) || 0x1a1410;
@@ -6864,6 +6995,210 @@
             // Initial Athlete Generation
             renderAthlete();
 
+            /* ------------------------------------------------------------------
+               3D DYNAMIC ARTIFACT & KEEPSAKE ROTATION ENGINE
+               ------------------------------------------------------------------ */
+            let artifactScene = null;
+            let artifactCamera = null;
+            let artifactRenderer = null;
+            let artifactControls = null;
+            let artifactGroup = null;
+            let currentArtifactType = 'jersey'; // 'jersey', 'medal', 'playbook'
+            let activeArtifactMemory = null;
+            let isArtifactSceneInit = false;
+
+            function init3DArtifactViewer() {
+                if (isArtifactSceneInit) return;
+                const artCanvas = document.getElementById('artifact-webgl-canvas');
+                if (!artCanvas) return;
+
+                artifactScene = new THREE.Scene();
+                artifactCamera = new THREE.PerspectiveCamera(40, artCanvas.clientWidth / artCanvas.clientHeight, 0.1, 100);
+                artifactCamera.position.set(0, 0, 3.8);
+
+                artifactRenderer = new THREE.WebGLRenderer({ canvas: artCanvas, antialias: true, alpha: true });
+                artifactRenderer.setSize(artCanvas.clientWidth, artCanvas.clientHeight);
+                artifactRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                artifactRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                artifactRenderer.toneMappingExposure = 1.1;
+
+                artifactControls = new THREE.OrbitControls(artifactCamera, artCanvas);
+                artifactControls.enableDamping = true;
+                artifactControls.dampingFactor = 0.08;
+                artifactControls.minDistance = 2.0;
+                artifactControls.maxDistance = 6.0;
+
+                const artAmb = new THREE.AmbientLight(0xffffff, 0.7);
+                artifactScene.add(artAmb);
+
+                const artDir1 = new THREE.DirectionalLight(0x00f0ff, 1.2);
+                artDir1.position.set(5, 6, 5);
+                artifactScene.add(artDir1);
+
+                const artDir2 = new THREE.DirectionalLight(0xffb703, 0.9);
+                artDir2.position.set(-5, -4, -4);
+                artifactScene.add(artDir2);
+
+                artifactGroup = new THREE.Group();
+                artifactScene.add(artifactGroup);
+
+                function animateArtifact() {
+                    requestAnimationFrame(animateArtifact);
+                    if (document.getElementById('modal-3d-artifact')?.classList.contains('active')) {
+                        if (artifactGroup) {
+                            artifactGroup.rotation.y += 0.006;
+                        }
+                        artifactControls.update();
+                        artifactRenderer.render(artifactScene, artifactCamera);
+                    }
+                }
+                animateArtifact();
+
+                window.addEventListener('resize', () => {
+                    if (artCanvas.clientWidth && artCanvas.clientHeight && artifactRenderer) {
+                        artifactCamera.aspect = artCanvas.clientWidth / artCanvas.clientHeight;
+                        artifactCamera.updateProjectionMatrix();
+                        artifactRenderer.setSize(artCanvas.clientWidth, artCanvas.clientHeight);
+                    }
+                });
+
+                isArtifactSceneInit = true;
+            }
+
+            function buildArtifactMesh(type, memory) {
+                if (!artifactGroup) return;
+                while (artifactGroup.children.length > 0) {
+                    const c = artifactGroup.children[0];
+                    if (c.geometry) c.geometry.dispose();
+                    if (c.material) c.material.dispose();
+                    artifactGroup.remove(c);
+                }
+
+                const mem = memory || {};
+                const jerseyNum = getJerseyNumber();
+
+                if (type === 'jersey') {
+                    const jerseyGeom = new THREE.BoxGeometry(1.2, 1.5, 0.22);
+                    const jerseyMat = new THREE.MeshStandardMaterial({
+                        color: 0x00d2ff,
+                        roughness: 0.35,
+                        metalness: 0.15
+                    });
+                    const jersey = new THREE.Mesh(jerseyGeom, jerseyMat);
+
+                    // Collar
+                    const collarGeom = new THREE.CylinderGeometry(0.28, 0.28, 0.15, 16);
+                    const collarMat = new THREE.MeshStandardMaterial({ color: 0x0a101d, roughness: 0.4 });
+                    const collar = new THREE.Mesh(collarGeom, collarMat);
+                    collar.position.set(0, 0.75, 0);
+                    jersey.add(collar);
+
+                    // Number 10 plate
+                    const numCanvas = document.createElement('canvas');
+                    numCanvas.width = 128; numCanvas.height = 128;
+                    const nctx = numCanvas.getContext('2d');
+                    nctx.fillStyle = '#ffffff';
+                    nctx.font = 'bold 74px monospace';
+                    nctx.textAlign = 'center';
+                    nctx.textBaseline = 'middle';
+                    nctx.fillText(jerseyNum || '10', 64, 64);
+                    const numTex = new THREE.CanvasTexture(numCanvas);
+                    const numPlane = new THREE.Mesh(
+                        new THREE.PlaneGeometry(0.5, 0.5),
+                        new THREE.MeshBasicMaterial({ map: numTex, transparent: true })
+                    );
+                    numPlane.position.set(0, 0.1, 0.12);
+                    jersey.add(numPlane);
+
+                    artifactGroup.add(jersey);
+                } else if (type === 'medal') {
+                    // Gold Championship Medal
+                    const medalGeom = new THREE.CylinderGeometry(0.7, 0.7, 0.08, 32);
+                    const medalMat = new THREE.MeshStandardMaterial({
+                        color: 0xffd700,
+                        metalness: 0.85,
+                        roughness: 0.22
+                    });
+                    const medal = new THREE.Mesh(medalGeom, medalMat);
+                    medal.rotation.x = Math.PI / 2;
+
+                    // Ribbon Loop
+                    const ribbonGeom = new THREE.TorusGeometry(0.65, 0.06, 12, 32, Math.PI);
+                    const ribbonMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, roughness: 0.5 });
+                    const ribbon = new THREE.Mesh(ribbonGeom, ribbonMat);
+                    ribbon.position.set(0, 0.7, 0);
+                    medal.add(ribbon);
+
+                    artifactGroup.add(medal);
+                } else {
+                    // Digitized Tactical Playbook Clipboard
+                    const boardGeom = new THREE.BoxGeometry(1.1, 1.6, 0.06);
+                    const boardMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.5 });
+                    const board = new THREE.Mesh(boardGeom, boardMat);
+
+                    // Sheet
+                    const sheetGeom = new THREE.PlaneGeometry(0.95, 1.4);
+                    const sheetMat = new THREE.MeshBasicMaterial({ color: 0x091e2f });
+                    const sheet = new THREE.Mesh(sheetGeom, sheetMat);
+                    sheet.position.set(0, 0, 0.035);
+                    board.add(sheet);
+
+                    // Clip on top
+                    const clipGeom = new THREE.BoxGeometry(0.4, 0.14, 0.1);
+                    const clipMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.8, roughness: 0.3 });
+                    const clip = new THREE.Mesh(clipGeom, clipMat);
+                    clip.position.set(0, 0.76, 0.05);
+                    board.add(clip);
+
+                    artifactGroup.add(board);
+                }
+            }
+
+            function open3DArtifactModal(memory) {
+                init3DArtifactViewer();
+                activeArtifactMemory = memory || getActiveMemories()[activeNodeIndex >= 0 ? activeNodeIndex : 0];
+                if (!activeArtifactMemory) return;
+
+                const modal = document.getElementById('modal-3d-artifact');
+                if (!modal) return;
+
+                document.getElementById('artifact-title-display').textContent = activeArtifactMemory.title;
+                document.getElementById('artifact-meta-era').textContent = activeArtifactMemory.era || 'Career Era';
+                document.getElementById('artifact-meta-resonance').textContent = activeArtifactMemory.sentimentLabel || `Resonance: ${activeArtifactMemory.sentiment || 90}%`;
+                
+                const excerpt = activeArtifactMemory.journal
+                    ? `"${activeArtifactMemory.journal.slice(0, 160)}..."`
+                    : `"Every championship season and breakthrough begins with relentless dedication on the pitch."`;
+                document.getElementById('artifact-story-excerpt').textContent = excerpt;
+
+                buildArtifactMesh(currentArtifactType, activeArtifactMemory);
+                modal.classList.add('active');
+                playSoftSound('click');
+            }
+
+            document.getElementById('btn-close-3d-artifact')?.addEventListener('click', () => {
+                document.getElementById('modal-3d-artifact')?.classList.remove('active');
+                playSoftSound('click');
+            });
+
+            document.getElementById('btn-artifact-switch-mesh')?.addEventListener('click', () => {
+                const types = ['jersey', 'medal', 'playbook'];
+                const nextIdx = (types.indexOf(currentArtifactType) + 1) % types.length;
+                currentArtifactType = types[nextIdx];
+                const labels = { jersey: 'State Kit 🎽', medal: 'Honor Medal 🏅', playbook: 'Tactics Board 📋' };
+                document.getElementById('btn-artifact-type-label').textContent = labels[currentArtifactType];
+                buildArtifactMesh(currentArtifactType, activeArtifactMemory);
+                playSoftSound('click');
+            });
+
+            document.getElementById('btn-artifact-open-full-modal')?.addEventListener('click', () => {
+                document.getElementById('modal-3d-artifact')?.classList.remove('active');
+                if (activeArtifactMemory) {
+                    const idx = getActiveMemories().findIndex(m => m.id === activeArtifactMemory.id || m.title === activeArtifactMemory.title);
+                    openInspectModalForNode(idx >= 0 ? idx : 0);
+                }
+            });
+
             // Floating 3D Tactical Card Hologram
             const tacticalCardTexture = createTacticalCardTexture();
             const tacticalCardSprite = new THREE.Sprite(new THREE.SpriteMaterial({
@@ -7399,11 +7734,22 @@
                 document.getElementById('snippet-title').textContent = play.title;
                 document.getElementById('snippet-sentiment').textContent = play.sentimentLabel || `${play.sentiment}/100`;
 
-                let journalText = play.journal || '';
+                let journalText = (play.journal || '').trim();
                 if (play.isVaultLocked && !isSessionVaultUnlocked) {
                     journalText = '🔒 Confidential Family Vault Memory • Tap to Unlock and Read Story';
-                } else if (/^[a-f0-9]{16,}:[a-f0-9]{16,}/i.test(journalText.trim())) {
+                } else if (/^[a-f0-9]{16,}:[a-f0-9]{16,}/i.test(journalText)) {
                     journalText = '🔒 Encrypted Milestone Chapter • Protected in Athlete Vault';
+                } else if (!journalText) {
+                    // Graceful inspirational milestone fallback when journal text is not logged yet
+                    const defaultInspirationalQuotes = [
+                        'Pushing past the comfort zone to establish dominance on the turf.',
+                        'The game isn\'t won under the floodlights; it\'s earned in the unglamorous early morning hours.',
+                        'Mentoring the young squad while setting the standard for relentless consistency.',
+                        'Writing legacy one milestone, one challenge, and one victory at a time.',
+                        'Grounded in struggle, elevated by passion, and driven toward championship dreams.'
+                    ];
+                    const seed = Math.abs((play.title || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0));
+                    journalText = defaultInspirationalQuotes[seed % defaultInspirationalQuotes.length];
                 }
                 document.getElementById('snippet-journal-preview').textContent = `"${journalText}"`;
 
@@ -7492,6 +7838,28 @@
             document.getElementById('btn-call-sub-bench').addEventListener('click', () => {
                 document.getElementById('btn-open-ai-companion').click();
             });
+
+            // Floating HUD Collapse / Expand Micro-interaction
+            const btnToggleDockCollapse = document.getElementById('btn-toggle-dock-collapse');
+            const snippetClickableArea = document.getElementById('snippet-clickable-area');
+            const dockCollapseIcon = document.getElementById('dock-collapse-icon');
+            let isDockCollapsed = false;
+
+            if (btnToggleDockCollapse) {
+                btnToggleDockCollapse.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isDockCollapsed = !isDockCollapsed;
+                    if (snippetClickableArea) {
+                        snippetClickableArea.style.display = isDockCollapsed ? 'none' : 'block';
+                    }
+                    if (dockCollapseIcon) {
+                        dockCollapseIcon.textContent = isDockCollapsed ? '▲' : '▼';
+                    }
+                    btnToggleDockCollapse.classList.toggle('bg-amber-500/20', isDockCollapsed);
+                    btnToggleDockCollapse.classList.toggle('text-amber-300', isDockCollapsed);
+                    playSoftSound('click');
+                });
+            }
 
             // Snippet Prev/Next Navigation
             document.getElementById('btn-prev-play').addEventListener('click', () => {
@@ -8975,7 +9343,9 @@
                 document.getElementById('inspect-sentiment-badge').textContent = play.sentimentLabel || `Resonance: ${play.sentiment}%`;
                 document.getElementById('inspect-era-badge').textContent = play.era || (isLifeMode ? 'Life Sanctuary' : 'Career Era');
                 document.getElementById('inspect-tags-badge').textContent = (play.tags || []).join(' ') || '#Reflective';
-                document.getElementById('inspect-journal').textContent = `"${play.journal}"`;
+                const rawJournal = (play.journal || '').trim();
+                const displayJournal = rawJournal || 'A defining milestone in our living athletic ledger. When memories are etched into the timeline, the journey becomes an eternal source of strength and inspiration for the challenges ahead.';
+                document.getElementById('inspect-journal').textContent = `"${displayJournal}"`;
                 document.getElementById('inspect-ai-quote').textContent = `"I remember preserving '${play.title}' on ${play.date}. Your resonance of '${play.sentimentLabel || play.sentiment + '%'}' reminds me how deeply this moment shaped our foundation."`;
 
                 // Vault Encryption Status & Masking (SRS 4.1 & 71)
@@ -10713,6 +11083,51 @@
             const btnAIAttachPhoto = document.getElementById('btn-ai-attach-photo');
             const aiPhotoFileInput = document.getElementById('ai-photo-file-input');
 
+            // Neural TTS Toggle & Tone Tuning Slider Listeners
+            window.isAITTSEnabled = localStorage.getItem('legacylane_ai_tts') === 'true';
+            const btnAITTSToggle = document.getElementById('btn-ai-tts-toggle');
+            const aiTTSIcon = document.getElementById('ai-tts-icon');
+            const aiTTSLabel = document.getElementById('ai-tts-label');
+
+            function updateTTSUI() {
+                if (btnAITTSToggle && aiTTSIcon && aiTTSLabel) {
+                    aiTTSIcon.textContent = window.isAITTSEnabled ? '🔊' : '🔇';
+                    aiTTSLabel.textContent = window.isAITTSEnabled ? 'Voice TTS: ON' : 'Voice TTS: OFF';
+                    btnAITTSToggle.classList.toggle('bg-amber-500/25', window.isAITTSEnabled);
+                    btnAITTSToggle.classList.toggle('text-amber-200', window.isAITTSEnabled);
+                    btnAITTSToggle.classList.toggle('border-amber-500/40', window.isAITTSEnabled);
+                }
+            }
+            updateTTSUI();
+
+            if (btnAITTSToggle) {
+                btnAITTSToggle.addEventListener('click', () => {
+                    window.isAITTSEnabled = !window.isAITTSEnabled;
+                    localStorage.setItem('legacylane_ai_tts', window.isAITTSEnabled ? 'true' : 'false');
+                    updateTTSUI();
+                    playSoftSound('click');
+                    if (!window.isAITTSEnabled && 'speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                    }
+                });
+            }
+
+            const sliderCoachingFire = document.getElementById('slider-coaching-fire');
+            const valCoachingFire = document.getElementById('val-coaching-fire');
+            if (sliderCoachingFire && valCoachingFire) {
+                sliderCoachingFire.addEventListener('input', (e) => {
+                    valCoachingFire.textContent = `${e.target.value}%`;
+                });
+            }
+
+            const sliderSoulEmpathy = document.getElementById('slider-soul-empathy');
+            const valSoulEmpathy = document.getElementById('val-soul-empathy');
+            if (sliderSoulEmpathy && valSoulEmpathy) {
+                sliderSoulEmpathy.addEventListener('input', (e) => {
+                    valSoulEmpathy.textContent = `${e.target.value}%`;
+                });
+            }
+
             // Sideline AI Real-Time WebSocket Streaming Client (SRS 4.3)
             let sidelineWS = null;
             let wsReconnectTimer = null;
@@ -10889,6 +11304,54 @@
                     const btnSave = currentStreamingFooter.querySelector('.btn-save-ai-insight');
                     if (btnSave) {
                         setupSaveInsightButton(btnSave, fullText, quote, activeStreamEra, activeStreamPhoto);
+                    }
+                }
+
+                // 1. Synthesize Neural TTS Voice Audio if enabled (Web Speech API)
+                if (window.isAITTSEnabled && 'speechSynthesis' in window && fullText) {
+                    try {
+                        window.speechSynthesis.cancel();
+                        const cleanSpeechText = fullText.replace(/[*#_`>]/g, '').trim();
+                        const utterance = new SpeechSynthesisUtterance(cleanSpeechText);
+                        utterance.rate = 1.0;
+                        utterance.pitch = (aiEraSelect && aiEraSelect.value && (aiEraSelect.value.includes('Youth') || aiEraSelect.value.includes('High School'))) ? 1.15 : 0.98;
+                        const voices = window.speechSynthesis.getVoices();
+                        const chosenVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('David')));
+                        if (chosenVoice) utterance.voice = chosenVoice;
+                        window.speechSynthesis.speak(utterance);
+                    } catch (ttsErr) {
+                        console.warn('Speech synthesis playback note:', ttsErr);
+                    }
+                }
+
+                // 2. Scan response for cited milestone nodes and attach interactive 3D fly-to chips
+                if (currentStreamingBubble && fullText) {
+                    const allMems = getActiveMemories();
+                    const citedChips = [];
+                    allMems.forEach((m, idx) => {
+                        const titleSnippet = (m.title || '').toLowerCase();
+                        if (titleSnippet.length > 4 && fullText.toLowerCase().includes(titleSnippet)) {
+                            citedChips.push({ index: idx, title: m.title, id: m.id || (idx + 1) });
+                        }
+                    });
+
+                    if (citedChips.length > 0) {
+                        const chipContainer = document.createElement('div');
+                        chipContainer.className = 'mt-2 pt-2 border-t border-amber-500/15 flex flex-wrap gap-1.5 items-center';
+                        chipContainer.innerHTML = '<span class="text-[10px] font-mono text-amber-300/80 font-semibold">CITED MILESTONES:</span>';
+                        citedChips.forEach(c => {
+                            const chip = document.createElement('button');
+                            chip.type = 'button';
+                            chip.className = 'px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/30 text-[10px] font-mono font-medium transition cursor-pointer flex items-center gap-1';
+                            chip.innerHTML = `<span>🎯 Chapter #${c.id}: ${escapeHTML(c.title.slice(0, 26))}...</span>`;
+                            chip.title = 'Pan 3D camera to this cited milestone';
+                            chip.addEventListener('click', () => {
+                                visitNode(c.index, false);
+                                playSoftSound('click');
+                            });
+                            chipContainer.appendChild(chip);
+                        });
+                        currentStreamingBubble.appendChild(chipContainer);
                     }
                 }
 
@@ -13650,7 +14113,11 @@
             document.getElementById('btn-free-walk-toggle')?.addEventListener('click', launchDedicated3DWalk);
             document.getElementById('btn-inspect-dock')?.addEventListener('click', () => {
                 const mems = getActiveMemories();
-                if (mems.length > 0) openInspectModalForNode(activeNodeIndex >= 0 ? activeNodeIndex : 0);
+                if (mems.length > 0) {
+                    const activeMem = mems[activeNodeIndex >= 0 ? activeNodeIndex : 0];
+                    // Transition smoothly from character to rotatable 3D keepsake artifact
+                    open3DArtifactModal(activeMem);
+                }
             });
             document.getElementById('btn-sidebar-arena')?.addEventListener('click', () => switchViewMode('ground'));
             document.getElementById('btn-exit-free-walk')?.addEventListener('click', () => toggleFreeWalkMode(false));
@@ -14338,6 +14805,31 @@
             window.benchGroup = benchGroup;
             window.championPedestalGroup = championPedestalGroup;
 
+            // ------------------------------------------------------------------
+            // 5C. PERFORMANCE FALLBACK & LOW-TIER GPU RENDERER TOGGLE
+            // ------------------------------------------------------------------
+            window.lowTierRendererActive = localStorage.getItem('legacylane_low_gpu') === 'true';
+
+            function applyRendererPerformanceTier() {
+                if (window.lowTierRendererActive) {
+                    if (renderer) {
+                        renderer.setPixelRatio(1.0);
+                        renderer.shadowMap.enabled = false;
+                    }
+                    if (scene.fog) scene.fog.density = 0.002;
+                    isPostProcessingEnabled = false;
+                    console.log('⚡ [LegacyLane] Low-tier / 2.5D optimized performance renderer activated.');
+                } else {
+                    if (renderer) {
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                        renderer.shadowMap.enabled = true;
+                    }
+                    if (scene.fog) scene.fog.density = 0.0055;
+                    isPostProcessingEnabled = true;
+                }
+            }
+            applyRendererPerformanceTier();
+
             /* ------------------------------------------------------------------
                14. 60FPS ANIMATION LOOP (TREES SWAYING & DRIFTING BREEZE)
                ------------------------------------------------------------------ */
@@ -14377,7 +14869,11 @@
                     if (!isCabinetCamTweening) {
                         controls.update();
                     }
+                    if (effectComposer && isPostProcessingEnabled && !window.lowTierRendererActive) {
+                    effectComposer.render(delta);
+                } else {
                     renderer.render(scene, camera);
+                }
                     return;
                 }
 
@@ -14388,12 +14884,34 @@
 
                 const memories = getActiveMemories();
 
-                // ── AVATAR: idle breathing (Anatomically anchored to 1.44 torso, 1.88 head, 1.58 arms) ──
-                const breatheAmt = Math.sin(time * 2.1) * 0.008;
-                if (torsoMesh) torsoMesh.position.y = 1.44 + breatheAmt;
-                if (headMesh) headMesh.position.y  = 1.88 + breatheAmt * 0.6;
-                if (avatarLimbs.armLGroup) avatarLimbs.armLGroup.position.y = 1.58 + breatheAmt * 0.4;
-                if (avatarLimbs.armRGroup) avatarLimbs.armRGroup.position.y = 1.58 + breatheAmt * 0.4;
+                // ── AVATAR: idle breathing & stance shift dynamics (Anatomically anchored) ──
+                const breatheAmt = Math.sin(time * 2.1) * 0.012;
+                const stanceShiftX = Math.sin(time * 0.45) * 0.014;
+                const stanceShiftRotZ = Math.sin(time * 0.45) * 0.015;
+                if (torsoMesh) {
+                    torsoMesh.position.y = 1.44 + breatheAmt;
+                    torsoMesh.position.x = stanceShiftX * 0.4;
+                    torsoMesh.rotation.z = stanceShiftRotZ * 0.3;
+                }
+                if (headMesh) {
+                    headMesh.position.y  = 1.88 + breatheAmt * 0.7;
+                    headMesh.position.x = stanceShiftX * 0.5;
+
+                    // Contextual reaction: If AI chat drawer or inspect modal is active, avatar gently turns head towards it!
+                    const isChatDrawerActive = Boolean(document.getElementById('drawer-ai-companion')?.classList.contains('active'));
+                    const isInspectActive = Boolean(document.getElementById('modal-inspect-play')?.classList.contains('active'));
+                    const targetHeadTurn = isChatDrawerActive ? -0.38 : (isInspectActive ? 0.28 : 0);
+                    headMesh.rotation.y = THREE.MathUtils.lerp(headMesh.rotation.y, targetHeadTurn, delta * 4.0);
+                    headMesh.rotation.x = THREE.MathUtils.lerp(headMesh.rotation.x, (isChatDrawerActive || isInspectActive) ? 0.08 : 0, delta * 3.0);
+                }
+                if (avatarLimbs.armLGroup) {
+                    avatarLimbs.armLGroup.position.y = 1.58 + breatheAmt * 0.5;
+                    avatarLimbs.armLGroup.rotation.z = Math.sin(time * 0.6) * 0.025;
+                }
+                if (avatarLimbs.armRGroup) {
+                    avatarLimbs.armRGroup.position.y = 1.58 + breatheAmt * 0.5;
+                    avatarLimbs.armRGroup.rotation.z = -Math.sin(time * 0.6) * 0.025;
+                }
 
                 // ── BIOLOGICAL BLINKING & EYE SACCADES (Avatar v5 Engine) ──
                 if (avatarLimbs && avatarLimbs.eyes) {
@@ -14636,6 +15154,9 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                if (effectComposer) {
+                    effectComposer.setSize(window.innerWidth, window.innerHeight);
+                }
             });
 
         });
