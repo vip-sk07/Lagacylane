@@ -7,6 +7,7 @@ const localVectorIndex = [];
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 let supabase = null;
+let supabaseNoticeLogged = false;
 
 if (supabaseUrl && supabaseKey) {
   try {
@@ -94,12 +95,18 @@ export async function storeVectorEmbedding({ memoryId, userId, embedding, metada
         });
 
       if (error) {
-        console.warn('Supabase insertion error (table memories_vector might need pgvector setup):', error.message);
+        if (!supabaseNoticeLogged) {
+          console.warn('Notice: Supabase vector store unavailable, using fast local memory vector store.');
+          supabaseNoticeLogged = true;
+        }
       } else {
         storedInSupabase = true;
       }
     } catch (err) {
-      console.warn('Failed inserting to Supabase:', err.message);
+      if (!supabaseNoticeLogged) {
+        console.warn('Notice: Supabase vector store unavailable, using fast local memory vector store.');
+        supabaseNoticeLogged = true;
+      }
     }
   }
 
@@ -179,6 +186,26 @@ export function removeUserVectors(userId) {
   localVectorIndex.length = 0;
   afterList.forEach(r => localVectorIndex.push(r));
   console.log(`Vector store: removed ${before - localVectorIndex.length} embeddings for user ${userId}`);
+}
+
+/**
+ * Removes the vector embedding for a single memory (on memory delete or before re-ingesting an edit).
+ * @param {string} memoryId
+ * @returns {number} Number of embeddings removed
+ */
+export function removeMemoryVector(memoryId) {
+  if (!memoryId) return 0;
+  let removed = 0;
+  for (let i = localVectorIndex.length - 1; i >= 0; i--) {
+    if (localVectorIndex[i].id === memoryId) {
+      localVectorIndex.splice(i, 1);
+      removed++;
+    }
+  }
+  if (supabase) {
+    supabase.from('memories_vector').delete().eq('id', memoryId).then(() => {}, () => {});
+  }
+  return removed;
 }
 
 /**

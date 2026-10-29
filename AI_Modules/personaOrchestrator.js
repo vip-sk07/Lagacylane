@@ -458,8 +458,11 @@ async function _generateYoungerSelfResponseInternal({
       });
 
       if (response && response.text) {
+        const sparseNotice = (parsedMemories.length === 0)
+          ? "You haven't logged any memories from this time yet. Responses will be limited.\n\n"
+          : '';
         return {
-          response: response.text,
+          response: sparseNotice + response.text,
           crisisTriggered: false,
           isBurnout,
           selectedEra,
@@ -500,8 +503,11 @@ async function _generateYoungerSelfResponseInternal({
       if (res.ok) {
         const data = await res.json();
         if (data.message?.content) {
+          const sparseNotice = (parsedMemories.length === 0)
+            ? "You haven't logged any memories from this time yet. Responses will be limited.\n\n"
+            : '';
           return {
-            response: data.message.content,
+            response: sparseNotice + data.message.content,
             crisisTriggered: false,
             isBurnout,
             selectedEra,

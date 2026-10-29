@@ -61,11 +61,12 @@ export async function ingestMemoryPayload(memoryPayload) {
     imageSource = null,
     caption = null,
     journeyType = null,   // domain scoping
-    domain = null         // domain scoping
+    domain = null,        // domain scoping
+    memoryId: providedMemoryId = null // reuse the archive Memory_ID so edits/deletes can target this vector
   } = memoryPayload;
 
   // 1. Unique Memory ID Generation
-  const memoryId = 'mem_vec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+  const memoryId = providedMemoryId || ('mem_vec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
 
   // 2. Compute Sentiment Score if not explicitly provided
   const computedSentiment = (typeof sentimentScore === 'number') 

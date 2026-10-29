@@ -448,6 +448,22 @@
       </div>
     </div>
 
+    <!-- WORKFLOW PROGRESS STEPPER -->
+    <div class="workflow-stepper" style="display:flex;align-items:center;gap:6px;background:rgba(13,20,30,0.85);padding:5px 14px;border-radius:24px;border:1px solid rgba(0,210,255,0.25);font-size:11px;">
+      <a href="LegacyLogin.html" style="color:#10b981;font-weight:600;text-decoration:none;">✓ 1. Auth</a>
+      <span style="color:rgba(255,255,255,0.2);">➔</span>
+      <a href="journey-selection.html" style="color:#10b981;font-weight:600;text-decoration:none;">✓ 2. Path</a>
+      <span style="color:rgba(255,255,255,0.2);">➔</span>
+      <a href="timeline.html" style="color:#10b981;font-weight:600;text-decoration:none;">✓ 3. Timeline</a>
+      <span style="color:rgba(255,255,255,0.2);">➔</span>
+      <span style="color:#00fff0;font-weight:700;display:flex;align-items:center;gap:4px;background:rgba(0,210,255,0.15);padding:2px 8px;border-radius:12px;border:1px solid rgba(0,210,255,0.4);">
+        <span style="width:6px;height:6px;border-radius:50%;background:#00fff0;box-shadow:0 0 6px #00fff0;"></span>
+        4. 3D Ground
+      </span>
+      <span style="color:rgba(255,255,255,0.2);">➔</span>
+      <span style="color:#64748b;">5. Immortality</span>
+    </div>
+
     <!-- TABS -->
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-v="ground" id="tab-ground">
@@ -461,8 +477,9 @@
     <!-- ACTION BUTTONS -->
     <div class="actions">
       <a href="timeline.html" class="nav-btn" title="Open Analytical Timeline">📊 Timeline</a>
-      <a href="chat.html" class="nav-btn" title="Talk to Younger Self AI">💬 Younger Self</a>
+      <a href="timeline.html?open=ai-companion" class="nav-btn" title="Talk to Younger Self AI">💬 Younger Self</a>
       <a href="journey-selection.html" class="nav-btn" title="Switch Athlete / Sport">🔄 Switch</a>
+      <button id="btn-seal-legacy" type="button" class="nav-btn" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#0a0c10;font-weight:800;border:none;box-shadow:0 0 16px rgba(245,158,11,0.5);cursor:pointer;display:inline-flex;align-items:center;gap:6px;" title="Finish Workflow & Seal Immortality">🏆 Finish & Seal Immortality</button>
     </div>
   </header>
 
@@ -523,6 +540,82 @@
     <div class="glass ctrl">
       <button class="btn" id="back" hidden>← Back to Cabinet</button>
       <span class="lbl" id="chint">Hover any cup or award, click to inspect story</span>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 5: IMMORTALITY GRAND FINALE CEREMONY MODAL -->
+<div id="immortality-modal" style="position:fixed;inset:0;background:rgba(4,7,12,0.92);backdrop-filter:blur(14px);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.4s ease;">
+  <div class="immortality-card" style="max-width:580px;width:100%;background:linear-gradient(170deg,#0e1624 0%,#090d15 100%);border:2px solid rgba(245,158,11,0.5);border-radius:24px;box-shadow:0 0 60px rgba(245,158,11,0.25), 0 25px 50px rgba(0,0,0,0.8);padding:32px;position:relative;overflow:hidden;color:#f8fafc;font-family:sans-serif;text-align:center;">
+    
+    <!-- Golden aura glow -->
+    <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:280px;height:160px;background:radial-gradient(ellipse,rgba(245,158,11,0.35) 0%,transparent 70%);pointer-events:none;"></div>
+    
+    <!-- Top badge -->
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);font-size:11px;font-weight:700;letter-spacing:1px;color:#ffc65a;margin-bottom:14px;text-transform:uppercase;">
+      <span>🏆 STAGE 5 / 5: ARCHIVAL IMMORTALITY REACHED</span>
+    </div>
+
+    <h2 style="font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px;color:#fff;text-shadow:0 2px 12px rgba(245,158,11,0.3);">Legacy Immortalized</h2>
+    <p style="font-size:13px;color:#94a3b8;line-height:1.5;max-width:440px;margin:0 auto 20px;">Your milestones, memories, and personal reflections have been permanently preserved in the LegacyLane Vault for future generations.</p>
+
+    <!-- Certificate Card -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:20px;margin-bottom:24px;text-align:left;position:relative;">
+      <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="cert-avatar-badge" style="width:44px;height:44px;border-radius:12px;background:#0d1117;border:2px solid #ffc65a;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:#ffc65a;box-shadow:0 0 12px rgba(245,158,11,0.4);">
+            #10
+          </div>
+          <div>
+            <div id="cert-name" style="font-size:16px;font-weight:700;color:#fff;">Alex Morgan</div>
+            <div id="cert-discipline" style="font-size:12px;color:#94a3b8;">⚽ Football · Attacking Midfielder</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.5px;">Vault Status</div>
+          <div style="font-size:12px;font-weight:700;color:#10b981;display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span> SEALED ETERNAL
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
+        <div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;">Milestones</div>
+          <div id="cert-milestones" style="font-size:18px;font-weight:800;color:#00fff0;">12 Preserved</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;">Resilience Index</div>
+          <div style="font-size:18px;font-weight:800;color:#ffc65a;">94% Elite</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;">Younger Self AI</div>
+          <div style="font-size:18px;font-weight:800;color:#10b981;">RAG Active</div>
+        </div>
+      </div>
+
+      <!-- Holographic Seal Stamp -->
+      <div style="margin-top:14px;padding:8px 12px;background:linear-gradient(90deg,rgba(245,158,11,0.1),rgba(0,210,255,0.1));border-radius:10px;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-family:monospace;color:#ffc65a;">
+        <span>ARCHIVE ID: LL-VAULT-2026-X9</span>
+        <span>AES-256-GCM SEALED</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+      <button id="btn-print-cert" type="button" style="padding:10px 22px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0a0c10;font-size:13px;font-weight:800;border:none;cursor:pointer;box-shadow:0 0 20px rgba(245,158,11,0.4);display:flex;align-items:center;gap:6px;">
+        <span>📜 Print / Save Certificate</span>
+      </button>
+      <a href="timeline.html" style="text-decoration:none;padding:10px 18px;border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;gap:6px;">
+        <span>📊 Back to Timeline</span>
+      </a>
+      <a href="index.html" style="text-decoration:none;padding:10px 18px;border-radius:12px;background:rgba(255,255,255,0.04);color:#94a3b8;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:6px;">
+        <span>🔄 Restart Workflow</span>
+      </a>
+      <button id="btn-close-immortality" type="button" style="padding:10px 16px;border-radius:12px;background:transparent;color:#64748b;font-size:13px;border:none;cursor:pointer;">
+        Dismiss
+      </button>
     </div>
   </div>
 </div>
@@ -2270,9 +2363,54 @@
   }
   requestAnimationFrame(frame);
 
+  // Stage 5: Archival Immortality Modal Controller
+  const modalImmortality = $('#immortality-modal');
+  const btnSealLegacy = $('#btn-seal-legacy');
+  const btnCloseImmortality = $('#btn-close-immortality');
+  const btnPrintCert = $('#btn-print-cert');
+
+  function openImmortalityCeremony() {
+    if (!modalImmortality) return;
+    const certName = $('#cert-name');
+    const certDisc = $('#cert-discipline');
+    const certAvatar = $('#cert-avatar-badge');
+    const certMems = $('#cert-milestones');
+
+    if (certName) certName.textContent = athleteName || 'Athlete';
+    if (certDisc) certDisc.textContent = `${sportEmoji} ${sportNames[activeSport] || activeSport} · #${jerseyNumber}`;
+    if (certAvatar) certAvatar.textContent = (activeSport === 'life') ? '✦' : `#${jerseyNumber}`;
+    if (certMems) {
+      const count = (Array.isArray(MEM) && MEM.length > 0) ? MEM.length : 12;
+      certMems.textContent = `${count} Preserved`;
+    }
+
+    modalImmortality.style.display = 'flex';
+    requestAnimationFrame(() => {
+      modalImmortality.style.opacity = '1';
+    });
+  }
+
+  function closeImmortalityCeremony() {
+    if (!modalImmortality) return;
+    modalImmortality.style.opacity = '0';
+    setTimeout(() => {
+      modalImmortality.style.display = 'none';
+    }, 400);
+  }
+
+  if (btnSealLegacy) btnSealLegacy.addEventListener('click', openImmortalityCeremony);
+  if (btnCloseImmortality) btnCloseImmortality.addEventListener('click', closeImmortalityCeremony);
+  if (btnPrintCert) btnPrintCert.addEventListener('click', () => window.print());
+  if (modalImmortality) {
+    modalImmortality.addEventListener('click', e => {
+      if (e.target === modalImmortality) closeImmortalityCeremony();
+    });
+  }
+
   window.__lane = {
     goTo: i => goTo(i),
     openTrophy: i => openTrophy(i),
+    openImmortalityCeremony: () => openImmortalityCeremony(),
     sport: k => {
       const e = $('#sport');
       if (e) {

@@ -112,7 +112,7 @@ function saveMemoryDocToSQLite(doc) {
       doc.MatchDetails || doc.journal || doc.content || '',
       doc.VictoryMessage || doc.victoryMessage || '',
       Number(doc.Stars || doc.stars) || 3,
-      Number(doc.SentimentScore ?? doc.sentiment) || 85,
+      Number.isFinite(Number(doc.SentimentScore ?? doc.sentiment)) ? Number(doc.SentimentScore ?? doc.sentiment) : 85,
       doc.PrivacySetting || (doc.IsVaultLocked || doc.isVaultLocked ? 'Vault' : 'Public'),
       JSON.stringify(doc.Tags || doc.tags || {}),
       JSON.stringify(doc.MediaAssets || doc.mediaAssets || doc.photos || []),
@@ -183,6 +183,11 @@ export function getCollection(collectionName) {
               sql += ' AND Domain = ?';
               params.push(dom);
             }
+            const era = query.Era || query.era;
+            if (typeof era === 'string' && era && era.toLowerCase() !== 'all eras') {
+              sql += ' AND Era = ?';
+              params.push(era);
+            }
             sql += ' ORDER BY EntryDate ASC';
             rows = sqliteDb.prepare(sql).all(...params);
           } catch (e) {
@@ -199,7 +204,19 @@ export function getCollection(collectionName) {
               list = list.slice(0, n);
               return cursor;
             },
-            sort() {
+            sort(spec = {}) {
+              // Mirror MongoDB sort semantics for the single-field sorts the API uses (e.g. { CreatedAt: -1 })
+              const [field, dir] = Object.entries(spec)[0] || [];
+              if (field) {
+                list = [...list].sort((a, b) => {
+                  const av = a[field] instanceof Date ? a[field].getTime() : a[field];
+                  const bv = b[field] instanceof Date ? b[field].getTime() : b[field];
+                  if (av === bv) return 0;
+                  if (av === undefined || av === null) return 1;
+                  if (bv === undefined || bv === null) return -1;
+                  return (av > bv ? 1 : -1) * (dir < 0 ? -1 : 1);
+                });
+              }
               return cursor;
             },
             toArray: async () => list
@@ -288,7 +305,7 @@ export function getCollection(collectionName) {
               INSERT OR REPLACE INTO ChatSessions (Session_ID, User_ID, EraSelected, StartTime, MessagesJSON)
               VALUES (?, ?, ?, ?, ?)
             `).run(
-              doc.Session_ID || ('sess_' + Date.now()),
+              doc.Session_ID || ('sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
               doc.User_ID,
               doc.EraSelected || 'Current',
               doc.StartTime instanceof Date ? doc.StartTime.toISOString() : (doc.StartTime || new Date().toISOString()),

@@ -4,7 +4,7 @@
  * Run: node Backend/test_e2e.js
  */
 
-const BASE = 'http://localhost:5000';
+const BASE = process.env.TEST_BASE_URL || 'http://localhost:5000';
 let PASS = 0, FAIL = 0, SKIP = 0;
 let userId = null, memoryId = null, grantId = null, inviteCode = null;
 
