@@ -632,7 +632,7 @@
                 </div>
                 <p id="sub-bench-speech-bubble" style="font-size:10px;color:#d6d3d1;font-style:italic;line-height:1.5;margin:0">&ldquo;Take your time writing. I&rsquo;m right here whenever you want to revisit what we felt.&rdquo;</p>
             </div>
-            <button id="btn-call-sub-bench" class="sidebar-nav-item accent-amber" style="justify-content:center;background:rgba(245,158,11,0.10);border-color:rgba(245,158,11,0.22);">
+            <button id="btn-call-sub-bench" type="button" class="sidebar-nav-item accent-amber" style="justify-content:center;background:rgba(245,158,11,0.10);border-color:rgba(245,158,11,0.22);">
                 <svg style="width:13px;height:13px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 <span class="sidebar-nav-label" style="flex:unset">Ask Younger Self</span>
             </button>
@@ -3009,6 +3009,8 @@
             }
 
             function getUserId() {
+                const urlUid = urlParams.get('user') || urlParams.get('userId');
+                if (urlUid) return urlUid;
                 let id = localStorage.getItem('legacy_user_id');
                 if (!id) {
                     const cleanName = getUserName().toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -5008,7 +5010,9 @@
                         }
 
                         currentFieldModelGroup = gltf.scene;
-                        currentFieldModelGroup.position.set(0, 0, 0);
+                        // Calibrate ground elevation: 'life' sanctuary terrain path sits at +2.26, offset down to align ground level with pedestal & character
+                        const fieldElevationOffsetY = (sport === 'life') ? -2.26 : 0;
+                        currentFieldModelGroup.position.set(0, fieldElevationOffsetY, 0);
 
                         // Align coordinate space with timeline camera
                         if (sport === 'football' || sport === 'track') {
@@ -5408,16 +5412,23 @@
             };
 
             function getAthleteCustomization() {
+                const uid = getUserId();
+                const activeName = getUserName();
                 let saved = null;
                 try {
-                    const raw = localStorage.getItem('legacy_athlete_customization');
+                    const raw = localStorage.getItem(`legacy_athlete_customization_${uid}`) || localStorage.getItem('legacy_athlete_customization');
                     if (raw && raw.startsWith('{')) saved = JSON.parse(raw);
                 } catch (e) {}
 
                 const custom = Object.assign({}, DEFAULT_ATHLETE_CUSTOM, saved || {});
                 if (!saved || !saved.auraColor) custom.auraColor = getAvatarAura() || '#00d2ff';
                 if (!saved || !saved.squadNumber) custom.squadNumber = getJerseyNumber() || (isLifeMode ? '✦' : '10');
-                if (!saved || !saved.jerseyName) custom.jerseyName = getUserName() || 'ATHLETE';
+                
+                // Synchronize jerseyName with active user profile (prevent stale names from past demo runs)
+                if (!saved || !saved.jerseyName || saved.jerseyName === 'ATHLETE' || (saved.userId && saved.userId !== uid) || (!saved.userId && saved.jerseyName !== activeName && activeName !== 'Athlete' && activeName !== 'Life Explorer')) {
+                    custom.jerseyName = activeName || 'ATHLETE';
+                    custom.userId = uid;
+                }
                 if (!saved || !saved.role) custom.role = isLifeMode ? 'SEEKER' : getPositionRole();
 
                 // Sport-specific intelligent default accents when no saved custom exists
@@ -5439,6 +5450,9 @@
 
             function saveAthleteCustomization(custom) {
                 try {
+                    const uid = getUserId();
+                    if (custom) custom.userId = uid;
+                    localStorage.setItem(`legacy_athlete_customization_${uid}`, JSON.stringify(custom));
                     localStorage.setItem('legacy_athlete_customization', JSON.stringify(custom));
                     if (custom.auraColor) localStorage.setItem('legacy_avatar_aura', custom.auraColor);
                 } catch (e) {}
@@ -7315,12 +7329,19 @@
             buildChampionPedestal();
 
             function update3DJerseyAndCard(customInput) {
+                const activeName = getUserName();
                 const data = customInput || getAthleteCustomization();
+                if (activeName && activeName !== 'Athlete' && activeName !== 'Life Explorer') {
+                    if (!data.userId || data.userId !== getUserId() || data.jerseyName === 'Jordan Rivera' || data.jerseyName === 'ATHLETE') {
+                        data.jerseyName = activeName;
+                        data.userId = getUserId();
+                    }
+                }
                 renderAthlete(data);
 
                 if (tacticalCardSprite) {
                     tacticalCardSprite.material.map = createTacticalCardTexture({
-                        name: data.jerseyName,
+                        name: data.jerseyName || activeName,
                         jersey: data.squadNumber,
                         position: data.role
                     });
@@ -7410,7 +7431,8 @@
             const nodeGraphicTextures = new Map();
 
             function createNodeGraphicTexture(mem, idx, isLight = false) {
-                const photoSrc = mem.photo || (Array.isArray(mem.photos) && mem.photos[0]) || (Array.isArray(mem.mediaAssets) && mem.mediaAssets[0]?.url) || '';
+                const photoSrcRaw = mem.photo || (Array.isArray(mem.photos) && (typeof mem.photos[0] === 'string' ? mem.photos[0] : mem.photos[0]?.url)) || (Array.isArray(mem.mediaAssets) && (typeof mem.mediaAssets[0] === 'string' ? mem.mediaAssets[0] : mem.mediaAssets[0]?.url)) || '';
+                const photoSrc = (typeof photoSrcRaw === 'string') ? photoSrcRaw : (photoSrcRaw?.url || '');
                 const cacheKey = `${mem.Memory_ID || idx}_${photoSrc}_${isLight ? 'light' : 'dark'}`;
                 if (nodeGraphicTextures.has(cacheKey)) {
                     return nodeGraphicTextures.get(cacheKey);
@@ -7835,8 +7857,13 @@
                 }
             }
 
-            document.getElementById('btn-call-sub-bench').addEventListener('click', () => {
-                document.getElementById('btn-open-ai-companion').click();
+            document.getElementById('btn-call-sub-bench')?.addEventListener('click', (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                const btnAI = document.getElementById('btn-open-ai-companion');
+                if (btnAI) btnAI.click();
             });
 
             // Floating HUD Collapse / Expand Micro-interaction
@@ -8097,12 +8124,12 @@
                                 journal: m.journal || m.content || m.matchDetails || '',
                                 sentiment: typeof m.sentiment === 'number' ? m.sentiment : 85,
                                 sentimentLabel: m.sentimentLabel || 'Pure Gratitude \uD83D\uDD4A\uFE0F',
-                                photo: m.photo || (m.media ? m.media : null),
-                                caption: m.caption || '',
-                                photos: (Array.isArray(m.photos) && m.photos.length > 0)
-                                    ? m.photos
-                                    : ((Array.isArray(m.mediaAssets) && m.mediaAssets.length > 0)
-                                        ? m.mediaAssets.map(a => ({ url: a.url, caption: a.caption || '' }))
+                                photo: m.photo || (Array.isArray(m.mediaAssets) && (m.mediaAssets[0]?.url || m.mediaAssets[0])) || (m.media ? m.media : null),
+                                caption: m.caption || (Array.isArray(m.mediaAssets) && m.mediaAssets[0]?.caption) || '',
+                                photos: (Array.isArray(m.mediaAssets) && m.mediaAssets.length > 0)
+                                    ? m.mediaAssets.map(a => typeof a === 'string' ? { url: a, caption: m.caption || '' } : { url: a.url, caption: a.caption || m.caption || '' })
+                                    : ((Array.isArray(m.photos) && m.photos.length > 0)
+                                        ? m.photos.map(p => typeof p === 'string' ? { url: p, caption: m.caption || '' } : { url: p.url, caption: p.caption || m.caption || '' })
                                         : (m.photo ? [{ url: m.photo, caption: m.caption || '' }] : [])),
                                 location: m.location || '',
                                 people: m.people || '',
@@ -9308,6 +9335,7 @@
                 modalLightbox.classList.add('active');
                 playSoftSound('click');
             }
+            window.openPhotoLightbox = openPhotoLightbox;
 
             function closePhotoLightbox() {
                 if (modalLightbox) modalLightbox.classList.remove('active');
@@ -9418,15 +9446,18 @@
                     photoCaptionEl.textContent = '';
 
                     nodePhotos.forEach((item) => {
+                        const imgUrl = typeof item === 'string' ? item : (item && item.url ? item.url : '');
+                        const imgCaption = (typeof item === 'object' && item && item.caption) ? item.caption : (play.caption || '');
+                        if (!imgUrl) return;
                         const thumbCard = document.createElement('div');
                         thumbCard.className = 'group relative rounded-xl overflow-hidden border border-white/10 bg-black/40 cursor-pointer aspect-video hover:border-amber-400/60 transition shadow-md';
                         thumbCard.innerHTML = `
-                            <img src="${item.url}" alt="${item.caption || play.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                            ${item.caption ? `<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-1.5 text-[10px] text-stone-200 truncate font-mono">${item.caption}</div>` : ''}
+                            <img src="${imgUrl}" alt="${imgCaption || play.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            ${imgCaption ? `<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-1.5 text-[10px] text-stone-200 truncate font-mono">${imgCaption}</div>` : ''}
                             <div class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition w-6 h-6 rounded-md bg-black/70 text-white flex items-center justify-center text-[10px]">🔍</div>
                         `;
                         thumbCard.addEventListener('click', () => {
-                            openPhotoLightbox(item.url, item.caption || play.title);
+                            openPhotoLightbox(imgUrl, imgCaption || play.title);
                         });
                         photosGrid.appendChild(thumbCard);
                     });
@@ -11263,6 +11294,8 @@
             }
 
             function finalizeStreamingResponse(msg) {
+                const targetBubble = currentStreamingBubble || window.currentStreamingBubble;
+                const targetSpan = currentStreamingSpan || window.currentStreamingSpan;
                 const fullText = msg.fullResponse || activeStreamResponse;
                 const quote = msg.insightQuote || fullText;
                 const visualPerception = msg.visualPerception;
@@ -11272,8 +11305,8 @@
                     currentStreamingCursor = null;
                 }
 
-                if (currentStreamingSpan) {
-                    currentStreamingSpan.textContent = fullText;
+                if (targetSpan) {
+                    targetSpan.textContent = fullText;
                 }
 
                 if (currentPerceptionContainer && (visualPerception || activeStreamPhoto)) {
@@ -11324,17 +11357,150 @@
                     }
                 }
 
-                // 2. Scan response for cited milestone nodes and attach interactive 3D fly-to chips
-                if (currentStreamingBubble && fullText) {
+                // 2. Scan response for cited milestone nodes and attach interactive 3D fly-to chips & retrieved archival photos
+                if (targetBubble && fullText) {
                     const allMems = getActiveMemories();
                     const citedChips = [];
+                    const citedPhotos = [];
+                    const seenPhotoUrls = new Set();
+
+                    // A. Check for photos explicitly retrieved by AI backend
+                    if (Array.isArray(msg.retrievedPhotos) && msg.retrievedPhotos.length > 0) {
+                        msg.retrievedPhotos.forEach(rp => {
+                            if (rp && rp.url && !seenPhotoUrls.has(rp.url)) {
+                                const titleLow = (rp.title || '').toLowerCase();
+                                const capLow = (rp.caption || '').toLowerCase();
+                                const fullLow = fullText.toLowerCase();
+                                const isMentioned = (titleLow && fullLow.includes(titleLow)) ||
+                                                    (capLow && fullLow.includes(capLow)) ||
+                                                    fullLow.includes('photo') ||
+                                                    fullLow.includes('picture') ||
+                                                    fullLow.includes('image');
+                                if (isMentioned) {
+                                    seenPhotoUrls.add(rp.url);
+                                    citedPhotos.push(rp);
+                                }
+                            }
+                        });
+                    }
+
+                    // B. Scan active timeline memories for titles or photo captions cited in fullText
                     allMems.forEach((m, idx) => {
                         const titleSnippet = (m.title || '').toLowerCase();
-                        if (titleSnippet.length > 4 && fullText.toLowerCase().includes(titleSnippet)) {
+                        const captionSnippet = (m.caption || '').toLowerCase();
+                        const fullLow = fullText.toLowerCase();
+                        const isTitleMentioned = titleSnippet.length > 3 && fullLow.includes(titleSnippet);
+                        const isCaptionMentioned = captionSnippet.length > 3 && fullLow.includes(captionSnippet);
+
+                        if (isTitleMentioned || isCaptionMentioned) {
                             citedChips.push({ index: idx, title: m.title, id: m.id || (idx + 1) });
+
+                            // Extract photo if available
+                            const photoSrc = m.photo || (Array.isArray(m.photos) && (typeof m.photos[0] === 'string' ? m.photos[0] : m.photos[0]?.url)) || m.mediaUrl;
+                            if (photoSrc && !seenPhotoUrls.has(photoSrc)) {
+                                seenPhotoUrls.add(photoSrc);
+                                citedPhotos.push({
+                                    url: photoSrc,
+                                    caption: m.caption || (Array.isArray(m.photos) && m.photos[0]?.caption) || m.title,
+                                    title: m.title,
+                                    date: m.date,
+                                    era: m.era,
+                                    id: m.id || (idx + 1),
+                                    index: idx
+                                });
+                            }
                         }
                     });
 
+                    // C. If the prompt/response specifically refers to a photo and no photo was matched yet,
+                    // surface the most relevant photo from this era's memories
+                    if (citedPhotos.length === 0 && (fullText.toLowerCase().includes('photo') || fullText.toLowerCase().includes('picture') || fullText.toLowerCase().includes('photograph'))) {
+                        for (let idx = 0; idx < allMems.length; idx++) {
+                            const m = allMems[idx];
+                            const photoSrc = m.photo || (Array.isArray(m.photos) && (typeof m.photos[0] === 'string' ? m.photos[0] : m.photos[0]?.url)) || m.mediaUrl;
+                            if (photoSrc && !seenPhotoUrls.has(photoSrc)) {
+                                seenPhotoUrls.add(photoSrc);
+                                citedPhotos.push({
+                                    url: photoSrc,
+                                    caption: m.caption || (Array.isArray(m.photos) && m.photos[0]?.caption) || m.title,
+                                    title: m.title,
+                                    date: m.date,
+                                    era: m.era,
+                                    id: m.id || (idx + 1),
+                                    index: idx
+                                });
+                                break;
+                            }
+                        }
+                    }
+
+                    // D. Render Retrieved Archival Photo Cards inside Assistant Chat Bubble
+                    if (citedPhotos.length > 0) {
+                        const photoSection = document.createElement('div');
+                        photoSection.className = 'mt-3 space-y-2.5';
+
+                        citedPhotos.forEach(p => {
+                            const photoCard = document.createElement('div');
+                            photoCard.className = 'p-2.5 rounded-xl bg-stone-900/90 border border-amber-500/30 hover:border-amber-400/60 shadow-lg transition-all duration-200 group';
+                            photoCard.innerHTML = `
+                                <div class="flex items-center justify-between text-[10px] font-mono text-amber-300/90 mb-1.5 px-0.5">
+                                    <span class="flex items-center gap-1.5 font-bold tracking-wide">
+                                        <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        RETRIEVED ARCHIVAL PHOTO
+                                    </span>
+                                    <span class="text-stone-400 text-[9px] font-mono">${escapeHTML(p.date || '')}</span>
+                                </div>
+                                <div class="photo-preview-wrap relative overflow-hidden rounded-lg border border-white/10 bg-black/50 cursor-pointer aspect-video max-h-52">
+                                    <img src="${p.url}" alt="${escapeHTML(p.caption || p.title || 'Retrieved keepsake')}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" loading="lazy">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-black/20 to-transparent opacity-85 group-hover:opacity-60 transition-opacity"></div>
+                                    <div class="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between gap-2">
+                                        <p class="text-[11px] text-stone-100 font-medium truncate drop-shadow-md">"${escapeHTML(p.caption || p.title || '')}"</p>
+                                        <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-black/75 text-amber-300 border border-amber-500/30 flex-shrink-0">🔍 Zoom</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+                                    <button type="button" class="btn-fly-photo-node px-2.5 py-1 rounded bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 text-[10px] font-mono font-medium border border-amber-500/25 transition flex items-center gap-1 cursor-pointer">
+                                        <span>🎯 Fly to Chapter #${p.id || (p.index + 1)}</span>
+                                    </button>
+                                    <button type="button" class="btn-inspect-photo-node px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-stone-300 hover:text-stone-100 text-[10px] font-mono transition flex items-center gap-1 cursor-pointer">
+                                        <span>📖 Details</span>
+                                    </button>
+                                </div>
+                            `;
+
+                            // Zoom modal / lightbox
+                            const imgWrap = photoCard.querySelector('.photo-preview-wrap');
+                            if (imgWrap) {
+                                imgWrap.addEventListener('click', () => {
+                                    if (typeof openPhotoLightbox === 'function') openPhotoLightbox(p.url, p.caption || p.title || '');
+                                });
+                            }
+
+                            // 3D camera pan
+                            const flyBtn = photoCard.querySelector('.btn-fly-photo-node');
+                            if (flyBtn) {
+                                flyBtn.addEventListener('click', () => {
+                                    if (typeof visitNode === 'function') visitNode(p.index, false);
+                                    playSoftSound('click');
+                                });
+                            }
+
+                            // Memory inspection details
+                            const inspectBtn = photoCard.querySelector('.btn-inspect-photo-node');
+                            if (inspectBtn) {
+                                inspectBtn.addEventListener('click', () => {
+                                    if (typeof openInspectModalForNode === 'function') openInspectModalForNode(p.index);
+                                    playSoftSound('click');
+                                });
+                            }
+
+                            photoSection.appendChild(photoCard);
+                        });
+
+                        targetBubble.appendChild(photoSection);
+                    }
+
+                    // E. Render Cited Milestone Chips
                     if (citedChips.length > 0) {
                         const chipContainer = document.createElement('div');
                         chipContainer.className = 'mt-2 pt-2 border-t border-amber-500/15 flex flex-wrap gap-1.5 items-center';
@@ -11351,7 +11517,7 @@
                             });
                             chipContainer.appendChild(chip);
                         });
-                        currentStreamingBubble.appendChild(chipContainer);
+                        targetBubble.appendChild(chipContainer);
                     }
                 }
 
@@ -11365,6 +11531,7 @@
                 activeStreamResponse = '';
                 activeStreamPhoto = null;
             }
+            window.finalizeStreamingResponse = finalizeStreamingResponse;
 
             function showInstantLearningToast(msg) {
                 const toast = document.createElement('div');
@@ -11630,6 +11797,41 @@
                             <span>${msg.timestamp || ''}</span>
                         </div>
                     `;
+
+                    // Check if historic reflection references a stored memory with a photo
+                    const allMems = typeof getActiveMemories === 'function' ? getActiveMemories() : [];
+                    const msgTextLow = (msg.text || '').toLowerCase();
+                    const matchedMem = allMems.find(m => {
+                        const tLow = (m.title || '').toLowerCase();
+                        const cLow = (m.caption || '').toLowerCase();
+                        const photoUrl = m.photo || (Array.isArray(m.photos) && (typeof m.photos[0] === 'string' ? m.photos[0] : m.photos[0]?.url)) || m.mediaUrl;
+                        return photoUrl && ((tLow.length > 3 && msgTextLow.includes(tLow)) || (cLow.length > 3 && msgTextLow.includes(cLow)));
+                    });
+                    if (matchedMem) {
+                        const pUrl = matchedMem.photo || (Array.isArray(matchedMem.photos) && (typeof matchedMem.photos[0] === 'string' ? matchedMem.photos[0] : matchedMem.photos[0]?.url)) || matchedMem.mediaUrl;
+                        const pCap = matchedMem.caption || (Array.isArray(matchedMem.photos) && matchedMem.photos[0]?.caption) || matchedMem.title;
+                        const photoDiv = document.createElement('div');
+                        photoDiv.className = 'mt-2 p-2 rounded-xl bg-stone-900/80 border border-amber-500/25 group';
+                        photoDiv.innerHTML = `
+                            <div class="flex items-center justify-between text-[9px] font-mono text-amber-300/80 mb-1">
+                                <span class="flex items-center gap-1 font-semibold">📷 RETRIEVED ARCHIVAL PHOTO</span>
+                                <span>${escapeHTML(matchedMem.date || '')}</span>
+                            </div>
+                            <div class="cursor-pointer overflow-hidden rounded-lg aspect-video max-h-40 relative">
+                                <img src="${pUrl}" class="w-full h-full object-cover transition duration-200 group-hover:scale-105" alt="Archival photo">
+                                <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 to-transparent"></div>
+                                <div class="absolute bottom-1.5 left-2 right-2 text-[10px] text-stone-200 truncate">"${escapeHTML(pCap)}"</div>
+                            </div>
+                        `;
+                        const clickTarget = photoDiv.querySelector('.cursor-pointer');
+                        if (clickTarget) {
+                            clickTarget.addEventListener('click', () => {
+                                if (typeof openPhotoLightbox === 'function') openPhotoLightbox(pUrl, pCap);
+                            });
+                        }
+                        aiEl.appendChild(photoDiv);
+                    }
+
                     aiChatBox.appendChild(aiEl);
                 }
             }
@@ -11661,7 +11863,11 @@
                 });
             }
 
-            btnAICompanion.addEventListener('click', () => {
+            btnAICompanion.addEventListener('click', (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
                 drawerAI.classList.add('active');
                 populateAIEraSelect();
                 connectSidelineWebSocket();
@@ -11846,6 +12052,7 @@
             async function sendAIMessageRESTFallback(promptText, selectedEra, eraMemories, photoToUpload) {
                 let aiReply = '';
                 let visualReport = null;
+                let retrievedPhotos = null;
 
                 try {
                     const res = await fetch(`${API_BASE}/chat`, {
@@ -11865,6 +12072,7 @@
                         const data = await res.json();
                         if (data.response) aiReply = data.response;
                         if (data.visualPerception) visualReport = data.visualPerception;
+                        if (data.retrievedPhotos) retrievedPhotos = data.retrievedPhotos;
                     }
                 } catch (e) {}
 
@@ -11885,7 +12093,8 @@
                 finalizeStreamingResponse({
                     fullResponse: aiReply,
                     insightQuote: aiReply.slice(0, 90),
-                    visualPerception: visualReport
+                    visualPerception: visualReport,
+                    retrievedPhotos
                 });
             }
 
@@ -12099,6 +12308,7 @@
                         if (teamEl) teamEl.textContent = `🛡️ ${getTeamHistory()}`;
                     }
 
+                    const traits = sportTraitsMap[currentSport] || sportTraitsMap.football || [];
                     traits.forEach(t => {
                         const row = document.createElement('div');
                         row.innerHTML = `
@@ -13866,8 +14076,9 @@
                 const memories = getActiveMemories();
                 const dismissed = localStorage.getItem('legacy_onboarding_dismissed_' + uid);
                 const completed = localStorage.getItem('legacy_onboarding_completed_' + uid);
+                const configured = localStorage.getItem('legacy_journey_configured_' + uid) === 'true';
 
-                if (needsOnboarding || (memories.length === 0 && !dismissed && !completed)) {
+                if (needsOnboarding || (memories.length === 0 && !dismissed && !completed && !configured)) {
                     if (modalOnboarding) {
                         setTimeout(() => {
                             modalOnboarding.classList.add('active');
@@ -13911,7 +14122,6 @@
             rebuild3DSpline();
             updateSubBenchWidget();
             fetchMemoriesFromBackend();
-            checkAndTriggerOnboarding();
 
             // Cinematic Intro Camera Sweep
             gsap.to(camera.position, {
@@ -14986,6 +15196,20 @@
                         avatarLimbs.armRGroup.rotation.x = Math.sin(time * 1.8 + Math.PI) * 0.05;
                     }
 
+                    // Ground elevation clamp during free walk locomotion
+                    if (currentFieldModelGroup && typeof THREE !== 'undefined') {
+                        if (!window._freeWalkRaycaster) {
+                            window._freeWalkRaycaster = new THREE.Raycaster();
+                            window._freeWalkDown = new THREE.Vector3(0, -1, 0);
+                        }
+                        window._freeWalkRaycaster.set(new THREE.Vector3(avatarGroup.position.x, 25, avatarGroup.position.z), window._freeWalkDown);
+                        const groundHits = window._freeWalkRaycaster.intersectObjects(currentFieldModelGroup.children, true);
+                        if (groundHits.length > 0) {
+                            const targetY = groundHits[0].point.y + 0.25;
+                            avatarGroup.position.y += (targetY - avatarGroup.position.y) * Math.min(1, delta * 12);
+                        }
+                    }
+
                     const targetLookAt = new THREE.Vector3(avatarGroup.position.x, avatarGroup.position.y + 1.5, avatarGroup.position.z);
                     controls.target.lerp(targetLookAt, Math.min(1, delta * 8));
 
@@ -15149,6 +15373,23 @@
 
             animate();
             syncProfileFromBackend();
+
+            // Auto-open AI Companion if requested via query param (e.g. from 3D ground or chat link)
+            const autoOpenAI = urlParams.get('ai') === 'open' || urlParams.get('openAI') === '1' || urlParams.get('chat') === '1';
+            if (autoOpenAI) {
+                setTimeout(() => {
+                    const aiBtn = document.getElementById('btn-open-ai-companion');
+                    if (aiBtn) aiBtn.click();
+                    const targetEra = urlParams.get('era');
+                    if (targetEra && aiEraSelect) {
+                        const optVals = Array.from(aiEraSelect.options).map(o => o.value);
+                        if (optVals.includes(targetEra)) {
+                            aiEraSelect.value = targetEra;
+                            updateAIEraDisplay();
+                        }
+                    }
+                }, 500);
+            }
 
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;

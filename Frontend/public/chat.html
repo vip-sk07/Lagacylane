@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connecting to Younger Self AI...</title>
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const sport = params.get('sport') || localStorage.getItem('legacy_selected_sport') || 'football';
+            const mode = (sport === 'life') ? 'life' : (params.get('mode') || localStorage.getItem('legacy_journey_mode') || 'sports');
+            const name = params.get('name') || localStorage.getItem('username') || 'Athlete';
+            const era = params.get('era') || '';
+            const eraParam = era ? `&era=${encodeURIComponent(era)}` : '';
+            window.location.replace(`timeline.html?mode=${encodeURIComponent(mode)}&sport=${encodeURIComponent(sport)}&name=${encodeURIComponent(name)}&ai=open${eraParam}`);
+        })();
+    </script>
+</head>
+<body style="background:#070a12; color:#d6d3d1; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;">
+    <div style="text-align:center;">
+        <p style="font-size:14px; letter-spacing:0.05em;">Connecting to Younger Self Companion...</p>
+    </div>
+</body>
+</html>

@@ -299,6 +299,23 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     memories: parsedMemories.length > 0 ? parsedMemories : (ragContext?.memories || [])
   });
 
+  // Extract all retrievable archival photos from parsed memories
+  const retrievedPhotos = [];
+  parsedMemories.forEach((m, idx) => {
+    const pUrl = m.photo || (Array.isArray(m.photos) && m.photos[0]?.url) || (Array.isArray(m.photos) && typeof m.photos[0] === 'string' ? m.photos[0] : null) || m.mediaUrl;
+    if (pUrl && pUrl !== 'attached') {
+      retrievedPhotos.push({
+        url: pUrl,
+        caption: m.caption || (Array.isArray(m.photos) && m.photos[0]?.caption) || m.title,
+        title: m.title,
+        date: m.date,
+        era: m.era || selectedEra,
+        id: m.id || (idx + 1),
+        index: idx
+      });
+    }
+  });
+
   // 6. Construct System Prompt Contract with Cognitive Insights
   const eraAge = calculateEraAge(selectedEra);
   const systemPrompt = buildYoungerSelfSystemPrompt({
@@ -432,7 +449,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
               event: 'done',
               fullResponse,
               insightQuote: extractInsightQuote(fullResponse),
-              visualPerception: chatImagePerception || null
+              visualPerception: chatImagePerception || null,
+              retrievedPhotos
             }));
           }
           return;
@@ -447,8 +465,21 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
   const isBurnout = detectBurnoutKeywords(userPrompt);
   let fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
 
+  const photoNode = parsedMemories.find(m => m.caption || (m.photo && m.photo !== 'attached') || (Array.isArray(m.photos) && m.photos.length > 0));
+
   if (chatImagePerception) {
     fallbackReply = `I remember that day so clearly! Looking at this photograph, I can see ${chatImagePerception.visualSummary} Looking back at our ${chatImagePerception.perceivedEmotions.slice(0, 2).join(' and ')} expression, it brings me right back to our ${selectedEra} days. Back when we were ${eraAge}, every single minute on the pitch meant everything to us!`;
+  } else if (photoNode && (
+    userPrompt.toLowerCase().includes('photo') || 
+    userPrompt.toLowerCase().includes('picture') || 
+    userPrompt.toLowerCase().includes('pic') || 
+    userPrompt.toLowerCase().includes('image') || 
+    userPrompt.toLowerCase().includes('camera') ||
+    userPrompt.toLowerCase().includes('look at')
+  )) {
+    const cap = photoNode.caption ? `"${photoNode.caption}"` : `'${photoNode.title}'`;
+    const jText = photoNode.journal ? ` You wrote in our journal: "${photoNode.journal.slice(0, 90)}...".` : '';
+    fallbackReply = `I remember that photo so clearly! Looking back at ${cap} from ${photoNode.date}, it brings back the exact feeling from ${selectedEra}.${jText} Every time we capture a memory at our nodes, it locks that feeling into our story forever. What feeling comes rushing back when you look at it?`;
   } else if (isBurnout) {
     fallbackReply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
   } else if (
@@ -483,7 +514,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       event: 'done',
       fullResponse,
       insightQuote: extractInsightQuote(fullResponse),
-      visualPerception: chatImagePerception || null
+      visualPerception: chatImagePerception || null,
+      retrievedPhotos
     }));
   }
 }
