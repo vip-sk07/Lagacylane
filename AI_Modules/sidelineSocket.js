@@ -14,6 +14,9 @@ import { synthesizeLearnedInsights } from './learningEngine.js';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const MAX_HISTORY_TURNS = 10; // Sliding window max turns
+const MIN_PROMPT_INTERVAL_MS = 500; // Prompts closer together than this are queued (TC004e)
+const MAX_QUEUED_PROMPTS = 5; // Per-session backlog cap before prompts are rejected
+const MAX_WS_PAYLOAD_BYTES = 25 * 1024 * 1024; // Room for a compressed base64 photo + timeline nodes (matches the REST body limit)
 
 // Active WebSocket Sessions Store
 const activeSessions = new Map();
@@ -57,8 +60,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  */
 export function initSidelineWebSocketServer(options = {}) {
   const wss = options.server 
-    ? new WebSocketServer({ server: options.server, path: '/ws/sideline-ai' })
-    : new WebSocketServer({ port: options.port || 5001, path: '/ws/sideline-ai' });
+    ? new WebSocketServer({ server: options.server, path: '/ws/sideline-ai', maxPayload: MAX_WS_PAYLOAD_BYTES })
+    : new WebSocketServer({ port: options.port || 5001, path: '/ws/sideline-ai', maxPayload: MAX_WS_PAYLOAD_BYTES });
+  const onExchange = typeof options.onExchange === 'function' ? options.onExchange : null;
 
   console.log(`⚡ Sideline AI Real-Time WebSocket Server initialized on path /ws/sideline-ai`);
 
@@ -88,6 +92,9 @@ export function initSidelineWebSocketServer(options = {}) {
       userId,
       era,
       history: [],
+      promptQueue: [],
+      isStreaming: false,
+      lastPromptAt: 0,
       connectedAt: new Date()
     };
 
@@ -129,14 +136,45 @@ export function initSidelineWebSocketServer(options = {}) {
         const userPrompt = payload.prompt || payload.message || '';
         const selectedEra = payload.era || sessionState.era || 'Youth Era';
         const imageSource = payload.imageSource || payload.mediaUrl || payload.photo || null;
-        const clientMemories = Array.isArray(payload.clientMemories) ? payload.clientMemories : (Array.isArray(payload.memories) ? payload.memories : []);
+        const rawMemories = Array.isArray(payload.clientMemories) ? payload.clientMemories : (Array.isArray(payload.memories) ? payload.memories : []);
+        sessionState.era = selectedEra;
         if (payload.domain) sessionState.domain = payload.domain;
         if (payload.journeyType) sessionState.journeyType = payload.journeyType;
-        sessionState.era = selectedEra;
 
-        if (!userPrompt.trim() && !imageSource) return;
+        if (!String(userPrompt).trim() && !imageSource) return;
 
-        await processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource, clientMemories);
+        // Rapid-fire prompts are queued and answered in order instead of interleaving streams
+        const now = Date.now();
+        const tooSoon = now - sessionState.lastPromptAt < MIN_PROMPT_INTERVAL_MS;
+        sessionState.lastPromptAt = now;
+
+        if (sessionState.isStreaming || tooSoon || sessionState.promptQueue.length > 0) {
+          if (sessionState.promptQueue.length >= MAX_QUEUED_PROMPTS) {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                event: 'rate_limited',
+                status: 'RATE LIMITED',
+                queued: false,
+                message: 'Too many prompts waiting. Please let the current reply finish.'
+              }));
+            }
+            return;
+          }
+          sessionState.promptQueue.push({ userPrompt: String(userPrompt), selectedEra, imageSource, rawMemories });
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              event: 'rate_limited',
+              status: 'RATE LIMITED',
+              queued: true,
+              position: sessionState.promptQueue.length,
+              message: 'Prompt queued. Your younger self will answer in order.'
+            }));
+          }
+        } else {
+          sessionState.promptQueue.push({ userPrompt: String(userPrompt), selectedEra, imageSource, rawMemories });
+        }
+
+        await drainPromptQueue(ws, sessionState, onExchange);
 
       } catch (err) {
         console.error('Sideline WebSocket Processing Error:', err);
@@ -147,11 +185,58 @@ export function initSidelineWebSocketServer(options = {}) {
     });
 
     ws.on('close', () => {
+      sessionState.promptQueue.length = 0;
       activeSessions.delete(ws);
+    });
+
+    ws.on('error', (err) => {
+      console.warn('Sideline WebSocket client error:', err.message);
     });
   });
 
+  wss.on('error', (err) => {
+    console.warn('Sideline WebSocket server error:', err.message);
+  });
+
   return wss;
+}
+
+/**
+ * Answers queued prompts one at a time so each reply streams completely before the next starts.
+ */
+async function drainPromptQueue(ws, sessionState, onExchange) {
+  if (sessionState.isStreaming) return;
+  sessionState.isStreaming = true;
+  try {
+    while (sessionState.promptQueue.length > 0 && ws.readyState === WebSocket.OPEN) {
+      const job = sessionState.promptQueue.shift();
+      try {
+        const result = await processStreamingChatFlow(ws, sessionState, job.userPrompt, job.selectedEra, job.imageSource, job.rawMemories);
+        if (onExchange && result && result.fullResponse) {
+          try {
+            await onExchange({
+              userId: sessionState.userId,
+              era: job.selectedEra,
+              journeyType: sessionState.journeyType || null,
+              domain: sessionState.domain || null,
+              prompt: job.userPrompt || 'Visual memory shared',
+              response: result.fullResponse,
+              crisisTriggered: Boolean(result.crisisTriggered)
+            });
+          } catch (saveErr) {
+            console.warn('Sideline chat persistence warning:', saveErr.message);
+          }
+        }
+      } catch (err) {
+        console.error('Sideline WebSocket Processing Error:', err);
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ event: 'error', message: 'Failed to process request.' }));
+        }
+      }
+    }
+  } finally {
+    sessionState.isStreaming = false;
+  }
 }
 
 /**
@@ -213,10 +298,10 @@ export async function handleInstantLearningEvent(ws, sessionState, memoryData) {
 /**
  * Processes Chat Flow with Phase 2 RAG, Phase 3 Prompting, Multimodal Vision, and Token Streaming
  */
-export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource = null, clientMemories = []) {
+export async function processStreamingChatFlow(ws, sessionState, userPrompt, selectedEra, imageSource = null, rawMemories = []) {
   // 1. Check Safety Guardrails (Severe Crisis / Despair)
   if (detectCrisisKeywords(userPrompt)) {
-    const crisisText = `I hear how much pain you are in right now, and I want you to know that you are not alone. I'm stepping out of our younger self character because your safety and life matter deeply.\n\nPlease reach out for immediate support:\n• **988 Suicide & Crisis Lifeline**: Call or text **988** (24/7 free & confidential)\n• **Tele-MANAS**: Call **14416** or **1800 891 4416**\n\nPlease take a deep breath. We built this journey together, and your future still needs you.`;
+    const crisisText = `I hear how much pain you are in right now, and I want you to know that you are not alone. I'm stepping out of our younger self character because your safety and life matter deeply.\n\nPlease reach out for immediate support:\n• **988 Suicide & Crisis Lifeline**: Call or text **988** (24/7 free & confidential)\n• **Crisis Text Line**: Text **HOME** to **741741**\n• **Tele-MANAS**: Call **14416** or **1800 891 4416**\n\nPlease take a deep breath. We built this journey together, and your future still needs you.`;
 
     // Stream crisis response token by token
     const words = crisisText.split(' ');
@@ -234,7 +319,7 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
         crisisTriggered: true
       }));
     }
-    return;
+    return { fullResponse: crisisText, crisisTriggered: true };
   }
 
   // 2. Trigger Phase 2: Retrieve Era-Constrained RAG Context
@@ -248,11 +333,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
   });
 
   // 3. Harmonize client timeline memories with retrieved RAG context
-  const parsedMemories = parseMemoriesFromContext(ragContext, ragContext?.formattedContext, clientMemories, selectedEra);
+  const parsedMemories = parseMemoriesFromContext(ragContext, ragContext?.formattedContext, rawMemories, selectedEra);
   let formattedContextChunks = ragContext?.formattedContext || '';
-
-  // If clientMemories are present and formatted context is sparse or mentions no memories logged,
-  // format authentic memory blocks directly from the screen's timeline nodes
   if (parsedMemories.length > 0 && (!formattedContextChunks || formattedContextChunks.includes("haven't logged any memories"))) {
     const formattedBlocks = parsedMemories.slice(0, 5).map((mem, i) => {
       const dateStr = mem.date || 'Date Unknown';
@@ -292,11 +374,12 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
   }
 
   // 5. Synthesize Continuous Learning Trajectory Insights
+  const activeMemoriesList = parsedMemories.length > 0 ? parsedMemories : (ragContext?.memories || []);
   const cognitiveInsights = synthesizeLearnedInsights({
     userId: sessionState.userId,
     era: selectedEra,
     domain: sessionState.domain || 'football',
-    memories: parsedMemories.length > 0 ? parsedMemories : (ragContext?.memories || [])
+    memories: activeMemoriesList
   });
 
   // Extract all retrievable archival photos from parsed memories
@@ -361,12 +444,13 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       contents.push({ role: 'user', parts: userParts });
 
       const streamingResult = await ai.models.generateContentStream({
-        model: 'gemini-1.5-flash',
+        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
         contents,
         config: { systemInstruction: systemPrompt, temperature: 0.7 }
       });
 
-      for await (const chunk of streamingResult.stream) {
+      const streamIterable = streamingResult.stream || streamingResult;
+      for await (const chunk of streamIterable) {
         const textChunk = chunk.text;
         if (textChunk) {
           fullResponse += textChunk;
@@ -392,10 +476,22 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
             visualPerception: chatImagePerception || null
           }));
         }
-        return;
+        return { fullResponse, crisisTriggered: false };
       }
     } catch (err) {
       console.warn('Gemini Streaming warning, falling back:', err.message);
+      // Tokens already streamed for a partial reply must not be repeated by a fallback provider
+      if (fullResponse) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            event: 'done',
+            fullResponse,
+            insightQuote: extractInsightQuote(fullResponse),
+            visualPerception: chatImagePerception || null
+          }));
+        }
+        return { fullResponse, crisisTriggered: false };
+      }
     }
   }
 
@@ -453,7 +549,7 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
               retrievedPhotos
             }));
           }
-          return;
+          return { fullResponse, crisisTriggered: false };
         }
       }
     }
@@ -518,4 +614,5 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       retrievedPhotos
     }));
   }
+  return { fullResponse, crisisTriggered: false };
 }

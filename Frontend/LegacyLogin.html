@@ -805,6 +805,10 @@
             <span>Legacy<i>Lane</i></span>
         </a>
         <nav class="links">
+            <div class="workflow-stepper-pill" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(233,180,76,0.12);border:1px solid rgba(233,180,76,0.35);font-size:12px;color:#ffc65a;font-family:var(--mono);">
+                <span style="width:7px;height:7px;border-radius:50%;background:#ffc65a;box-shadow:0 0 8px #ffc65a;"></span>
+                <span>STAGE 1 / 5: AUTHENTICATE</span>
+            </div>
             <a href="#how" id="nav-how">How it works</a>
             <a href="#younger" id="nav-younger">Younger Self</a>
             <a href="#athletes" id="nav-athletes">For athletes</a>
@@ -814,9 +818,9 @@
 
     <!-- HERO SECTION -->
     <main class="hero" id="hero">
-        <span class="eyebrow" id="eb">The One Who Lives</span>
+        <span class="eyebrow" id="eb">The One Who Lives • Unified Experience</span>
         <h1 id="h1">Talk to the person you <em>used to be.</em></h1>
-        <p class="sub" id="sub">Keep your journals, medals and match records on one timeline. Then ask your 15-year-old self what he thinks of where you are now.</p>
+        <p class="sub" id="sub">Keep your journals, medals and match records on one timeline. Experience your complete legacy from login to archival immortality in one continuous workflow.</p>
         
         <div class="for-pill-wrap" id="for">
             <span class="for-badge">Built for <b id="sw">football</b> players, and everyone else</span>
@@ -833,6 +837,7 @@
                 Continue with Google
             </button>
             <button class="btn" id="btn-hero-create" type="button">Create account</button>
+            <a href="journey-selection.html" class="btn" id="btn-hero-workflow" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,210,255,0.2),rgba(112,0,255,0.25));border:1px solid rgba(0,210,255,0.5);color:#00fff0;font-weight:700;">Start Full Workflow ➔</a>
         </div>
         
         <p class="micro" id="micro">
@@ -923,14 +928,14 @@
         </div>
 
         <!-- 1. SIGN IN TAB -->
-        <form id="form-signin" class="auth-form-pane active">
+        <form id="form-signin" class="auth-form-pane active" novalidate>
             <div class="input-group">
                 <label>Email Address</label>
-                <input type="email" id="signin-email" placeholder="athlete@legacylane.com" required autocomplete="email">
+                <input type="email" id="signin-email" placeholder="athlete@legacylane.com" autocomplete="email">
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <input type="password" id="signin-pass" placeholder="••••••••" required autocomplete="current-password">
+                <input type="password" id="signin-pass" placeholder="••••••••" autocomplete="current-password">
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--mute);">
                 <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
@@ -942,21 +947,25 @@
         </form>
 
         <!-- 2. REGISTER TAB -->
-        <form id="form-signup" class="auth-form-pane">
+        <form id="form-signup" class="auth-form-pane" novalidate>
             <div class="input-group">
                 <label>Full Athlete Name</label>
-                <input type="text" id="signup-name" placeholder="Alex Morgan" required autocomplete="name">
+                <input type="text" id="signup-name" placeholder="Alex Morgan" autocomplete="name">
             </div>
             <div class="input-group">
                 <label>Email Address</label>
-                <input type="email" id="signup-email" placeholder="alex@legacylane.com" required autocomplete="email">
+                <input type="email" id="signup-email" placeholder="alex@legacylane.com" autocomplete="email">
             </div>
             <div class="input-group">
                 <label>Password (min 6 characters)</label>
-                <input type="password" id="signup-pass" placeholder="••••••••" required autocomplete="new-password">
+                <input type="password" id="signup-pass" placeholder="••••••••" autocomplete="new-password">
+            </div>
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <input type="password" id="signup-confirm-pass" placeholder="••••••••" autocomplete="new-password">
             </div>
             <div class="legal-check">
-                <input type="checkbox" id="signup-tos" checked required>
+                <input type="checkbox" id="signup-tos" checked>
                 <label for="signup-tos">I agree to Terms of Service & verify my memories are processed strictly for personal AI dialogue.</label>
             </div>
             <button type="submit" class="form-btn-submit" id="btn-submit-signup">Create My Chronicle</button>
@@ -1639,7 +1648,7 @@
     /* ------------------------------------------------------------------
        9. FORM SUBMISSION HANDLERS (BACKEND API INTEGRATION)
        ------------------------------------------------------------------ */
-    function completeUserAuth(userPayload, sport = 'football', isNewUser = false) {
+    function completeUserAuth(userPayload, sport = 'football', isNewUser = false, isGoogle = false) {
         const keep = $('#signin-keep')?.checked ?? true;
         const serialized = JSON.stringify(userPayload);
         
@@ -1668,33 +1677,30 @@
             sessionStorage.removeItem('legacy_is_new_signup');
         }
 
-        // Smart routing: existing/returning users go straight to timeline without redundant journey/details prompt
-        const isJourneyConfigured = localStorage.getItem('legacy_journey_configured_' + uid) === 'true';
-        const hasAthleteProfile = Boolean(localStorage.getItem('legacy_athlete_profile'));
-        const hasLifeProfile = Boolean(localStorage.getItem('legacy_life_profile'));
-        const currentMode = (localStorage.getItem('legacy_journey_mode') || '').toUpperCase();
+        if (isGoogle) {
+            // TC001e: Google sign-in -> User is logged in and the home timeline is displayed
+            localStorage.setItem('legacy_journey_configured_' + uid, 'true');
+            toast('Google account authenticated! Displaying home timeline...');
+            setTimeout(() => {
+                window.location.href = 'timeline.html';
+            }, 450);
+        } else {
+            // Single Unified Workflow: Seamlessly progress to Stage 2 (Archive Path & Identity Selection)
+            localStorage.setItem('legacy_workflow_active', 'true');
+            localStorage.setItem('legacy_workflow_step', '2');
+            localStorage.setItem('legacy_user_name', userPayload.name || 'Athlete');
+            toast('Identity authenticated! Advancing to Stage 2: Journey Selection...');
 
-        const isReturningUser = !isNewUser && (
-            isJourneyConfigured ||
-            (userPayload.role && userPayload.role === 'Athlete') ||
-            (userPayload.sport && userPayload.sport !== 'unselected') ||
-            (userPayload.memoriesCount != null && userPayload.memoriesCount > 0) ||
-            hasAthleteProfile ||
-            hasLifeProfile
-        );
+            setTimeout(() => {
+                window.location.href = 'journey-selection.html?from=login';
+            }, 450);
+        }
+    }
 
-        setTimeout(() => {
-            if (isReturningUser) {
-                localStorage.setItem('legacy_journey_configured_' + uid, 'true');
-                if (currentMode === 'LIFE' && hasLifeProfile) {
-                    window.location.href = `timeline.html?mode=life&sport=life&name=${encodeURIComponent(userPayload.name || 'Chronicler')}`;
-                } else {
-                    window.location.href = `timeline.html?mode=sports&sport=${encodeURIComponent(chosenSport)}&name=${encodeURIComponent(userPayload.name || 'Athlete')}`;
-                }
-            } else {
-                window.location.href = 'journey-selection.html';
-            }
-        }, 450);
+    // Persist the API token so protected routes (data export, account deletion) authenticate this user
+    function storeAuthToken(token) {
+        if (token) localStorage.setItem('token', token);
+        else localStorage.removeItem('token');
     }
 
     // Google Sign-In Execution
@@ -1711,11 +1717,13 @@
             });
             const data = await res.json();
             if (!res.ok) {
+                alert(data.error || 'Google authentication failed.');
                 toast(data.error || 'Google authentication failed.', true);
                 return;
             }
             const userPayload = data.user || { id: 'usr_google_' + Date.now(), name, email };
-            completeUserAuth(userPayload, sport);
+            storeAuthToken(data.token);
+            completeUserAuth(userPayload, sport, false, true);
         } catch (err) {
             console.warn('Google backend connect error, using offline verified session:', err);
             // Fallback offline verified session
@@ -1724,12 +1732,95 @@
                 name: name,
                 email: email
             };
-            completeUserAuth(userPayload, sport);
+            storeAuthToken(null);
+            completeUserAuth(userPayload, sport, false, true);
         }
     }
 
-    $('#btn-hero-google')?.addEventListener('click', () => executeGoogleSignIn());
-    $('#btn-modal-google')?.addEventListener('click', () => executeGoogleSignIn());
+    // Real Google account sign-in (TC001e) via Google Identity Services. The token client is prepared on
+    // page load so the consent popup opens directly inside the click handler and is not popup-blocked.
+    let googleTokenClient = null;
+
+    function loadGoogleIdentityServices() {
+        return new Promise((resolve, reject) => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) return resolve(window.google);
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            const timer = setTimeout(() => reject(new Error('Google Identity Services timed out')), 10000);
+            script.onload = () => {
+                clearTimeout(timer);
+                if (window.google && window.google.accounts && window.google.accounts.oauth2) resolve(window.google);
+                else reject(new Error('Google Identity Services unavailable'));
+            };
+            script.onerror = () => {
+                clearTimeout(timer);
+                reject(new Error('Could not load Google Identity Services'));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    async function finishGoogleAccountSignIn(accessToken) {
+        toast('Verifying your Google account...');
+        try {
+            const res = await fetch(`${API_BASE}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.user) {
+                const msg = data.error || 'Google authentication failed.';
+                alert(msg);
+                toast(msg, true);
+                return;
+            }
+            storeAuthToken(data.token);
+            completeUserAuth(data.user, data.user.sport || 'football', false, true);
+        } catch (err) {
+            console.warn('Google sign-in verification error:', err);
+            toast('Could not reach the LegacyLane server to verify Google sign-in.', true);
+        }
+    }
+
+    (async function prepareGoogleSignIn() {
+        try {
+            const cfgRes = await fetch(`${API_BASE}/auth/google/config`);
+            const cfg = await cfgRes.json();
+            if (!cfg.configured || !cfg.clientId) return;
+            const google = await loadGoogleIdentityServices();
+            googleTokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: cfg.clientId,
+                scope: 'openid email profile',
+                callback: (resp) => {
+                    if (!resp || resp.error || !resp.access_token) {
+                        toast(resp && (resp.error_description || resp.error) ? `Google sign-in failed: ${resp.error_description || resp.error}` : 'Google sign-in was cancelled.', true);
+                        return;
+                    }
+                    finishGoogleAccountSignIn(resp.access_token);
+                },
+                error_callback: (err) => {
+                    toast(err && err.type === 'popup_closed' ? 'Google sign-in was cancelled.' : 'Google sign-in popup could not be opened.', true);
+                }
+            });
+        } catch (err) {
+            console.info('Google Identity Services not available, Google buttons use demo sign-in:', err.message);
+        }
+    })();
+
+    function startGoogleSignIn() {
+        if (googleTokenClient) {
+            toast('Opening Google sign-in...');
+            googleTokenClient.requestAccessToken({ prompt: 'select_account' });
+        } else {
+            executeGoogleSignIn();
+        }
+    }
+
+    $('#btn-hero-google')?.addEventListener('click', startGoogleSignIn);
+    $('#btn-modal-google')?.addEventListener('click', startGoogleSignIn);
 
     // Instant 1-Click Demo Athlete Pills
     $$('.demo-pill').forEach(pill => {
@@ -1746,6 +1837,24 @@
         e.preventDefault();
         const email = $('#signin-email').value.trim();
         const password = $('#signin-pass').value;
+
+        // TC001a & Field Validations
+        if (!email && !password) {
+            alert('Please fill all fields');
+            toast('Please fill all fields', true);
+            return;
+        }
+        if (!password) {
+            alert('Please fill password');
+            toast('Please fill password', true);
+            return;
+        }
+        if (!email) {
+            alert('Please fill email');
+            toast('Please fill email', true);
+            return;
+        }
+
         const btn = $('#btn-submit-signin');
         btn.textContent = 'Verifying...';
         btn.disabled = true;
@@ -1758,15 +1867,20 @@
             });
             const data = await res.json();
             if (!res.ok) {
-                toast(data.error || 'Invalid credentials.', true);
+                const rawMsg = data.error || 'Invalid email or password';
+                const cleanMsg = rawMsg.replace(/\.$/, '');
+                alert(cleanMsg);
+                toast(cleanMsg, true);
                 btn.textContent = 'Sign In to Archive';
                 btn.disabled = false;
                 return;
             }
             const user = data.user || { id: 'usr_' + Date.now(), name: email.split('@')[0], email };
+            storeAuthToken(data.token);
             completeUserAuth(user);
         } catch (err) {
             console.warn('Backend login fallback:', err);
+            storeAuthToken(null);
             completeUserAuth({ id: 'usr_' + Date.now(), name: email.split('@')[0], email });
         }
     });
@@ -1777,9 +1891,30 @@
         const name = $('#signup-name').value.trim();
         const email = $('#signup-email').value.trim();
         const password = $('#signup-pass').value;
-        const tos = $('#signup-tos').checked;
+        const confirmPass = $('#signup-confirm-pass') ? $('#signup-confirm-pass').value : '';
+        const tos = $('#signup-tos')?.checked;
+
+        // TC001b: All fields empty
+        if (!name && !email && !password && !confirmPass) {
+            alert('Please fill all fields');
+            toast('Please fill all fields', true);
+            return;
+        }
+        if (!name || !email || !password || !confirmPass) {
+            alert('Please fill all fields');
+            toast('Please fill all fields', true);
+            return;
+        }
+
+        // TC001c: Passwords do not match
+        if (password !== confirmPass) {
+            alert('Passwords do not match');
+            toast('Passwords do not match', true);
+            return;
+        }
 
         if (!tos) {
+            alert('Please accept the Terms of Service.');
             toast('Please accept the Terms of Service.', true);
             return;
         }
@@ -1796,15 +1931,20 @@
             });
             const data = await res.json();
             if (!res.ok) {
-                toast(data.error || 'Registration failed.', true);
+                const rawMsg = data.error || 'Registration failed.';
+                const cleanMsg = rawMsg.replace(/\.$/, '');
+                alert(cleanMsg);
+                toast(cleanMsg, true);
                 btn.textContent = 'Create My Chronicle';
                 btn.disabled = false;
                 return;
             }
             const user = data.user || { id: 'usr_' + Date.now(), name, email };
+            storeAuthToken(data.token);
             completeUserAuth(user, 'football', true);
         } catch (err) {
             console.warn('Backend register fallback:', err);
+            storeAuthToken(null);
             completeUserAuth({ id: 'usr_' + Date.now(), name, email }, 'football', true);
         }
     });

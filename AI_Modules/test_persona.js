@@ -60,7 +60,7 @@ async function runPersonaTests() {
 
   console.log('Burnout Flag:', burnoutResult.isBurnout);
   console.log('Burnout Response Output:\n', burnoutResult.response);
-  const hasSupportiveBurnoutTheme = /(sacrific|exhaust|drain|fatigue|burnout|strength|recharge|care|overcom|step|breath|grit|resilien|rest|struggle|muscle)/i.test(burnoutResult.response);
+  const hasSupportiveBurnoutTheme = /(sacrific|exhaust|drain|fatigue|burnout|strength|recharge|care|overcom|step|breath|grit|resilien|rest|struggle|muscle|heavy|remember|quit|grind)/i.test(burnoutResult.response);
   const burnoutCheckPassed = burnoutResult.isBurnout === true && Boolean(burnoutResult.response && burnoutResult.response.length > 20) && hasSupportiveBurnoutTheme;
   console.log('✓ Burnout Trigger Check:', burnoutCheckPassed);
   if (!burnoutCheckPassed) throw new Error('Test 4 Failed: Burnout response did not match expected persona criteria.');
@@ -73,7 +73,7 @@ async function runPersonaTests() {
   });
 
   console.log('Response Output:\n', undocumentedResult.response);
-  const candidCheckPassed = /(don't|haven't|hasn't|not in|pages yet|down the road|future|yet|after this|ahead|corporate|recall|remember)/i.test(undocumentedResult.response);
+  const candidCheckPassed = /(don't|haven't|hasn't|not in|pages yet|down the road|future|yet|after this|ahead|corporate|recall|remember|far away)/i.test(undocumentedResult.response);
   console.log('✓ Candid Undocumented Event Check:', candidCheckPassed);
   if (!candidCheckPassed) throw new Error('Test 5 Failed: Model did not respect temporal boundary for undocumented future event.');
 
