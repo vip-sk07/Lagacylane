@@ -1302,7 +1302,8 @@ app.post('/api/chat', async (req, res) => {
       model: orchestrationResult.model,
       visualPerception: orchestrationResult.visualPerception,
       learnedMemoriesCount: orchestrationResult.learnedMemoriesCount,
-      photosCount: orchestrationResult.photosCount
+      photosCount: orchestrationResult.photosCount,
+      retrievedPhotos: orchestrationResult.retrievedPhotos || []
     });
   } catch (err) {
     console.error('AI Chat Error:', err);
@@ -1728,13 +1729,14 @@ app.post('/api/vault/change-pin', async (req, res) => {
     // If existing PIN exists, verify currentPin (accepts both 'currentPin' and 'oldPin' field names)
     const suppliedOld = String(currentPin || req.body.oldPin || '');
     if (user.VaultPIN) {
-      const isHashed = user.VaultPIN.startsWith('$2a$') || user.VaultPIN.startsWith('$2b$');
+      const isHashed = user.VaultPIN.startsWith('$2a$') || user.VaultPIN.startsWith('$2b$') || user.VaultPIN.startsWith('$2');
       const oldMatches = isHashed ? await bcrypt.compare(suppliedOld, user.VaultPIN) : user.VaultPIN === suppliedOld;
       if (!oldMatches) {
         return res.status(401).json({ error: 'Current PIN is incorrect.' });
       }
     }
 
+    const hashedNewPin = await bcrypt.hash(String(newPin), 10);
     db.prepare('UPDATE Users SET VaultPIN = ? WHERE User_ID = ?').run(hashedNewPin, userId);
     res.json({ success: true, message: 'Vault PIN successfully updated.' });
   } catch (err) {
@@ -2235,6 +2237,11 @@ app.get('*', (req, res, next) => {
   if (cleanPath === 'selector.html') {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
     return res.redirect(301, '/timeline.html' + query);
+  }
+  if (cleanPath === 'chat.html') {
+    const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    const connector = query ? '&' : '?';
+    return res.redirect(302, '/timeline.html' + query + (query.includes('ai=open') ? '' : connector + 'ai=open'));
   }
   const requestedFile = path.join(frontendDir, cleanPath);
   if (cleanPath && fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {

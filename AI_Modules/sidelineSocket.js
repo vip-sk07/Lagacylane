@@ -136,7 +136,7 @@ export function initSidelineWebSocketServer(options = {}) {
         const userPrompt = payload.prompt || payload.message || '';
         const selectedEra = payload.era || sessionState.era || 'Youth Era';
         const imageSource = payload.imageSource || payload.mediaUrl || payload.photo || null;
-        const rawMemories = payload.clientMemories || payload.memories || [];
+        const rawMemories = Array.isArray(payload.clientMemories) ? payload.clientMemories : (Array.isArray(payload.memories) ? payload.memories : []);
         sessionState.era = selectedEra;
         if (payload.domain) sessionState.domain = payload.domain;
         if (payload.journeyType) sessionState.journeyType = payload.journeyType;
@@ -327,14 +327,14 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     userId: sessionState.userId,
     selectedEra,
     userPrompt,
+    journeyType: sessionState.journeyType,
+    domain: sessionState.domain,
     topK: 4
   });
 
-  // Parse structured memories from both vector RAG store and client timeline nodes
-  const parsedMemories = parseMemoriesFromContext(ragContext, ragContext.formattedContext, rawMemories, selectedEra);
-  let formattedContextChunks = ragContext.formattedContext || '';
-
-  // If client nodes are available, format them so the younger self is grounded in authentic memories
+  // 3. Harmonize client timeline memories with retrieved RAG context
+  const parsedMemories = parseMemoriesFromContext(ragContext, ragContext?.formattedContext, rawMemories, selectedEra);
+  let formattedContextChunks = ragContext?.formattedContext || '';
   if (parsedMemories.length > 0 && (!formattedContextChunks || formattedContextChunks.includes("haven't logged any memories"))) {
     const formattedBlocks = parsedMemories.slice(0, 5).map((mem, i) => {
       const dateStr = mem.date || 'Date Unknown';
@@ -357,7 +357,7 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     formattedContextChunks = formattedBlocks.join('\n\n');
   }
 
-  // 3. Multimodal Perception for Chat Image (if imageSource provided)
+  // 4. Multimodal Perception for Chat Image (if imageSource provided)
   let normalizedChatImage = null;
   let chatImagePerception = null;
   if (imageSource) {
@@ -373,8 +373,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     }
   }
 
-  // 4. Synthesize Continuous Learning Trajectory Insights
-  const activeMemoriesList = parsedMemories.length > 0 ? parsedMemories : (ragContext.memories || []);
+  // 5. Synthesize Continuous Learning Trajectory Insights
+  const activeMemoriesList = parsedMemories.length > 0 ? parsedMemories : (ragContext?.memories || []);
   const cognitiveInsights = synthesizeLearnedInsights({
     userId: sessionState.userId,
     era: selectedEra,
@@ -382,13 +382,34 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
     memories: activeMemoriesList
   });
 
-  // 5. Construct System Prompt Contract with Cognitive Insights
+  // Extract all retrievable archival photos from parsed memories
+  const retrievedPhotos = [];
+  parsedMemories.forEach((m, idx) => {
+    const pUrl = m.photo || (Array.isArray(m.photos) && m.photos[0]?.url) || (Array.isArray(m.photos) && typeof m.photos[0] === 'string' ? m.photos[0] : null) || m.mediaUrl;
+    if (pUrl && pUrl !== 'attached') {
+      retrievedPhotos.push({
+        url: pUrl,
+        caption: m.caption || (Array.isArray(m.photos) && m.photos[0]?.caption) || m.title,
+        title: m.title,
+        date: m.date,
+        era: m.era || selectedEra,
+        id: m.id || (idx + 1),
+        index: idx
+      });
+    }
+  });
+
+  // 6. Construct System Prompt Contract with Cognitive Insights
   const eraAge = calculateEraAge(selectedEra);
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
     retrievedContextChunks: formattedContextChunks,
-    cognitiveInsights
+    cognitiveInsights,
+    journeyType: sessionState.journeyType,
+    domain: sessionState.domain,
+    userProvidedContext: userPrompt,
+    stagedPhotoPerception: chatImagePerception
   });
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -524,7 +545,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
               event: 'done',
               fullResponse,
               insightQuote: extractInsightQuote(fullResponse),
-              visualPerception: chatImagePerception || null
+              visualPerception: chatImagePerception || null,
+              retrievedPhotos
             }));
           }
           return { fullResponse, crisisTriggered: false };
@@ -539,8 +561,21 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
   const isBurnout = detectBurnoutKeywords(userPrompt);
   let fallbackReply = `Hey! Back in our ${selectedEra} (when we were ${eraAge}), we were grinding every single day. I remember how much heart we put into everything.`;
 
+  const photoNode = parsedMemories.find(m => m.caption || (m.photo && m.photo !== 'attached') || (Array.isArray(m.photos) && m.photos.length > 0));
+
   if (chatImagePerception) {
     fallbackReply = `I remember that day so clearly! Looking at this photograph, I can see ${chatImagePerception.visualSummary} Looking back at our ${chatImagePerception.perceivedEmotions.slice(0, 2).join(' and ')} expression, it brings me right back to our ${selectedEra} days. Back when we were ${eraAge}, every single minute on the pitch meant everything to us!`;
+  } else if (photoNode && (
+    userPrompt.toLowerCase().includes('photo') || 
+    userPrompt.toLowerCase().includes('picture') || 
+    userPrompt.toLowerCase().includes('pic') || 
+    userPrompt.toLowerCase().includes('image') || 
+    userPrompt.toLowerCase().includes('camera') ||
+    userPrompt.toLowerCase().includes('look at')
+  )) {
+    const cap = photoNode.caption ? `"${photoNode.caption}"` : `'${photoNode.title}'`;
+    const jText = photoNode.journal ? ` You wrote in our journal: "${photoNode.journal.slice(0, 90)}...".` : '';
+    fallbackReply = `I remember that photo so clearly! Looking back at ${cap} from ${photoNode.date}, it brings back the exact feeling from ${selectedEra}.${jText} Every time we capture a memory at our nodes, it locks that feeling into our story forever. What feeling comes rushing back when you look at it?`;
   } else if (isBurnout) {
     fallbackReply = `Hey... take a deep breath. Look at how far we've come since ${selectedEra}! Back when we were ${eraAge}, we sacrificed so much sleep, sweat, and tears for this dream. Don't give up on us now—remember why we started!`;
   } else if (
@@ -575,7 +610,8 @@ export async function processStreamingChatFlow(ws, sessionState, userPrompt, sel
       event: 'done',
       fullResponse,
       insightQuote: extractInsightQuote(fullResponse),
-      visualPerception: chatImagePerception || null
+      visualPerception: chatImagePerception || null,
+      retrievedPhotos
     }));
   }
   return { fullResponse, crisisTriggered: false };

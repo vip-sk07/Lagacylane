@@ -109,8 +109,8 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
         era: m.era || m.Era || selectedEra || 'Youth Era',
         journal: plainJournal,
         sentiment: typeof m.sentiment === 'number' ? m.sentiment : (typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85),
-        photo: m.photo || m.mediaUrl || m.media_url || null,
-        caption: m.caption || m.photoCaption || null,
+        photo: m.photo || m.mediaUrl || m.media_url || (Array.isArray(m.photos) && m.photos[0] ? (typeof m.photos[0] === 'string' ? m.photos[0] : m.photos[0].url) : null) || null,
+        caption: m.caption || m.photoCaption || (Array.isArray(m.photos) && m.photos[0] && m.photos[0].caption ? m.photos[0].caption : null) || null,
         tags: Array.isArray(m.tags) ? m.tags : (Array.isArray(m.emotionTags) ? m.emotionTags : (Array.isArray(m.emotion_tags) ? m.emotion_tags : [])),
         domain: m.domain || m.Domain || null,
         journeyType: m.journeyType || m.JourneyType || null
@@ -125,8 +125,8 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
       era: m.era || 'Youth Era',
       journal: m.excerpt || '',
       sentiment: typeof m.sentimentScore === 'number' ? (m.sentimentScore <= 1.0 ? Math.round((m.sentimentScore + 1) * 50) : m.sentimentScore) : 85,
-      photo: m.mediaUrl || null,
-      caption: m.caption || null,
+      photo: m.mediaUrl || m.photo || (Array.isArray(m.photos) && m.photos[0] ? (typeof m.photos[0] === 'string' ? m.photos[0] : m.photos[0].url) : null) || null,
+      caption: m.caption || (Array.isArray(m.photos) && m.photos[0] && m.photos[0].caption ? m.photos[0].caption : null) || null,
       tags: m.emotionTags || [],
       domain: m.domain || null,
       journeyType: m.journeyType || null
@@ -148,6 +148,7 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
     let journal = '';
     let sentiment = 85;
     let photoCaption = '';
+    let photoUrl = null;
 
     for (const l of lines) {
       if (l.includes('**Date**:')) date = l.split('**Date**:')[1].trim();
@@ -159,6 +160,11 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
         if (match) sentiment = parseInt(match[1]);
       } else if (l.includes('**Photo Captured**:')) {
         photoCaption = l.split('**Photo Captured**:')[1].replace(/^["']|["']$/g, '').trim();
+        const urlMatch = photoCaption.match(/\((https?:\/\/[^\s)]+|\/uploads\/[^\s)]+|data:image\/[^\s)]+)\)/);
+        if (urlMatch) {
+          photoUrl = urlMatch[1];
+          photoCaption = photoCaption.replace(urlMatch[0], '').trim().replace(/^["']|["']$/g, '');
+        }
       }
     }
 
@@ -178,7 +184,7 @@ export function parseMemoriesFromContext(retrievedContext, formattedChunks = '',
         era: era || 'Youth Era',
         journal: journal || block.slice(0, 100),
         sentiment,
-        photo: photoCaption ? 'attached' : null,
+        photo: photoUrl || (photoCaption ? 'attached' : null),
         caption: photoCaption,
         tags: emotions ? emotions.split(',').map(s => s.trim()) : ['#Reflective']
       });
@@ -405,6 +411,24 @@ async function _generateYoungerSelfResponseInternal({
 
   // 5. Compute Era Age & Build System Prompt
   const eraAge = calculateEraAge(selectedEra);
+
+  // Extract all retrievable archival photos from parsed memories
+  const retrievedPhotos = [];
+  parsedMemories.forEach((m, idx) => {
+    const pUrl = m.photo || (Array.isArray(m.photos) && m.photos[0]?.url) || (Array.isArray(m.photos) && typeof m.photos[0] === 'string' ? m.photos[0] : null) || m.mediaUrl;
+    if (pUrl && pUrl !== 'attached') {
+      retrievedPhotos.push({
+        url: pUrl,
+        caption: m.caption || (Array.isArray(m.photos) && m.photos[0]?.caption) || m.title,
+        title: m.title,
+        date: m.date,
+        era: m.era || selectedEra,
+        id: m.id || (idx + 1),
+        index: idx
+      });
+    }
+  });
+
   const systemPrompt = buildYoungerSelfSystemPrompt({
     selectedEra,
     eraAge,
@@ -470,7 +494,8 @@ async function _generateYoungerSelfResponseInternal({
           model: normalizedIncomingImage ? 'google-gemini-multimodal-vision' : 'google-gemini',
           visualPerception: incomingImagePerception,
           learnedMemoriesCount: parsedMemories.length,
-          photosCount: parsedMemories.filter(m => m.photo || m.caption).length + (incomingImagePerception ? 1 : 0)
+          photosCount: parsedMemories.filter(m => m.photo || m.caption).length + (incomingImagePerception ? 1 : 0),
+          retrievedPhotos
         };
       }
     } catch (err) {
@@ -514,7 +539,8 @@ async function _generateYoungerSelfResponseInternal({
             eraAge,
             model: 'ollama',
             learnedMemoriesCount: parsedMemories.length,
-            photosCount: parsedMemories.filter(m => m.photo || m.caption).length
+            photosCount: parsedMemories.filter(m => m.photo || m.caption).length,
+            retrievedPhotos
           };
         }
       }
@@ -538,7 +564,8 @@ async function _generateYoungerSelfResponseInternal({
       model: 'cognitive-multimodal-vision-engine',
       visualPerception: incomingImagePerception,
       learnedMemoriesCount: parsedMemories.length,
-      photosCount: parsedMemories.filter(m => m.photo || m.caption).length + 1
+      photosCount: parsedMemories.filter(m => m.photo || m.caption).length + 1,
+      retrievedPhotos
     };
   }
 
@@ -556,7 +583,8 @@ async function _generateYoungerSelfResponseInternal({
       selectedEra,
       eraAge,
       model: 'cognitive-younger-self-engine',
-      learnedMemoriesCount: parsedMemories.length
+      learnedMemoriesCount: parsedMemories.length,
+      retrievedPhotos
     };
   }
 
@@ -580,7 +608,8 @@ async function _generateYoungerSelfResponseInternal({
       selectedEra,
       eraAge,
       model: 'cognitive-younger-self-engine',
-      learnedMemoriesCount: parsedMemories.length
+      learnedMemoriesCount: parsedMemories.length,
+      retrievedPhotos
     };
   }
 
@@ -594,7 +623,7 @@ async function _generateYoungerSelfResponseInternal({
     lowerPrompt.includes('album') || 
     lowerPrompt.includes('look at')
   ) {
-    const photoMem = parsedMemories.find(m => m.caption || m.photo);
+    const photoMem = parsedMemories.find(m => m.caption || (m.photo && m.photo !== 'attached') || (Array.isArray(m.photos) && m.photos.length > 0));
     if (photoMem) {
       const capStr = photoMem.caption ? `"${photoMem.caption}"` : `'${photoMem.title}'`;
       return {
@@ -604,7 +633,9 @@ async function _generateYoungerSelfResponseInternal({
         selectedEra,
         eraAge,
         model: 'cognitive-younger-self-engine',
-        learnedMemoriesCount: parsedMemories.length
+        learnedMemoriesCount: parsedMemories.length,
+        photosCount: parsedMemories.filter(m => m.photo || m.caption).length,
+        retrievedPhotos
       };
     }
   }
@@ -635,7 +666,8 @@ async function _generateYoungerSelfResponseInternal({
         selectedEra,
         eraAge,
         model: 'cognitive-younger-self-engine',
-        learnedMemoriesCount: parsedMemories.length
+        learnedMemoriesCount: parsedMemories.length,
+        retrievedPhotos
       };
     }
   }
@@ -649,7 +681,8 @@ async function _generateYoungerSelfResponseInternal({
       selectedEra,
       eraAge,
       model: 'cognitive-younger-self-engine',
-      learnedMemoriesCount: parsedMemories.length
+      learnedMemoriesCount: parsedMemories.length,
+      retrievedPhotos
     };
   }
 
@@ -664,7 +697,8 @@ async function _generateYoungerSelfResponseInternal({
         selectedEra,
         eraAge,
         model: 'cognitive-younger-self-engine',
-        learnedMemoriesCount: parsedMemories.length
+        learnedMemoriesCount: parsedMemories.length,
+        retrievedPhotos
       };
     }
   }
@@ -694,7 +728,8 @@ async function _generateYoungerSelfResponseInternal({
       eraAge,
       model: 'cognitive-younger-self-engine',
       learnedMemoriesCount: parsedMemories.length,
-      photosCount: parsedMemories.filter(m => m.photo || m.caption).length
+      photosCount: parsedMemories.filter(m => m.photo || m.caption).length,
+      retrievedPhotos
     };
   }
 
@@ -722,6 +757,7 @@ async function _generateYoungerSelfResponseInternal({
     eraAge,
     model: 'cognitive-younger-self-engine',
     learnedMemoriesCount: parsedMemories.length,
-    photosCount: parsedMemories.filter(m => m.photo || m.caption).length
+    photosCount: parsedMemories.filter(m => m.photo || m.caption).length,
+    retrievedPhotos
   };
 }

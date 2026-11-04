@@ -476,8 +476,8 @@
 
     <!-- ACTION BUTTONS -->
     <div class="actions">
-      <a href="timeline.html" class="nav-btn" title="Open Analytical Timeline">📊 Timeline</a>
-      <a href="timeline.html?open=ai-companion" class="nav-btn" title="Talk to Younger Self AI">💬 Younger Self</a>
+      <a href="timeline.html" class="nav-btn" id="nav-btn-timeline" title="Open Analytical Timeline">📊 Timeline</a>
+      <a href="timeline.html?ai=open&open=ai-companion" class="nav-btn" id="nav-btn-ai" title="Talk to Younger Self AI">💬 Younger Self</a>
       <a href="journey-selection.html" class="nav-btn" title="Switch Athlete / Sport">🔄 Switch</a>
       <button id="btn-seal-legacy" type="button" class="nav-btn" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#0a0c10;font-weight:800;border:none;box-shadow:0 0 16px rgba(245,158,11,0.5);cursor:pointer;display:inline-flex;align-items:center;gap:6px;" title="Finish Workflow & Seal Immortality">🏆 Finish & Seal Immortality</button>
     </div>
@@ -678,6 +678,10 @@
     }
   }
 
+  const timelineBaseUrl = `timeline.html?mode=${activeSport === 'life' ? 'life' : 'sports'}&sport=${encodeURIComponent(activeSport)}&name=${encodeURIComponent(athleteName)}`;
+  if ($('#nav-btn-timeline')) $('#nav-btn-timeline').href = timelineBaseUrl;
+  if ($('#nav-btn-ai')) $('#nav-btn-ai').href = `${timelineBaseUrl}&ai=open`;
+
   if ($('#sport')) {
     const supportedSports = ['football', 'cricket', 'basketball', 'track', 'tennis', 'combat', 'swimming', 'life'];
     if (supportedSports.includes(activeSport)) {
@@ -734,15 +738,18 @@
   const TYPE = { win: 'Win or Award', train: 'Training', hard: 'Challenging Moment', journal: 'Journal Reflection' };
 
   const DEFAULT_DEMO_MEMORIES = [
-    { y: 2012, age: 10, t: 'Backyard Football & Red Ball', type: 'journal', imp: 0.55, mood: 8.2, note: 'Appa gave me a red football. We kicked it until the streetlights flickered on.' },
-    { y: 2014, age: 12, t: 'First School Team Striker', type: 'train', imp: 0.65, mood: 8.6, note: 'Selected for the first XI. Coach said I run like I am constantly late for something important.' },
-    { y: 2016, age: 14, t: 'The Heartbreak Final (0-1)', type: 'hard', imp: 0.8, mood: 3.4, note: 'Conceded in the 89th minute. Cried silently in the bus, but reported for 6 AM drills next morning.' },
-    { y: 2017, age: 15, t: 'U-15 District Championship', type: 'win', imp: 1.0, mood: 9.3, note: 'Brace against Rivers FC in front of the home crowd. Sealed my first regional trophy.' },
-    { y: 2018, age: 16, t: 'Golden Boot: 22 Goals', type: 'win', imp: 0.85, mood: 8.9, note: '22 goals in 14 matches. The trophy stayed on our living room mantelpiece all year.' },
-    { y: 2019, age: 17, t: 'State Final Runners-up', type: 'win', imp: 0.9, mood: 8.7, note: 'Best football of my junior career. Pushed the champions into extra time penalty kicks.' },
-    { y: 2020, age: 18, t: 'Meniscus Tear & Rehab', type: 'hard', imp: 0.8, mood: 3.1, note: 'Six grueling months in rehab. Kept a daily journal to remember why I started.' },
-    { y: 2022, age: 20, t: 'College Captaincy & Cup', type: 'win', imp: 0.9, mood: 9.1, note: 'Returned with the captain armband. Led from the front and lifted the inter-college trophy.' },
-    { y: 2025, age: 23, t: 'National Championship Clutch', type: 'win', imp: 1.0, mood: 9.4, note: 'Stoppage-time match-winner in the final. I thought of the red ball in the backyard.' }
+    { y: 2012, age: 10, t: 'First Touch on the Pitch', type: 'train', imp: 0.65, mood: 8.5, note: 'The day I first wore cleats. The grass smelled of rain and possibility. Coach handed me jersey Number 10. I knew this was the beginning of everything.', photo: '/uploads/athlete-first-touch.jpg', era: 'Youth & Formative Years', location: 'Riverside Youth Academy, Chennai' },
+    { y: 2016, age: 14, t: 'District Championship Finals', type: 'win', imp: 1.0, mood: 9.5, note: 'Down 2-1 at halftime. I scored the equaliser in the 72nd minute — a left-foot volley from outside the box. We won on penalties. Dad cried in the stands.', photo: '/uploads/athlete-district-finals.jpg', era: 'Breakthrough & Championship Season', location: 'Jawaharlal Nehru Stadium, Chennai' },
+    { y: 2018, age: 16, t: 'State Youth Team Selection', type: 'win', imp: 0.9, mood: 8.8, note: 'My name appeared on the official board. Tamil Nadu State Youth Team. I called Dad from the corridor — he went silent, then wept. So did I.', photo: '/uploads/athlete-state-selection.jpg', era: 'Breakthrough & Championship Season', location: 'Tamil Nadu Football Association, Chennai' },
+    { y: 2020, age: 18, t: 'College League Opening Match', type: 'win', imp: 0.85, mood: 9.0, note: 'New city. New teammates. Same boots. Scored twice on debut. The team lifted me on their shoulders. I understood that sport is ultimately about belonging.', photo: '/uploads/athlete-college-match.jpg', era: 'Pro Athlete & Mastery Era', location: 'SRM University Ground, Kattankulathur' },
+    { y: 2022, age: 20, t: 'National U-23 Training Camp', type: 'train', imp: 0.95, mood: 9.2, note: 'Twelve hours of training in biting Bengaluru cold. Tactical drills, video analysis, strength tests. I earned a spot in the 23-man squad. The highest rung I have ever stood on.', photo: '/uploads/athlete-national-camp.jpg', era: 'Pro Athlete & Mastery Era', location: 'SAI National Centre, Bengaluru' }
+  ];
+
+  const DEFAULT_LIFE_MEMORIES = [
+    { y: 2021, age: 22, t: 'University Graduation Day', type: 'win', imp: 0.95, mood: 9.5, note: 'Four years of late nights, chai, and debugging. When they called my name, Mum wept in the front row. I clutched my Computer Science degree and thought — this is just the start.', photo: '/uploads/life-graduation.jpg', era: 'Youth & Formative Years', location: 'Anna University Auditorium, Chennai' },
+    { y: 2021, age: 22, t: 'First Job Offer — Dream Company', type: 'win', imp: 0.9, mood: 9.2, note: 'The email arrived at 11:48 PM. "We are pleased to offer you the role of Associate Engineer." I read it seventeen times before I believed it. Mum made payasam.', photo: '/uploads/life-first-job.jpg', era: 'Breakthrough & Championship Season', location: 'Bangalore, Karnataka' },
+    { y: 2022, age: 23, t: 'Family Road Trip — Coorg Hills', type: 'journal', imp: 0.85, mood: 9.0, note: 'Three days in misty coffee estate hills. No Wi-Fi, no deadlines. Dad drove, Mum sang old Ilayaraja songs. Karthik and I laughed about everything.', photo: '/uploads/life-coorg-trip.jpg', era: 'Breakthrough & Championship Season', location: 'Coorg, Karnataka' },
+    { y: 2023, age: 24, t: 'Solo Trip — Spiti Valley', type: 'journal', imp: 0.95, mood: 9.8, note: 'High altitude, thin air, golden monastery at Key. Sat alone on a boulder for two hours, thinking about nothing and everything simultaneously.', photo: '/uploads/life-spiti-valley.jpg', era: 'Pro Athlete & Mastery Era', location: 'Spiti Valley, Himachal Pradesh' }
   ];
 
   let MEM = [];
@@ -797,12 +804,14 @@
     const note = raw.journal || raw.content || raw.matchDetails || raw.note || raw.victoryMessage || 'Milestone recorded in your personal athlete chronicle.';
 
     let photo = raw.photo || raw.media || null;
+    if (typeof photo === 'object' && photo && photo.url) photo = photo.url;
     if (!photo && Array.isArray(raw.photos) && raw.photos.length > 0) {
-      photo = typeof raw.photos[0] === 'string' ? raw.photos[0] : raw.photos[0].url;
+      photo = typeof raw.photos[0] === 'string' ? raw.photos[0] : (raw.photos[0] && raw.photos[0].url);
     }
     if (!photo && Array.isArray(raw.mediaAssets) && raw.mediaAssets.length > 0) {
-      photo = raw.mediaAssets[0].url;
+      photo = typeof raw.mediaAssets[0] === 'string' ? raw.mediaAssets[0] : (raw.mediaAssets[0] && raw.mediaAssets[0].url);
     }
+    if (typeof photo === 'object' && photo) photo = photo.url || null;
 
     return {
       id: raw.id || raw.Memory_ID || ('mem_' + index),
@@ -967,7 +976,7 @@
       }
       dynamicFieldGroup = gltf.scene;
       window.dynamicFieldGroup = dynamicFieldGroup;
-      dynamicFieldGroup.position.set(0, 0.05, -80);
+      dynamicFieldGroup.position.set(0, sportKey === 'life' ? -2.26 : 0.05, -80);
       if (sportKey === 'football' || sportKey === 'track') {
         dynamicFieldGroup.rotation.y = Math.PI / 2;
       }
@@ -1314,6 +1323,7 @@
     buildList();
   }
   window.goTo = goTo;
+  window.arrive = arrive;
 
   function arrive() {
     walking = false;
@@ -1322,11 +1332,16 @@
     const c = $('#gcard');
     c.hidden = false;
 
-    const photoMarkup = m.photo
-      ? `<div style="margin-bottom:12px; border-radius:10px; overflow:hidden; max-height:220px; border:1px solid rgba(255,255,255,0.15);">
-           <img src="${m.photo}" alt="${m.t}" style="width:100%; height:180px; object-fit:cover; display:block;" onerror="this.parentElement.style.display='none';">
+    const safePhoto = m.photo ? (m.photo.startsWith('http') || m.photo.startsWith('data:') ? m.photo : (window.location.origin + (m.photo.startsWith('/') ? '' : '/') + m.photo)) : null;
+
+    const photoMarkup = safePhoto
+      ? `<div style="margin-bottom:12px; border-radius:10px; overflow:hidden; max-height:220px; border:1px solid rgba(255,255,255,0.15); background:#050912;">
+           <img src="${safePhoto}" alt="${m.t}" style="width:100%; height:180px; object-fit:cover; display:block;" onerror="this.onerror=null; this.parentElement.style.display='none';">
          </div>`
       : `<canvas id="ph" width="640" height="240"></canvas>`;
+
+    const tlUrl = `timeline.html?mode=${activeSport === 'life' ? 'life' : 'sports'}&sport=${encodeURIComponent(activeSport)}&name=${encodeURIComponent(athleteName)}`;
+    const aiUrl = `${tlUrl}&ai=open&era=${encodeURIComponent(m.era || '')}`;
 
     c.innerHTML = `
       <div class="row">
@@ -1339,8 +1354,8 @@
       ${m.location ? `<div style="font-size:12px; color:var(--teal); margin-top:4px;">📍 ${m.location}</div>` : ''}
       <div class="row" style="margin-top:8px;">
         <span class="tag" style="color:${m.mood > 6 ? '#5fe0c8' : '#e5637a'}">Performance Mood: ${m.mood}/10</span>
-        <a href="timeline.html" class="btn" style="text-decoration:none; padding:6px 12px; font-size:12px;">📊 View Timeline</a>
-        <a href="chat.html" class="btn pri" style="text-decoration:none; padding:6px 14px; font-size:12px;">💬 Ask Age-${m.age} Self</a>
+        <a href="${tlUrl}" class="btn" style="text-decoration:none; padding:6px 12px; font-size:12px;">📊 View Timeline</a>
+        <a href="${aiUrl}" class="btn pri" style="text-decoration:none; padding:6px 14px; font-size:12px;">💬 Ask Age-${m.age} Self</a>
       </div>
     `;
 
@@ -1383,7 +1398,7 @@
           <p style="margin:0 0 12px 0; font-size:12px; line-height:1.4; color:#94a3b8;">
             Log matches, training drills, or awards in the timeline to build your personal 3D ground.
           </p>
-          <a href="timeline.html" class="btn pri" style="text-decoration:none; display:inline-block; padding:8px 14px; font-size:12px; border-radius:8px; font-weight:700;">
+          <a href="${timelineBaseUrl}" class="btn pri" style="text-decoration:none; display:inline-block; padding:8px 14px; font-size:12px; border-radius:8px; font-weight:700;">
             + Log Milestone in Timeline
           </a>
           <button type="button" class="btn" id="btn-load-template" style="margin-top:10px; font-size:11px; padding:6px 12px; width:100%;">
@@ -1392,9 +1407,9 @@
         </div>
       `;
       $('#btn-load-template')?.addEventListener('click', () => {
-        MEM = DEFAULT_DEMO_MEMORIES.slice();
+        MEM = (activeSport === 'life' ? DEFAULT_LIFE_MEMORIES : DEFAULT_DEMO_MEMORIES).slice();
         rebuildGroundMilestones();
-        toast('Loaded starter career milestones');
+        toast('Loaded starter ' + (activeSport === 'life' ? 'life' : 'career') + ' milestones');
       });
       return;
     }
@@ -1421,7 +1436,7 @@
      6B. REAL USER MEMORY ASYNC LOADER (ZERO HARDCODES)
      ------------------------------------------------------------------ */
   async function loadUserMemories() {
-    const uid = localStorage.getItem('legacy_user_id') || (userSession && (userSession.id || userSession.User_ID)) || 'usr_default';
+    const uid = (userFromUrl && userFromUrl.trim()) || localStorage.getItem('legacy_user_id') || (userSession && (userSession.id || userSession.User_ID)) || 'usr_default';
     const sport = activeSport || 'football';
     const API_BASE = window.location.origin ? (window.location.origin + '/api') : 'http://localhost:5000/api';
 
@@ -1486,6 +1501,7 @@
           MEM = serverMems.map((item, idx) => convertRawMemoryToNode(item, idx, userSession || {}));
           rebuildGroundMilestones();
           populateTrophiesFromMemories();
+          if (sel >= 0 && typeof arrive === 'function') arrive();
           toast(`Loaded ${MEM.length} personalized milestones for ${athleteName}`);
           return;
         }
@@ -1496,8 +1512,8 @@
 
     // 3. Fallback if user has no saved memories anywhere
     if (!localFound || MEM.length === 0) {
-      if (athleteName.includes('Morgan') || athleteName.includes('Williams') || uid === 'usr_default') {
-        MEM = DEFAULT_DEMO_MEMORIES.slice();
+      if (athleteName.includes('Morgan') || athleteName.includes('Williams') || uid === 'usr_default' || athleteName.includes('Maya')) {
+        MEM = (activeSport === 'life' ? DEFAULT_LIFE_MEMORIES : DEFAULT_DEMO_MEMORIES).slice();
       } else {
         MEM = [];
       }
@@ -2057,7 +2073,7 @@
         <span style="color:var(--mute)">Archive Entry, ${it.year}</span>
       </div>
       <div class="row" style="margin-top:4px;">
-        <a href="timeline.html" class="btn pri" style="text-decoration:none; padding:6px 14px; font-size:12px;">📊 Open Linked Timeline</a>
+        <a href="${timelineBaseUrl}" class="btn pri" style="text-decoration:none; padding:6px 14px; font-size:12px;">📊 Open Linked Timeline</a>
       </div>
     `;
   }

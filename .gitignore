@@ -19,6 +19,7 @@ dist/
 *.sqlite
 *.sqlite3
 Backend/legacylane.db
+AI_Modules/local_vector_cache.json
 
 # Local User Uploads
 Backend/uploads/*
